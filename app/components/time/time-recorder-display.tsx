@@ -107,7 +107,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label={`Select row ${row.id}`}
+            //aria-label={`Select row ${row.id}`}
           />
         )
       },
@@ -247,7 +247,7 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
     )
   const currentEntry = entries.find((entry) => !entry.endedAt)
   const currentElapsed = currentEntry
-    ? now - currentEntry.startedAt.getTime()
+    ? Math.max(now - currentEntry.startedAt.getTime(), 0)
     : 0
 
   return (
