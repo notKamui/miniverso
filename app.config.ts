@@ -10,7 +10,7 @@ export default defineConfig({
     autoCodeSplitting: true,
   },
   vite: {
-    plugins: [tsconfigPaths()],
+    plugins: [tsconfigPaths() as any],
   },
   react: {
     babel: {

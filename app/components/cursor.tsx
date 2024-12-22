@@ -1,14 +1,6 @@
 import { useTheme } from '@app/hooks/use-theme'
-import { type SpringOptions, type Variants, motion, useMotionValue, } from 'motion/react'
+import { type Variants, motion, useMotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-
-const springConfig = {
-  stiffness: 1000,
-  damping: 70,
-  velocity: 1000
-} satisfies SpringOptions
-
-
 
 function hasButtonOrAnchorAncestor(element: HTMLElement | null): boolean {
   if (!element) return false
@@ -17,27 +9,27 @@ function hasButtonOrAnchorAncestor(element: HTMLElement | null): boolean {
 }
 
 function getTextRectOrNull(x: number, y: number): DOMRect | null {
-  const element = document.elementFromPoint(x, y);
-  if (element == null) return null;
-  const nodes = element.childNodes;
+  const element = document.elementFromPoint(x, y)
+  if (element == null) return null
+  const nodes = element.childNodes
   for (const node of nodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-          const range = document.createRange();
-          range.selectNode(node);
-          const rects = range.getClientRects();
-          for (const rect of rects) {
-              if (
-                  x > rect.left &&
-                  x < rect.right &&
-                  y > rect.top &&
-                  y < rect.bottom
-              ) {
-                  return rect;
-              }
-          }
+    if (node.nodeType === Node.TEXT_NODE) {
+      const range = document.createRange()
+      range.selectNode(node)
+      const rects = range.getClientRects()
+      for (const rect of rects) {
+        if (
+          x > rect.left &&
+          x < rect.right &&
+          y > rect.top &&
+          y < rect.bottom
+        ) {
+          return rect
+        }
       }
+    }
   }
-  return null;
+  return null
 }
 
 export function Cursor() {
@@ -53,11 +45,9 @@ export function Cursor() {
     }
   }, [])
 
-
   const [caretHeight, setCaretHeight] = useState(0)
   const variants = {
-    default: {
-    },
+    default: {},
     pointer: {
       scale: 2.5,
     },
@@ -65,30 +55,28 @@ export function Cursor() {
       height: caretHeight,
       width: 2,
       borderRadius: 0,
-    }
+    },
   } satisfies Variants
 
   const cursor = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<keyof typeof variants>('default')
 
-  const storedPosition =
-    typeof localStorage !== 'undefined' &&
-    localStorage.getItem('cursor-position')
-  const initialPosition = useRef<{ x: number; y: number }>(
-    storedPosition ? JSON.parse(storedPosition) : { x: 0, y: 0 },
-  )
-
-  const positionX = useMotionValue(initialPosition.current.x)
-  const positionY = useMotionValue(initialPosition.current.y)
+  const positionX = useMotionValue(0)
+  const positionY = useMotionValue(0)
 
   useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
       if (!cursor.current) return
 
-      const isHovered = e.target instanceof HTMLElement && hasButtonOrAnchorAncestor(e.target)
+      const isHovered =
+        e.target instanceof HTMLElement && hasButtonOrAnchorAncestor(e.target)
       const textRect = getTextRectOrNull(e.clientX, e.clientY)
 
-      const state = isHovered ? 'pointer' : textRect !== null ? 'text' : 'default'
+      const state = isHovered
+        ? 'pointer'
+        : textRect !== null
+          ? 'text'
+          : 'default'
       setState(state)
       if (state === 'text') {
         setCaretHeight(textRect!.height || 0)
@@ -96,14 +84,7 @@ export function Cursor() {
 
       positionX.set(e.clientX)
       positionY.set(e.clientY)
-      localStorage.setItem(
-        'cursor-position',
-        JSON.stringify({ x: e.clientX, y: e.clientY }),
-      )
     }
-
-    initialPosition.current.x = window.innerWidth / 2
-    initialPosition.current.y = window.innerHeight / 2
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => {
