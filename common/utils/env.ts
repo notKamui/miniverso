@@ -11,5 +11,5 @@ export const env = {
   SERVER_URL: process.env.SERVER_URL! as string,
   DATABASE_URL: process.env.DATABASE_URL! as string,
   DISABLE_CSRF: process.env.DISABLE_CSRF === 'true',
-  DISABLE_RATE_LIMIT: process.env.DISABLE_RATE_LIMIT === 'true'
+  DISABLE_RATE_LIMIT: process.env.DISABLE_RATE_LIMIT === 'true',
 }

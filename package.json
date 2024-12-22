@@ -11,7 +11,8 @@
     "type-check": "bun tsc --noEmit",
     "check": "bun lint && bun type-check",
     "db": "bunx drizzle-kit",
-    "dev:docker": "docker compose -f docker-compose.dev.yml up -d"
+    "dev:docker": "docker compose -f docker-compose.dev.yml up -d",
+    "deploy": "bun check && sh ./deployment/_.deploy.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
