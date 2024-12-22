@@ -16,6 +16,30 @@ function hasButtonOrAnchorAncestor(element: HTMLElement | null): boolean {
   return hasButtonOrAnchorAncestor(element.parentElement)
 }
 
+function getTextRectOrNull(x: number, y: number): DOMRect | null {
+  const element = document.elementFromPoint(x, y);
+  if (element == null) return null;
+  const nodes = element.childNodes;
+  for (const node of nodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+          const range = document.createRange();
+          range.selectNode(node);
+          const rects = range.getClientRects();
+          for (const rect of rects) {
+              if (
+                  x > rect.left &&
+                  x < rect.right &&
+                  y > rect.top &&
+                  y < rect.bottom
+              ) {
+                  return rect;
+              }
+          }
+      }
+  }
+  return null;
+}
+
 export function Cursor() {
   const { theme } = useTheme()
 
@@ -62,13 +86,12 @@ export function Cursor() {
       if (!cursor.current) return
 
       const isHovered = e.target instanceof HTMLElement && hasButtonOrAnchorAncestor(e.target)
-      const postion = document.caretPositionFromPoint(e.clientX, e.clientY)
-      const isOverText = !!postion && postion.offsetNode.nodeType === Node.TEXT_NODE && postion.offsetNode.parentElement === e.target
+      const textRect = getTextRectOrNull(e.clientX, e.clientY)
 
-      const state = isHovered ? 'pointer' : isOverText ? 'text' : 'default'
+      const state = isHovered ? 'pointer' : textRect !== null ? 'text' : 'default'
       setState(state)
       if (state === 'text') {
-        setCaretHeight(postion?.getClientRect()?.height || 0)
+        setCaretHeight(textRect!.height || 0)
       }
 
       positionX.set(e.clientX)
