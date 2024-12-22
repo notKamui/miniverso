@@ -114,8 +114,6 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       },
       cell: ({ row }) => {
         const entry = row.original
-        console.log(selectedRows);
-
         return (
           <Checkbox
             checked={!!selectedRows[entry.id]}
@@ -187,6 +185,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       </div>
       <div className="flex flex-col-reverse gap-4 lg:flex-row">
         <DataTable
+          key={Object.keys(selectedRows).length}
           className="flex-grow"
           columns={columnsWithActions}
           data={entries}
