@@ -1,4 +1,5 @@
 import { flatErrors } from '@app/utils/flat-errors'
+import { env } from '@common/utils/env'
 import { db } from '@server/db'
 import { sessionsTable } from '@server/db/schema'
 import { createTokenBucketManager } from '@server/utils/rate-limit'
@@ -13,9 +14,11 @@ const bucket = createTokenBucketManager<string>(10, 2)
 export const APIRoute = createAPIFileRoute('/api/sessions/purge')({
   POST: async () =>
     await flatErrors(async () => {
-      const ip = getRequestIP()
-      if (!ip) badRequest('Suspicious request without IP address', 400)
-      if (!bucket.consume(ip, 1)) badRequest('Too many requests', 429)
+      if (!env.DISABLE_RATE_LIMIT) {
+        const ip = getRequestIP()
+        if (!ip) badRequest('Suspicious request without IP address', 400)
+        if (!bucket.consume(ip, 1)) badRequest('Too many requests', 429)
+      }
       const deleted = await db
         .delete(sessionsTable)
         .where(lt(sessionsTable.expiresAt, new Date()))
