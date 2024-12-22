@@ -18,6 +18,7 @@ export interface Time {
   formatDiff(other: Time): string
   isToday(): boolean
   getDate(): Date
+  getMonth(): number
   getRange(type: RangeType): [Time, Time]
   setDay(time: Date | Time): Time
   setTime(time: string): Time
@@ -49,6 +50,10 @@ export namespace Time {
 
     function getDate(): Date {
       return new Date(_date)
+    }
+
+    function getMonth(): number {
+      return getDate().getMonth() + 1
     }
 
     function shift(type: ShiftType, count: number): Time {
@@ -216,6 +221,7 @@ export namespace Time {
       formatDiff,
       isToday,
       getDate,
+      getMonth,
       getRange,
       setDay,
       setTime,

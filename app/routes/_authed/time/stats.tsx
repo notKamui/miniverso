@@ -5,7 +5,6 @@ import { $getTimeStatsBy } from '@server/functions/time-entry'
 import { createFileRoute } from '@tanstack/react-router'
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -20,6 +19,16 @@ type Stats = {
   total: number
   dayOrMonth: number
 }[]
+
+type Chart = (
+  stats: Stats,
+  time: Time,
+) => {
+  data: any[]
+  x: string
+  y: string
+  format: (value: any) => string
+}
 
 const DAYS = {
   1: 'Monday',
@@ -47,7 +56,7 @@ const MONTHS = {
 } as const
 
 const CHARTS = {
-  week: (stats: Stats) => {
+  week: (stats) => {
     const fullRange = Object.keys(DAYS).map(Number)
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
@@ -63,8 +72,11 @@ const CHARTS = {
       format: (total: number) => Time.formatTime(total * 1000),
     }
   },
-  month: (stats: Stats) => {
-    const fullRange = Collection.range(1, 32)
+  month: (stats, time) => {
+    const daysInMonth = [1, 3, 5, 7, 8, 10, 12].includes(time.getMonth())
+      ? 31
+      : 30
+    const fullRange = Collection.range(1, daysInMonth + 1)
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
       return {
@@ -79,7 +91,7 @@ const CHARTS = {
       format: (total: number) => Time.formatTime(total * 1000),
     }
   },
-  year: (stats: Stats) => {
+  year: (stats) => {
     const fullRange = Object.keys(MONTHS).map(Number)
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
@@ -95,7 +107,7 @@ const CHARTS = {
       format: (total: number) => Time.formatTime(total * 1000),
     }
   },
-} as const
+} satisfies Record<string, Chart>
 
 export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
@@ -131,8 +143,9 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
 function RouteComponent() {
   const { stats, date, type } = Route.useLoaderData()
+  const time = Time.from(date)
 
-  const chart = CHARTS[type](stats)
+  const chart = CHARTS[type](stats, time)
 
   return (
     <div className="size-full">
@@ -152,7 +165,6 @@ function RouteComponent() {
           <XAxis dataKey={chart.x} />
           <YAxis dataKey={chart.y} tickFormatter={chart.format} />
           <Tooltip formatter={chart.format} />
-          <Legend />
           <Line
             type="monotone"
             dataKey="total"
