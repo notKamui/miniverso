@@ -13,20 +13,22 @@ export const Route = createFileRoute('/_authed/time/')({
     })
     entries.sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
 
-    console.log(await $getTimeStatsBy({ data: { date: time.getDate(), type: 'week' } }))
-
     return {
       entries,
       date: time.getDate(),
       crumbs: crumbs({ title: 'Time recorder' }),
+      a: await $getTimeStatsBy({ data: { date: time.getDate(), type: 'week' } })
     }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { entries, date } = Route.useLoaderData()
+  const { entries, date, a } = Route.useLoaderData()
   const time = Time.from(date)
+
+  console.log("AAA", a);
+
 
   return (
     <div className="space-y-8">

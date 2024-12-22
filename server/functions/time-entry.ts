@@ -1,3 +1,4 @@
+import { Time } from '@common/utils/time'
 import { tryAsync } from '@common/utils/try'
 import { db, takeUniqueOrNull } from '@server/db'
 import { timeEntriesTable } from '@server/db/schema'
@@ -58,6 +59,13 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     const endDate = new Date(date)
     let groupBy: 'day' | 'month'
 
+    console.log(
+      'TYPE',
+      type,
+      Time.from(startDate).formatDay(),
+      Time.from(endDate).formatDay(),
+    )
+
     switch (type) {
       case 'week':
         startDate.setDate(date.getDate() - date.getDay())
@@ -80,6 +88,9 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         throw new Error('Invalid type')
     }
 
+    startDate.setHours(0, 0, 0, 0)
+    endDate.setHours(23, 59, 59, 999)
+
     const result = await db
       .select({
         unit:
@@ -91,7 +102,11 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
                 typeof groupBy
               >`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
         total: sql<number>`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`,
-       // context: groupBy === 'day' ? sql<number>`DOW FROM ${timeEntriesTable.startedAt}` : sql<number>`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+        dayOrMonth: {
+          week: sql<number>`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
+          month: sql<number>`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
+          year: sql<number>`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+        }[type],
       })
       .from(timeEntriesTable)
       .where(
@@ -102,7 +117,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
           lte(timeEntriesTable.endedAt, endDate),
         ),
       )
-      .groupBy(({ unit }) => unit)
+      .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
 
     return result
   })

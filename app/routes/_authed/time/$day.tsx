@@ -6,6 +6,7 @@ import { Time } from '@common/utils/time'
 import {
   $deleteTimeEntry,
   $getTimeEntriesByDay,
+  $getTimeStatsBy,
 } from '@server/functions/time-entry'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
@@ -30,14 +31,17 @@ export const Route = createFileRoute('/_authed/time/$day')({
       entries,
       date: time.getDate(),
       crumbs: crumbs({ title: 'Time recorder', to: '/time' }, { title: time.formatDay({ short: true }) }),
+      a: await $getTimeStatsBy({ data: { date: time.getDate(), type: 'month' } }),
     }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { entries, date } = Route.useLoaderData()
+  const { entries, date, a } = Route.useLoaderData()
   const time = Time.from(date)
+  console.log('AAA', a);
+
 
   return (
     <div className="space-y-8">
