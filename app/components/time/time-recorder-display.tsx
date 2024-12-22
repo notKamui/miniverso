@@ -94,8 +94,8 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       id: 'select',
       header: () => {
         const checked =
-          entries.length > 0 &&
-          entries.every((entry) => selectedRows[entry.id]) ||
+          (entries.length > 0 &&
+            entries.every((entry) => selectedRows[entry.id])) ||
           (Object.keys(selectedRows).length > 0 && 'indeterminate')
         return (
           <Checkbox
@@ -193,7 +193,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                 initial={{ height: 0, opacity: 0, marginBottom: 0 }}
                 exit={{ height: 0, opacity: 0, marginBottom: 0 }}
                 animate={{ height: 'auto', opacity: 1, marginBottom: 16 }}
-                className='flex flex-row items-center gap-4'
+                className="flex flex-row items-center gap-4"
               >
                 <span>{Object.keys(selectedRows).length} selected</span>
                 <Button

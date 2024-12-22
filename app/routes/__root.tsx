@@ -20,7 +20,6 @@ import { Meta, Scripts } from '@tanstack/start'
 import { outdent } from 'outdent'
 import { Suspense } from 'react'
 
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -59,7 +58,12 @@ export const Route = createRootRoute({
   },
   loader: async ({ context: { user } }) => {
     const { uiTheme } = await $getTheme()
-    return { uiTheme, user, crumbs: crumbs({ title: 'Home', to: '/' }), cursor: await $getCursor() }
+    return {
+      uiTheme,
+      user,
+      crumbs: crumbs({ title: 'Home', to: '/' }),
+      cursor: await $getCursor(),
+    }
   },
   component: () => {
     const uiTheme = Route.useLoaderData({ select: (state) => state.uiTheme })

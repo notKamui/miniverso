@@ -24,7 +24,8 @@ export namespace Collection {
   }
 
   export function range(first: number, lastExcluded: number): number[] {
-    if (lastExcluded < first) throw new Error('lastExcluded must be greater than first')
+    if (lastExcluded < first)
+      throw new Error('lastExcluded must be greater than first')
     return Array.from(Array(lastExcluded - first), (_, i) => i + first)
   }
 }

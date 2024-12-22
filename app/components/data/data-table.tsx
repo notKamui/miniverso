@@ -33,7 +33,6 @@ export function DataTable<TData, TValue>({
   onRowClick,
   onRowDoubleClick,
 }: DataTableProps<TData, TValue>) {
-
   const table = useReactTable({
     columns,
     data,

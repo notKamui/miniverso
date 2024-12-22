@@ -76,7 +76,10 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     const result = await db
       .select({
         unit: unitQuery,
-        total: sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`.mapWith(Number),
+        total:
+          sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`.mapWith(
+            Number,
+          ),
         dayOrMonth: dayOrMonthQuery,
       })
       .from(timeEntriesTable)

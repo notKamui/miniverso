@@ -62,7 +62,7 @@ export function Cursor() {
   const cursor = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<keyof typeof variants>('default')
 
-  const { cursor: initial } = useLoaderData({ from: '__root__'})
+  const { cursor: initial } = useLoaderData({ from: '__root__' })
   const positionX = useMotionValue(initial?.x ?? -100)
   const positionY = useMotionValue(initial?.y ?? -100)
 
