@@ -217,11 +217,19 @@ function ActionsMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={onEdit}>
-          <EditIcon /> Edit
+        <DropdownMenuItem asChild>
+          <button type="button" className="w-full" onClick={onEdit}>
+            <EditIcon /> Edit
+          </button>
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={onDelete}>
-          <Trash2Icon /> Delete
+        <DropdownMenuItem asChild>
+          <button
+            type="button"
+            className="w-full text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2Icon /> Delete
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
