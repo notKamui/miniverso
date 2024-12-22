@@ -61,8 +61,8 @@ export function Cursor() {
   const cursor = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<keyof typeof variants>('default')
 
-  const positionX = useMotionValue(0)
-  const positionY = useMotionValue(0)
+  const positionX = useMotionValue(-100)
+  const positionY = useMotionValue(-100)
 
   useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
