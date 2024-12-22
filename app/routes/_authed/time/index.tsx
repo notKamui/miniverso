@@ -2,7 +2,7 @@ import { RecorderDisplay } from '@app/components/time/time-recorder-display'
 import { title } from '@app/components/ui/primitives/typography'
 import { crumbs } from '@app/hooks/use-crumbs'
 import { Time } from '@common/utils/time'
-import { $getTimeEntriesByDay, $getTimeStatsBy } from '@server/functions/time-entry'
+import { $getTimeEntriesByDay } from '@server/functions/time-entry'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed/time/')({
@@ -17,18 +17,14 @@ export const Route = createFileRoute('/_authed/time/')({
       entries,
       date: time.getDate(),
       crumbs: crumbs({ title: 'Time recorder' }),
-      a: await $getTimeStatsBy({ data: { date: time.getDate(), type: 'week' } })
     }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { entries, date, a } = Route.useLoaderData()
+  const { entries, date } = Route.useLoaderData()
   const time = Time.from(date)
-
-  console.log("AAA", a);
-
 
   return (
     <div className="space-y-8">

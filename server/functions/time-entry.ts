@@ -68,15 +68,15 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     }[groupBy]
 
     const dayOrMonthQuery = {
-      week: sql<number>`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
-      month: sql<number>`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
-      year: sql<number>`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
-    }[type]
+      week: sql`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
+      month: sql`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
+      year: sql`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+    }[type].mapWith(Number)
 
     const result = await db
       .select({
         unit: unitQuery,
-        total: sql<number>`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`,
+        total: sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`.mapWith(Number),
         dayOrMonth: dayOrMonthQuery,
       })
       .from(timeEntriesTable)

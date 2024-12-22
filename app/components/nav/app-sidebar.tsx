@@ -35,8 +35,8 @@ const sections: AppNavGroupProps[] = [
         icon: ClockIcon,
         items: [
           {
-            title: 'Calendar',
-            to: '/time/calendar',
+            title: 'Statistics',
+            to: '/time/stats',
           },
         ],
         condition: ({ user }) => !!user,
