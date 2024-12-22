@@ -1,0 +1,22 @@
+services:
+  miniverso:
+    image: notkamui/miniverso:latest
+    container_name: miniverso
+    ports:
+      - "80:3000"
+    environment:
+      - DATABASE_URL=postgres://miniverso:miniverso@db:5432/miniverso
+      - SERVER_URL=https://miniverso.notkamui.com
+    restart: unless-stopped
+  db:
+    image: postgres:17
+    container_name: db
+    environment:
+      - POSTGRES_USER=miniverso
+      - POSTGRES_PASSWORD=miniverso
+      - POSTGRES_DB=miniverso
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
