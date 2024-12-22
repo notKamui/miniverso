@@ -55,71 +55,37 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     // - month: get the totals per day of the month of the date
     // - year: get the totals per month of the year of the date
 
-    const startDate = new Date(date)
-    const endDate = new Date(date)
-    let groupBy: 'day' | 'month'
+    const [startDate, endDate] = Time.from(date).getRange(type)
+    const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
 
-    console.log(
-      'TYPE',
-      type,
-      Time.from(startDate).formatDay(),
-      Time.from(endDate).formatDay(),
-    )
+    const unitQuery = {
+      day: sql<
+        typeof groupBy
+      >`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
+      month: sql<
+        typeof groupBy
+      >`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+    }[groupBy]
 
-    switch (type) {
-      case 'week': {
-        const day = date.getDay()
-        const diff = day === 0 ? -6 : 1 - day // adjust when day is Sunday
-        startDate.setDate(date.getDate() + diff)
-        endDate.setDate(startDate.getDate() + 6)
-        groupBy = 'day'
-        break
-      }
-      case 'month': {
-        startDate.setDate(1)
-        endDate.setMonth(startDate.getMonth() + 1)
-        endDate.setDate(0)
-        groupBy = 'day'
-        break
-      }
-      case 'year': {
-        startDate.setMonth(0, 1)
-        endDate.setFullYear(startDate.getFullYear() + 1)
-        endDate.setMonth(0, 0)
-        groupBy = 'month'
-        break
-      }
-      default:
-        throw new Error('Invalid type')
-    }
-
-    startDate.setHours(0, 0, 0, 0)
-    endDate.setHours(23, 59, 59, 999)
+    const dayOrMonthQuery = {
+      week: sql<number>`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
+      month: sql<number>`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
+      year: sql<number>`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+    }[type]
 
     const result = await db
       .select({
-        unit:
-          groupBy === 'day'
-            ? sql<
-                typeof groupBy
-              >`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`
-            : sql<
-                typeof groupBy
-              >`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+        unit: unitQuery,
         total: sql<number>`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`,
-        dayOrMonth: {
-          week: sql<number>`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
-          month: sql<number>`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
-          year: sql<number>`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
-        }[type],
+        dayOrMonth: dayOrMonthQuery,
       })
       .from(timeEntriesTable)
       .where(
         and(
           eq(timeEntriesTable.userId, user.id),
           isNotNull(timeEntriesTable.endedAt),
-          gte(timeEntriesTable.startedAt, startDate),
-          lte(timeEntriesTable.endedAt, endDate),
+          gte(timeEntriesTable.startedAt, startDate.getDate()),
+          lte(timeEntriesTable.endedAt, endDate.getDate()),
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])

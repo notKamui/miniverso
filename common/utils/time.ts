@@ -7,6 +7,8 @@ type ShiftType =
   | 'seconds'
   | 'milliseconds'
 
+type RangeType = 'day' | 'week' | 'month' | 'year'
+
 export interface Time {
   shift(type: ShiftType, count: number): Time
   compare(other: Time, type?: ShiftType): number
@@ -16,6 +18,7 @@ export interface Time {
   formatDiff(other: Time): string
   isToday(): boolean
   getDate(): Date
+  getRange(type: RangeType): [Time, Time]
   setDay(time: Date | Time): Time
   setTime(time: string): Time
 }
@@ -175,6 +178,35 @@ export namespace Time {
       return from(date)
     }
 
+    function getRange(type: RangeType): [Time, Time] {
+      const startDate = getDate()
+      const endDate = getDate()
+      switch (type) {
+        case 'week': {
+          const day = startDate.getDay()
+          const diff = day === 0 ? -6 : 1 - day
+          startDate.setDate(startDate.getDate() + diff)
+          endDate.setDate(startDate.getDate() + 6)
+          break
+        }
+        case 'month': {
+          startDate.setDate(1)
+          endDate.setMonth(startDate.getMonth() + 1)
+          endDate.setDate(0)
+          break
+        }
+        case 'year': {
+          startDate.setMonth(0, 1)
+          endDate.setFullYear(startDate.getFullYear() + 1)
+          endDate.setMonth(0, 0)
+          break
+        }
+      }
+      startDate.setHours(0, 0, 0, 0)
+      endDate.setHours(23, 59, 59, 999)
+      return [from(startDate), from(endDate)]
+    }
+
     return {
       shift,
       compare,
@@ -184,6 +216,7 @@ export namespace Time {
       formatDiff,
       isToday,
       getDate,
+      getRange,
       setDay,
       setTime,
     }
