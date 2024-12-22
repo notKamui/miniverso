@@ -164,7 +164,7 @@ function RouteComponent() {
         <CalendarSelect
           value={time.getDate()}
           onChange={(date) => navigate({ to: '.', search: { date, type } })}
-          className='max-lg:w-full'
+          className="max-lg:w-full"
         />
         <Select
           value={type}
@@ -184,12 +184,9 @@ function RouteComponent() {
       </div>
       <ResponsiveContainer>
         <LineChart
-          width={500}
-          height={300}
           data={chart.data}
           margin={{
             top: 5,
-            right: 30,
             left: 20,
             bottom: 5,
           }}
