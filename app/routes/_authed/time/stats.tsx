@@ -1,9 +1,17 @@
+import { CalendarSelect } from '@app/components/ui/calendar-select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@app/components/ui/select'
 import { crumbs } from '@app/hooks/use-crumbs'
 import { useTheme } from '@app/hooks/use-theme'
 import { Collection } from '@common/utils/collection'
 import { Time } from '@common/utils/time'
 import { $getTimeStatsBy } from '@server/functions/time-entry'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   CartesianGrid,
   Line,
@@ -112,7 +120,7 @@ const CHARTS = {
 
 export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
-    date: z.date().optional(),
+    date: z.coerce.date().optional(),
     type: z.enum(['week', 'month', 'year']).optional().default('week'),
   }),
   loaderDeps: ({ search }) => {
@@ -143,6 +151,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 })
 
 function RouteComponent() {
+  const navigate = useNavigate()
   const { theme } = useTheme()
   const { stats, date, type } = Route.useLoaderData()
   const time = Time.from(date)
@@ -150,8 +159,30 @@ function RouteComponent() {
   const chart = CHARTS[type](stats, time)
 
   return (
-    <div className="size-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="flex size-full flex-col gap-4">
+      <div className="flex flex-row gap-4 max-lg:flex-col">
+        <CalendarSelect
+          value={time.getDate()}
+          onChange={(date) => navigate({ to: '.', search: { date, type } })}
+          className='max-lg:w-full'
+        />
+        <Select
+          value={type}
+          onValueChange={(type: 'week' | 'month' | 'year') =>
+            navigate({ to: '.', search: { date: time.getDate(), type } })
+          }
+        >
+          <SelectTrigger className="w-[180px] max-lg:w-full">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="week">Week</SelectItem>
+            <SelectItem value="month">Month</SelectItem>
+            <SelectItem value="year">Year</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <ResponsiveContainer>
         <LineChart
           width={500}
           height={300}
@@ -168,13 +199,15 @@ function RouteComponent() {
           <YAxis dataKey={chart.y} tickFormatter={chart.format} />
           <Tooltip
             formatter={chart.format}
-            wrapperClassName='AAAA'
+            wrapperClassName="AAAA"
             contentStyle={{
               borderRadius: 'var(--radius)',
-              ...(theme === 'light' ? {} : { backgroundColor: 'hsl(var(--background))'})
+              ...(theme === 'light'
+                ? {}
+                : { backgroundColor: 'hsl(var(--background))' }),
             }}
             itemStyle={{
-              color: theme === 'light' ? '#8884d8' : '#b3b0e9'
+              color: theme === 'light' ? '#8884d8' : '#b3b0e9',
             }}
           />
           <Line
