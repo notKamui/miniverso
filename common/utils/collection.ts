@@ -11,4 +11,15 @@ export namespace Collection {
     }
     return [truthy, falsy]
   }
+
+  export function associateBy<T, K extends PropertyKey>(
+    array: T[],
+    keySelector: (value: T) => K,
+  ): Record<K, T> {
+    const result: Record<K, T> = {} as any
+    for (const value of array) {
+      result[keySelector(value)] = value
+    }
+    return result
+  }
 }

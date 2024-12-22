@@ -14,6 +14,7 @@ import {
 } from '@app/components/ui/dropdown-menu'
 import { useNow } from '@app/hooks/use-now'
 import { cn } from '@app/utils/cn'
+import { Collection } from '@common/utils/collection'
 import { Time } from '@common/utils/time'
 import type { TimeEntry } from '@server/db/schema'
 import {
@@ -83,31 +84,52 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     })
   }
 
+  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
+    {},
+  )
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
   const columnsWithActions: typeof timeTableColumns = [
     {
       id: 'select',
-      header: ({ table }) => {
+      header: () => {
+        const checked =
+          entries.every((entry) => selectedRows[entry.id]) ||
+          (Object.keys(selectedRows).length > 0 && 'indeterminate')
         return (
           <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && 'indeterminate')
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
+            checked={checked}
+            onCheckedChange={(value) => {
+              if (value) {
+                setSelectedRows(
+                  Collection.associateBy(entries, (entry) => entry.id),
+                )
+              } else {
+                setSelectedRows({})
+              }
+            }}
             aria-label="Select all rows"
           />
         )
       },
       cell: ({ row }) => {
+        const entry = row.original
+        console.log(selectedRows);
+
         return (
           <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            //aria-label={`Select row ${row.id}`}
+            checked={!!selectedRows[entry.id]}
+            onCheckedChange={(value) => {
+              if (value) {
+                setSelectedRows((prev) => ({ ...prev, [entry.id]: entry }))
+              } else {
+                setSelectedRows((prev) => {
+                  const { [entry.id]: _, ...rest } = prev
+                  return rest
+                })
+              }
+            }}
+            aria-label={`Select row ${entry.id}`}
           />
         )
       },

@@ -11,12 +11,10 @@ import { cn } from '@app/utils/cn'
 import {
   type ColumnDef,
   type Row,
-  type RowSelectionState,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useState } from 'react'
 
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]
@@ -35,16 +33,11 @@ export function DataTable<TData, TValue>({
   onRowClick,
   onRowDoubleClick,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const table = useReactTable({
     columns,
     data,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: setRowSelection,
-    state: {
-      rowSelection,
-    },
   })
 
   const headerGroups = table.getHeaderGroups()
