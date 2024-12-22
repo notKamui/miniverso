@@ -67,23 +67,28 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     )
 
     switch (type) {
-      case 'week':
-        startDate.setDate(date.getDate() - date.getDay())
+      case 'week': {
+        const day = date.getDay()
+        const diff = day === 0 ? -6 : 1 - day // adjust when day is Sunday
+        startDate.setDate(date.getDate() + diff)
         endDate.setDate(startDate.getDate() + 6)
         groupBy = 'day'
         break
-      case 'month':
+      }
+      case 'month': {
         startDate.setDate(1)
         endDate.setMonth(startDate.getMonth() + 1)
         endDate.setDate(0)
         groupBy = 'day'
         break
-      case 'year':
+      }
+      case 'year': {
         startDate.setMonth(0, 1)
         endDate.setFullYear(startDate.getFullYear() + 1)
         endDate.setMonth(0, 0)
         groupBy = 'month'
         break
+      }
       default:
         throw new Error('Invalid type')
     }
