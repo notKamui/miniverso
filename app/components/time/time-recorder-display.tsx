@@ -94,6 +94,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       id: 'select',
       header: () => {
         const checked =
+          entries.length > 0 &&
           entries.every((entry) => selectedRows[entry.id]) ||
           (Object.keys(selectedRows).length > 0 && 'indeterminate')
         return (
@@ -184,13 +185,42 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         <TotalTime entries={entries} />
       </div>
       <div className="flex flex-col-reverse gap-4 lg:flex-row">
-        <DataTable
-          key={Object.keys(selectedRows).length}
-          className="flex-grow"
-          columns={columnsWithActions}
-          data={entries}
-          onRowDoubleClick={(entry) => setSelectedEntry(entry)}
-        />
+        <div className="flex-grow">
+          <AnimatePresence>
+            {Object.keys(selectedRows).length > 0 && (
+              <motion.div
+                key="delete-rows"
+                initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                animate={{ height: 'auto', opacity: 1, marginBottom: 16 }}
+                className='flex flex-row items-center gap-4'
+              >
+                <span>{Object.keys(selectedRows).length} selected</span>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    await Promise.all(
+                      Object.values(selectedRows).map((entry) =>
+                        deleteEntry({ data: { id: entry.id } }),
+                      ),
+                    )
+                    await router.invalidate()
+                    setSelectedRows({})
+                  }}
+                >
+                  Delete
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <DataTable
+            key={Object.keys(selectedRows).length}
+            className="w-full"
+            columns={columnsWithActions}
+            data={entries}
+            onRowDoubleClick={(entry) => setSelectedEntry(entry)}
+          />
+        </div>
 
         {isToday && (
           <TimeRecorderControls
