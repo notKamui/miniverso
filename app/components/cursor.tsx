@@ -1,4 +1,5 @@
 import { useTheme } from '@app/hooks/use-theme'
+import { useLoaderData } from '@tanstack/react-router'
 import { type Variants, motion, useMotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -61,8 +62,9 @@ export function Cursor() {
   const cursor = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<keyof typeof variants>('default')
 
-  const positionX = useMotionValue(-100)
-  const positionY = useMotionValue(-100)
+  const { cursor: initial } = useLoaderData({ from: '__root__'})
+  const positionX = useMotionValue(initial?.x ?? -100)
+  const positionY = useMotionValue(initial?.y ?? -100)
 
   useEffect(() => {
     function handleMouseMove(e: MouseEvent) {
@@ -84,6 +86,10 @@ export function Cursor() {
 
       positionX.set(e.clientX)
       positionY.set(e.clientY)
+      document.cookie = `cursor-position=${JSON.stringify({
+        x: e.clientX,
+        y: e.clientY,
+      })}; path=/`
     }
 
     window.addEventListener('mousemove', handleMouseMove)

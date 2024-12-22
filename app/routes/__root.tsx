@@ -8,6 +8,7 @@ import { MainLayout } from '@app/layouts/main'
 import appCss from '@app/styles/index.css?url'
 import { cn } from '@app/utils/cn'
 import { tryAsync } from '@common/utils/try'
+import { $getCursor } from '@server/functions/cursor'
 import { $getTheme } from '@server/functions/theme'
 import { $authenticate } from '@server/functions/user'
 import {
@@ -18,6 +19,7 @@ import {
 import { Meta, Scripts } from '@tanstack/start'
 import { outdent } from 'outdent'
 import { Suspense } from 'react'
+
 
 export const Route = createRootRoute({
   head: () => ({
@@ -57,7 +59,7 @@ export const Route = createRootRoute({
   },
   loader: async ({ context: { user } }) => {
     const { uiTheme } = await $getTheme()
-    return { uiTheme, user, crumbs: crumbs({ title: 'Home', to: '/' }) }
+    return { uiTheme, user, crumbs: crumbs({ title: 'Home', to: '/' }), cursor: await $getCursor() }
   },
   component: () => {
     const uiTheme = Route.useLoaderData({ select: (state) => state.uiTheme })
