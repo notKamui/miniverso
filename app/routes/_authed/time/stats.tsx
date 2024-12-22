@@ -1,4 +1,5 @@
 import { crumbs } from '@app/hooks/use-crumbs'
+import { useTheme } from '@app/hooks/use-theme'
 import { Collection } from '@common/utils/collection'
 import { Time } from '@common/utils/time'
 import { $getTimeStatsBy } from '@server/functions/time-entry'
@@ -142,6 +143,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 })
 
 function RouteComponent() {
+  const { theme } = useTheme()
   const { stats, date, type } = Route.useLoaderData()
   const time = Time.from(date)
 
@@ -164,11 +166,21 @@ function RouteComponent() {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey={chart.x} />
           <YAxis dataKey={chart.y} tickFormatter={chart.format} />
-          <Tooltip formatter={chart.format} />
+          <Tooltip
+            formatter={chart.format}
+            wrapperClassName='AAAA'
+            contentStyle={{
+              borderRadius: 'var(--radius)',
+              ...(theme === 'light' ? {} : { backgroundColor: 'hsl(var(--background))'})
+            }}
+            itemStyle={{
+              color: theme === 'light' ? '#8884d8' : '#b3b0e9'
+            }}
+          />
           <Line
             type="monotone"
             dataKey="total"
-            stroke="#8884d8"
+            stroke={theme === 'light' ? '#8884d8' : '#b3b0e9'}
             activeDot={{ r: 8 }}
           />
         </LineChart>
