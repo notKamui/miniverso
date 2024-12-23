@@ -18,4 +18,5 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
+RUN bun run db migrate
 CMD ["bun", "run", ".output/server/index.mjs"]
