@@ -108,13 +108,13 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$session])
-  .validator(validate(z.object({ startedAt: z.date().optional() })))
+  .validator(validate(z.object({ startedAt: z.date() })))
   .handler(async ({ context: { user }, data: { startedAt } }) => {
     const timeEntry = await db
       .insert(timeEntriesTable)
       .values({
         userId: user.id,
-        startedAt: startedAt ?? new Date(),
+        startedAt: startedAt,
       })
       .returning()
       .then(takeUniqueOrNull)

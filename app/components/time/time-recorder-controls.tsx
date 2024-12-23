@@ -30,7 +30,7 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
   })
 
   async function start() {
-    const entry = await createTimeEntry({ data: {} })
+    const entry = await createTimeEntry({ data: { startedAt: new Date() } })
     setCurrentEntry(entry)
     router.invalidate()
   }

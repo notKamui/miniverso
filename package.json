@@ -1,7 +1,7 @@
 {
   "name": "miniverso",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@tanstack/router-devtools": "^1.92.1",
+    "@tanstack/router-devtools": "^1.92.3",
     "@types/bun": "latest",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -44,10 +44,10 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@tanstack/react-form": "^0.40.4",
-    "@tanstack/react-router": "^1.92.1",
+    "@tanstack/react-router": "^1.92.3",
     "@tanstack/react-table": "^8.20.6",
-    "@tanstack/start": "^1.92.1",
-    "babel-plugin-react-compiler": "^19.0.0-beta-37ed2a7-20241206",
+    "@tanstack/start": "^1.92.3",
+    "babel-plugin-react-compiler": "^19.0.0-beta-b2e8e9c-20241220",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -70,5 +70,9 @@
   "peerDependencies": {
     "typescript": "^5.7.2"
   },
-  "trustedDependencies": ["@biomejs/biome", "@parcel/watcher", "esbuild"]
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "@parcel/watcher",
+    "esbuild"
+  ]
 }
