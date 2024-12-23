@@ -70,9 +70,5 @@
   "peerDependencies": {
     "typescript": "^5.7.2"
   },
-  "trustedDependencies": [
-    "@biomejs/biome",
-    "@parcel/watcher",
-    "esbuild"
-  ]
+  "trustedDependencies": ["@biomejs/biome", "@parcel/watcher", "esbuild"]
 }
