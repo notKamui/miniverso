@@ -4,6 +4,7 @@ dotenv.config({
   path: '.env',
   override: true,
   quiet: true,
+  ignore: ['MISSING_ENV_FILE'],
 })
 
 export const env = {
