@@ -19,5 +19,7 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/.drizzle ./.drizzle
 COPY deployment/drizzle.config.ts ./
 
+RUN bun add drizzle-kit drizzle-orm
+
 EXPOSE 3000
 CMD bunx drizzle-kit migrate; bun run .output/server/index.mjs
