@@ -1,4 +1,3 @@
-
 import { badRequest } from '@server/utils/response'
 import { getEvent, getRequestIP } from 'vinxi/http'
 
