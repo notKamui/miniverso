@@ -20,4 +20,4 @@ COPY --from=builder /app/.drizzle ./.drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 
 EXPOSE 3000
-CMD bunx drizzle-kit migrate && bun run .output/server/index.mjs
+CMD bunx drizzle-kit migrate --dialect=postgresql --url=${DATABASE_URL}; bun run .output/server/index.mjs
