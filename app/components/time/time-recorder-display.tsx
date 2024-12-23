@@ -18,7 +18,7 @@ import { Collection } from '@common/utils/collection'
 import { Time } from '@common/utils/time'
 import type { TimeEntry } from '@server/db/schema'
 import {
-  $deleteTimeEntry,
+  $deleteTimeEntries,
   $updateTimeEntry,
 } from '@server/functions/time-entry'
 import { Link, useRouter } from '@tanstack/react-router'
@@ -70,7 +70,7 @@ const MotionDialog = motion.create(EditEntryDialog)
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
   const updateEntry = useServerFn($updateTimeEntry)
-  const deleteEntry = useServerFn($deleteTimeEntry)
+  const deleteEntries = useServerFn($deleteTimeEntries)
 
   const dayBefore = time.shift('days', -1)
   const dayAfter = time.shift('days', 1)
@@ -144,7 +144,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           <ActionsMenu
             onEdit={() => setSelectedEntry(entry)}
             onDelete={async () => {
-              await deleteEntry({ data: { id: entry.id } })
+              await deleteEntries({ data: { ids: [entry.id] } })
               await router.invalidate()
             }}
           />
@@ -199,13 +199,13 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                 <Button
                   variant="destructive"
                   onClick={async () => {
-                    await Promise.all(
-                      Object.values(selectedRows).map((entry) =>
-                        deleteEntry({ data: { id: entry.id } }),
-                      ),
-                    )
-                    await router.invalidate()
                     setSelectedRows({})
+                    await deleteEntries({
+                      data: {
+                        ids: Object.values(selectedRows).map((e) => e.id),
+                      },
+                    })
+                    await router.invalidate()
                   }}
                 >
                   Delete

@@ -9,7 +9,17 @@ import { badRequest } from '@server/utils/response'
 import { validate } from '@server/utils/validate'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/start'
-import { and, eq, gte, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
+import {
+  and,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { z } from 'zod'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
@@ -160,19 +170,21 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
     },
   )
 
-export const $deleteTimeEntry = createServerFn({ method: 'POST' })
+export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$session])
-  .validator(validate(z.object({ id: z.string() })))
-  .handler(async ({ context: { user }, data: { id } }) => {
+  .validator(validate(z.object({ ids: z.array(z.string()) })))
+  .handler(async ({ context: { user }, data: { ids } }) => {
     const timeEntry = await db
       .delete(timeEntriesTable)
       .where(
-        and(eq(timeEntriesTable.id, id), eq(timeEntriesTable.userId, user.id)),
+        and(
+          inArray(timeEntriesTable.id, ids),
+          eq(timeEntriesTable.userId, user.id),
+        ),
       )
       .returning({ id: timeEntriesTable.id })
-      .then(takeUniqueOrNull)
 
     if (!timeEntry) throw notFound()
 
-    return timeEntry.id
+    return timeEntry.map((e) => e.id)
   })

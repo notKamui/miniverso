@@ -4,7 +4,7 @@ import { crumbs } from '@app/hooks/use-crumbs'
 import { Collection } from '@common/utils/collection'
 import { Time } from '@common/utils/time'
 import {
-  $deleteTimeEntry,
+  $deleteTimeEntries,
   $getTimeEntriesByDay,
 } from '@server/functions/time-entry'
 import { createFileRoute, redirect } from '@tanstack/react-router'
@@ -22,9 +22,7 @@ export const Route = createFileRoute('/_authed/time/$day')({
     )
 
     entries.sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
-    await Promise.all(
-      notEnded.map((entry) => $deleteTimeEntry({ data: { id: entry.id } })),
-    )
+    await $deleteTimeEntries({ data: { ids: notEnded.map((e) => e.id) } })
 
     return {
       entries,
