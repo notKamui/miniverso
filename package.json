@@ -43,7 +43,7 @@
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
-    "@tanstack/react-form": "^0.40.4",
+    "@tanstack/react-form": "^0.41.0",
     "@tanstack/react-router": "^1.92.3",
     "@tanstack/react-table": "^8.20.6",
     "@tanstack/start": "^1.92.3",
