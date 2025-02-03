@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from '@tanstack/start/config'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -10,7 +11,7 @@ export default defineConfig({
     autoCodeSplitting: true,
   },
   vite: {
-    plugins: [tsconfigPaths() as any],
+    plugins: [tsconfigPaths() as any, tailwindcss()],
   },
   react: {
     babel: {
