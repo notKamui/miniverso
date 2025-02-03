@@ -4,10 +4,13 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
   component: RouteComponent,
+  loader: ({ context: { session } }) => {
+    return { session }
+  }
 })
 
 function RouteComponent() {
-  const session = Route.useRouteContext({ select: (state) => state.session })
+  const session = Route.useLoaderData({ select: (state) => state.session })
 
   return (
     <>

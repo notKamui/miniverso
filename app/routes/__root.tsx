@@ -33,6 +33,7 @@ export const Route = createRootRoute({
   }),
   beforeLoad: async () => {
     const [error, result] = await tryAsync($authenticate())
+
     if (error) {
       return { session: null, user: null }
     }
