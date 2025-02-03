@@ -185,7 +185,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         <TotalTime entries={entries} />
       </div>
       <div className="flex flex-col-reverse gap-4 lg:flex-row">
-        <div className="flex-grow">
+        <div className="grow">
           <AnimatePresence>
             {Object.keys(selectedRows).length > 0 && (
               <motion.div

@@ -91,7 +91,7 @@ export function TimeRecorderControls({
         )}
       </div>
       <Textarea
-        className="flex-grow resize-none"
+        className="grow resize-none"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"

@@ -39,7 +39,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <main className="h-[calc(100vh-theme(spacing.16))] space-y-8 overflow-auto p-4 max-sm:w-screen">
+        <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
           {children}
         </main>
       </SidebarInset>

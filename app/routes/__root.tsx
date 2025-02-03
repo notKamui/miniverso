@@ -11,13 +11,8 @@ import { tryAsync } from '@common/utils/try'
 import { $getCursor } from '@server/functions/cursor'
 import { $getTheme } from '@server/functions/theme'
 import { $authenticate } from '@server/functions/user'
-import {
-  Outlet,
-  ScrollRestoration,
-  createRootRoute,
-} from '@tanstack/react-router'
+import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { Meta, Scripts } from '@tanstack/start'
-import { outdent } from 'outdent'
 import { Suspense } from 'react'
 
 export const Route = createRootRoute({
@@ -31,23 +26,10 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Time Recorder',
+        title: 'Miniverso',
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
-    scripts: import.meta.env.PROD
-      ? []
-      : [
-          {
-            type: 'module',
-            children: outdent /* js */`
-              import RefreshRuntime from "/_build/@react-refresh"
-              RefreshRuntime.injectIntoGlobalHook(window)
-              window.$RefreshReg$ = () => {}
-              window.$RefreshSig$ = () => (type) => type
-            `,
-          },
-        ],
   }),
   beforeLoad: async () => {
     const [error, result] = await tryAsync($authenticate())
@@ -91,7 +73,6 @@ export const Route = createRootRoute({
           <Suspense>
             <RouterDevtools position="bottom-right" />
           </Suspense>
-          <ScrollRestoration />
           <Scripts />
         </body>
       </html>

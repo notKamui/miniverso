@@ -30,7 +30,7 @@ export function CalendarSelect({
         <Button
           variant={'outline'}
           className={cn(
-            'w-[280px] pl-3 text-left font-normal max-sm:flex-grow',
+            'w-[280px] pl-3 text-left font-normal max-sm:grow',
             !value && 'text-muted-foreground',
             className,
           )}
