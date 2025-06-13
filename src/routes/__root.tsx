@@ -1,6 +1,6 @@
 import {
-  Outlet,
   HeadContent,
+  Outlet,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router'
@@ -30,23 +30,15 @@ export const Route = createRootRoute({
   }),
 
   component: () => (
-    <RootDocument>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </RootDocument>
-  ),
-})
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <Outlet />
+        <TanStackRouterDevtools />
         <Scripts />
       </body>
     </html>
-  )
-}
+  ),
+})

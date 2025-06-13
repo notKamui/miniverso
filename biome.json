@@ -10,7 +10,7 @@
     "ignore": [
       "node_modules",
       "bun.lock",
-      "routeTree.gen.ts",
+      "src/routeTree.gen.ts",
       ".drizzle",
       ".output",
       ".tanstack",
