@@ -7,7 +7,12 @@
     "start": "node .output/server/index.mjs",
     "build": "vite build",
     "serve": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "bunx biome check",
+    "lint:fix": "bunx biome check --write",
+    "type-check": "bun tsc --noEmit",
+    "check": "bun lint && bun type-check",
+    "dev:docker": "docker compose -f docker-compose.dev.yml"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
