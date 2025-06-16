@@ -20,7 +20,7 @@ export function Providers({ children }: { children: ReactNode }) {
         }}
       >
         {children}
-        <Toaster />
+        <Toaster closeButton duration={5000} richColors visibleToasts={5} />
       </AuthUIProviderTanstack>
     </AuthQueryProvider>
   )
