@@ -1,11 +1,12 @@
 import { env } from '@/lib/env/server'
 import { db } from '@/server/db'
+import * as schema from '@/server/db/schema'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { reactStartCookies } from 'better-auth/react-start'
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, { provider: 'pg' }),
+  database: drizzleAdapter(db, { provider: 'pg', schema }),
   baseURL: env.BASE_URL,
   emailAndPassword: {
     enabled: true,
