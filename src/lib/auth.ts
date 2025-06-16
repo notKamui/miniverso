@@ -1,4 +1,8 @@
 import { env } from '@/lib/env/server'
+import {
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as schema from '@/server/db/schema'
 import { betterAuth } from 'better-auth'
@@ -10,6 +14,40 @@ export const auth = betterAuth({
   baseURL: env.BASE_URL,
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      const response = await sendResetPasswordEmail({
+        to: user.email,
+        url,
+        name: user.name,
+        imageUrl: user.image ?? undefined,
+      })
+      if (response.error) {
+        console.error(
+          'Error sending reset password email:',
+          response.error,
+          response.data,
+        )
+      }
+    },
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    autoSignInAfterVerification: false,
+    sendVerificationEmail: async ({ user, url }) => {
+      const response = await sendVerificationEmail({
+        to: user.email,
+        url,
+        name: user.name,
+        imageUrl: user.image ?? undefined,
+      })
+      if (response.error) {
+        console.error(
+          'Error sending verification email:',
+          response.error,
+          response.data,
+        )
+      }
+    },
   },
   socialProviders: {
     github: {
