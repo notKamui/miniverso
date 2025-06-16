@@ -2,6 +2,7 @@ import { env } from '@/lib/env/server'
 import { db } from '@/server/db'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { reactStartCookies } from 'better-auth/react-start'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: 'pg' }),
@@ -16,4 +17,7 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
+  plugins: [
+    reactStartCookies(), // WARN: should be the last plugin
+  ],
 })
