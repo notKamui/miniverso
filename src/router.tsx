@@ -8,7 +8,7 @@ import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60,
+      staleTime: 1000 * 60 * 2, // 2 minutes
     },
   },
 })
@@ -18,11 +18,14 @@ export function createRouter() {
     createTanstackRouter({
       routeTree,
       context: {
+        user: null,
         queryClient,
       },
       scrollRestoration: true,
       defaultNotFoundComponent: () => <NotFound />,
+      defaultPreload: 'intent',
       defaultPreloadStaleTime: 0,
+      defaultStructuralSharing: true,
     }),
     queryClient,
   )

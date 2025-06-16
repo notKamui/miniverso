@@ -23,19 +23,25 @@ import { Link, useLinkProps } from '@tanstack/react-router'
 import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-export type NavGroupItem = {
+export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
   title: string
   icon: LucideIcon
-  to: keyof FileRoutesByTo
+  to: To
   items?: NavGroupSubItem[]
   condition?: (user: GlobalContext) => boolean
-}
+} & (FileRoutesByTo[To] extends { params: infer P }
+  ? { params: P }
+  : // biome-ignore lint/complexity/noBannedTypes: <explanation>
+    {})
 
-export type NavGroupSubItem = {
+export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
   title: string
-  to: keyof FileRoutesByTo
+  to: To
   condition?: (user: GlobalContext) => boolean
-}
+} & (FileRoutesByTo[To] extends { params: infer P }
+  ? { params: P }
+  : // biome-ignore lint/complexity/noBannedTypes: <explanation>
+    {})
 
 export type AppNavGroupProps = {
   title: string
@@ -83,7 +89,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
     >
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip={item.title}>
-          <Link to={item.to}>
+          <Link to={item.to} params={(item as any).params}>
             <item.icon />
             <span>{item.title}</span>
           </Link>
@@ -101,7 +107,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
                 {item.items?.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton asChild>
-                      <Link to={subItem.to}>
+                      <Link to={subItem.to} params={(subItem as any).params}>
                         <span>{subItem.title}</span>
                       </Link>
                     </SidebarMenuSubButton>

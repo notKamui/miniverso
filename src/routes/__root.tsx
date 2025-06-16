@@ -10,9 +10,11 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import type { User } from 'better-auth'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRouteWithContext<{
+  user: User | null
   queryClient: QueryClient
 }>()({
   head: () => ({
@@ -32,6 +34,7 @@ export const Route = createRootRouteWithContext<{
   }),
   beforeLoad: async () => {
     const session = await authClient.getSession()
+    console.log('Session:', session)
     const user = session.data?.user
     if (!user) {
       return {
@@ -45,6 +48,10 @@ export const Route = createRootRouteWithContext<{
     }
   },
   loader: async ({ context: { user } }) => {
+    const session = await authClient.getSession({
+      fetchOptions: { throw: true },
+    })
+    console.log('Sessiono:', session)
     return {
       user,
       crumbs: crumbs({ title: 'Home', to: '/' }),

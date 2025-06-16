@@ -1,7 +1,13 @@
+import { crumbs } from '@/lib/hooks/use-crumbs'
 import { AuthCard } from '@daveyplate/better-auth-ui'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/auth/$pathname')({
+  loader: async () => {
+    return {
+      crumbs: crumbs({ title: 'Auth', to: '/auth/$pathname' }),
+    }
+  },
   component: RouteComponent,
 })
 

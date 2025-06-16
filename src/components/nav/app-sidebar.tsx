@@ -11,7 +11,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { HomeIcon, StarIcon } from 'lucide-react'
+import { HomeIcon, LogInIcon, LogOutIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
 const sections: AppNavGroupProps[] = [
@@ -40,18 +40,20 @@ const sections: AppNavGroupProps[] = [
   {
     title: 'Account',
     items: [
-      // {
-      //   title: 'Log In',
-      //   to: '/login',
-      //   icon: LogInIcon,
-      //   condition: ({ user }) => !user,
-      // },
-      // {
-      //   title: 'Log Out',
-      //   to: '/logout',
-      //   icon: LogOutIcon,
-      //   condition: ({ user }) => !!user,
-      // },
+      {
+        title: 'Log In',
+        to: '/auth/$pathname',
+        params: { pathname: 'sign-in' },
+        icon: LogInIcon,
+        condition: ({ user }) => !user,
+      },
+      {
+        title: 'Log Out',
+        to: '/auth/$pathname',
+        params: { pathname: 'sign-out' },
+        icon: LogOutIcon,
+        condition: ({ user }) => !!user,
+      },
     ],
   },
 ]
