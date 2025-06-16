@@ -1,3 +1,4 @@
+import { Providers } from '@/providers'
 import type { QueryClient } from '@tanstack/react-query'
 import {
   HeadContent,
@@ -38,7 +39,9 @@ export const Route = createRootRouteWithContext<{
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <Providers>
+          <Outlet />
+        </Providers>
         <TanStackRouterDevtools />
         <Scripts />
       </body>

@@ -5,9 +5,15 @@ import { NotFound } from '@/components/not-found'
 import { QueryClient } from '@tanstack/react-query'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 
-export const createRouter = () => {
-  const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60,
+    },
+  },
+})
 
+export function createRouter() {
   const router = routerWithQueryClient(
     createTanstackRouter({
       routeTree,
