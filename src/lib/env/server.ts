@@ -7,7 +7,6 @@ export const env = createEnv({
     BASE_URL: z.string().url(),
     DATABASE_URL: z.string().url(),
     BETTER_AUTH_SECRET: z.string().min(1),
-    BETTER_AUTH_URL: z.string().url(),
     DISABLE_CSRF: z
       .string()
       .default('false')
