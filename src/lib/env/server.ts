@@ -7,6 +7,8 @@ export const env = createEnv({
     BASE_URL: z.string().url(),
     DATABASE_URL: z.string().url(),
     BETTER_AUTH_SECRET: z.string().min(1),
+    GITHUB_OAUTH_CLIENT_ID: z.string().min(1),
+    GITHUB_OAUTH_CLIENT_SECRET: z.string().min(1),
     DISABLE_CSRF: z
       .string()
       .default('false')
