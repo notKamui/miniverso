@@ -1,8 +1,9 @@
 import { MainLayout } from '@/layouts/main'
-import { authClient } from '@/lib/auth-client'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Providers } from '@/providers'
+import { $getUser } from '@/server/functions/get-user'
 import type { QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   HeadContent,
   Outlet,
@@ -32,26 +33,15 @@ export const Route = createRootRouteWithContext<{
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
-  beforeLoad: async () => {
-    const session = await authClient.getSession()
-    console.log('Session:', session)
-    const user = session.data?.user
-    if (!user) {
-      return {
-        user: null,
-        session: null,
-      }
-    }
-    return {
-      user,
-      session: session.data?.session,
-    }
+  beforeLoad: async ({ context: { queryClient } }) => {
+    const user = await queryClient.fetchQuery({
+      queryKey: ['user'],
+      staleTime: 0,
+      queryFn: ({ signal }) => $getUser({ signal }),
+    })
+    return { user }
   },
   loader: async ({ context: { user } }) => {
-    const session = await authClient.getSession({
-      fetchOptions: { throw: true },
-    })
-    console.log('Sessiono:', session)
     return {
       user,
       crumbs: crumbs({ title: 'Home', to: '/' }),
@@ -68,7 +58,8 @@ export const Route = createRootRouteWithContext<{
             <Outlet />
           </MainLayout>
         </Providers>
-        <TanStackRouterDevtools />
+        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>
     </html>
