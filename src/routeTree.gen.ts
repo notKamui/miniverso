@@ -11,12 +11,17 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
 
 const rootServerRouteImport = createServerRootRoute()
 
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -44,6 +49,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authed': typeof AuthedRoute
   '/auth/$pathname': typeof AuthPathnameRoute
 }
 export interface FileRouteTypes {
@@ -51,11 +57,12 @@ export interface FileRouteTypes {
   fullPaths: '/' | '/auth/$pathname'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/auth/$pathname'
-  id: '__root__' | '/' | '/auth/$pathname'
+  id: '__root__' | '/' | '/_authed' | '/auth/$pathname'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthedRoute: typeof AuthedRoute
   AuthPathnameRoute: typeof AuthPathnameRoute
 }
 export interface FileServerRoutesByFullPath {
@@ -82,6 +89,13 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -112,6 +126,7 @@ declare module '@tanstack/react-start/server' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRoute,
   AuthPathnameRoute: AuthPathnameRoute,
 }
 export const routeTree = rootRouteImport
