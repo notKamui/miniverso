@@ -13,6 +13,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import {
   type GlobalContext,
@@ -70,6 +71,7 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
 }
 
 function MenuItem({ item }: { item: NavGroupItem }) {
+  const { isMobile, setOpenMobile } = useSidebar()
   const linkProps = (useLinkProps({ to: item.to }) as any)[
     'data-status'
   ] as string
@@ -77,6 +79,12 @@ function MenuItem({ item }: { item: NavGroupItem }) {
   const [isActive, setIsActive] = useState(defaultIsActive)
 
   useEffect(() => setIsActive(defaultIsActive), [defaultIsActive])
+
+  function handleLinkClick() {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <Collapsible
@@ -87,7 +95,11 @@ function MenuItem({ item }: { item: NavGroupItem }) {
     >
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip={item.title}>
-          <Link to={item.to} params={(item as any).params}>
+          <Link
+            to={item.to}
+            params={(item as any).params}
+            onClick={handleLinkClick}
+          >
             <item.icon />
             <span>{item.title}</span>
           </Link>
@@ -105,7 +117,11 @@ function MenuItem({ item }: { item: NavGroupItem }) {
                 {item.items?.map((subItem) => (
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton asChild>
-                      <Link to={subItem.to} params={(subItem as any).params}>
+                      <Link
+                        to={subItem.to}
+                        params={(subItem as any).params}
+                        onClick={handleLinkClick}
+                      >
                         <span>{subItem.title}</span>
                       </Link>
                     </SidebarMenuSubButton>

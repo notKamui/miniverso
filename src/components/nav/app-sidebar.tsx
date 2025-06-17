@@ -11,7 +11,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { UserButton } from '@daveyplate/better-auth-ui'
 import { HomeIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -84,11 +83,5 @@ function Header() {
 }
 
 function Footer() {
-  const { open } = useSidebar()
-  return (
-    <SidebarFooter>
-      {/* <ThemeToggle /> */}
-      <UserButton size={open ? 'default' : 'icon'} />
-    </SidebarFooter>
-  )
+  return <SidebarFooter>{/* <ThemeToggle /> */}</SidebarFooter>
 }

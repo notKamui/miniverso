@@ -14,6 +14,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
+import { UserButton } from '@daveyplate/better-auth-ui'
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
@@ -24,20 +25,23 @@ export function MainLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1 z-50" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              {breadcrumbs.map((crumb, index) => (
-                <CrumbLink
-                  key={crumb.title}
-                  crumb={crumb}
-                  last={index === breadcrumbs.length - 1}
-                />
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
+        <header className="flex flex-row items-center justify-between border-b bg-background pr-1.5 pl-4">
+          <div className="flex h-16 shrink-0 items-center gap-2 ">
+            <SidebarTrigger className="-ml-1 z-50" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbs.map((crumb, index) => (
+                  <CrumbLink
+                    key={crumb.title}
+                    crumb={crumb}
+                    last={index === breadcrumbs.length - 1}
+                  />
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <UserButton />
         </header>
         <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
           {children}
