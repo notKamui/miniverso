@@ -35,7 +35,7 @@ export function FieldInfo({ field }: { field: Field }) {
           animate={{ height: 'auto', opacity: 1 }}
           className={text({ variant: 'small', color: 'error' })}
         >
-          {field.state.meta.errors.join(',')}
+          {field.state.meta.errors.map(({ message }) => message).join(',')}
         </motion.p>
       )}
     </AnimatePresence>

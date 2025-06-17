@@ -1,5 +1,6 @@
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
+import { useServerErrors } from '@/lib/hooks/use-server-errors'
 import { Providers } from '@/providers'
 import { $getUser } from '@/server/functions/get-user'
 import type { QueryClient } from '@tanstack/react-query'
@@ -47,21 +48,25 @@ export const Route = createRootRouteWithContext<{
       crumbs: crumbs({ title: 'Home', to: '/' }),
     }
   },
-  component: () => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <Providers>
-          <MainLayout>
-            <Outlet />
-          </MainLayout>
-        </Providers>
-        <ReactQueryDevtools buttonPosition="bottom-left" />
-        <TanStackRouterDevtools position="bottom-right" />
-        <Scripts />
-      </body>
-    </html>
-  ),
+  component: () => {
+    useServerErrors()
+
+    return (
+      <html lang="en">
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          <Providers>
+            <MainLayout>
+              <Outlet />
+            </MainLayout>
+          </Providers>
+          <ReactQueryDevtools buttonPosition="bottom-left" />
+          <TanStackRouterDevtools position="bottom-right" />
+          <Scripts />
+        </body>
+      </html>
+    )
+  },
 })
