@@ -52,7 +52,7 @@ export const Route = createRootRouteWithContext<{
     useServerErrors()
 
     return (
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           <HeadContent />
         </head>
