@@ -1,39 +1,81 @@
-import { createFileRoute } from '@tanstack/react-router'
-import logo from '../logo.svg'
+import { link, title } from '@/components/ui/typography'
+import type { FileRoutesByTo } from '@/routeTree.gen'
+import { Link, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: App,
+  loader: async ({ context: { user } }) => {
+    return {
+      user,
+    }
+  },
+  component: RouteComponent,
 })
 
-function App() {
+function RouteComponent() {
+  const isLoggedIn = Route.useLoaderData({ select: ({ user }) => !!user })
+
   return (
-    <div className="text-center">
-      <header className="flex min-h-screen flex-col items-center justify-center bg-[#282c34] text-[calc(10px+2vmin)] text-white">
-        <img
-          src={logo}
-          className="pointer-events-none h-[40vmin] animate-[spin_20s_linear_infinite]"
-          alt="logo"
-        />
-        <p>
-          Edit <code>src/routes/index.tsx</code> and save to reload.
-        </p>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <>
+      <h2 className={title({ h: 1 })}>Welcome to Miniverso</h2>
+      {isLoggedIn ? <Main /> : <NotLoggedIn />}
+    </>
+  )
+}
+
+function NotLoggedIn() {
+  return (
+    <div>
+      <p>
+        Please{' '}
+        <Link
+          to="/auth/$pathname"
+          params={{ pathname: 'sign-in' }}
+          className={link()}
         >
-          Learn React
-        </a>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://tanstack.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          sign in
+        </Link>{' '}
+        or{' '}
+        <Link
+          to="/auth/$pathname"
+          params={{ pathname: 'sign-up' }}
+          className={link()}
         >
-          Learn TanStack
-        </a>
-      </header>
+          sign up
+        </Link>{' '}
+        to continue using the rest of the application.
+      </p>
+    </div>
+  )
+}
+
+type Application = {
+  to: keyof FileRoutesByTo
+  title: string
+  description: string
+}
+const applications: Application[] = [
+  {
+    to: '/time',
+    title: 'Time recorder',
+    description: 'Record your time and track your progress',
+  },
+]
+
+function Main() {
+  return (
+    <div className="flex flex-col gap-4">
+      <h3 className={title({ h: 3 })}>Applications</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {applications.map((app) => (
+          <div key={app.to} className="container rounded-md border p-4">
+            <h4 className={title({ h: 4 })}>{app.title}</h4>
+            <p>{app.description}</p>
+            <Link to={app.to} className={link()}>
+              Open
+            </Link>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

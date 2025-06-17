@@ -21,7 +21,7 @@ import type { ReactNode } from 'react'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile(true)
 
   return (
     <SidebarProvider>
@@ -43,7 +43,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <UserButton size={isMobile ? 'icon' : 'default'} />
+          <UserButton size={isMobile ? 'icon' : 'default'} variant="ghost" />
         </header>
         <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
           {children}
