@@ -31,8 +31,8 @@ function RouteComponent() {
   const { pathname } = Route.useParams()
 
   return (
-    <main className="container flex grow flex-col items-center justify-center gap-3 self-center p-4 md:p-6">
+    <div className="mb-0 flex h-full flex-col items-center justify-center">
       <AuthCard pathname={pathname} />
-    </main>
+    </div>
   )
 }
