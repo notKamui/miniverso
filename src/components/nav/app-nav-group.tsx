@@ -31,8 +31,7 @@ export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
   condition?: (user: GlobalContext) => boolean
 } & (FileRoutesByTo[To] extends { params: infer P }
   ? { params: P }
-  : // biome-ignore lint/complexity/noBannedTypes: <explanation>
-    {})
+  : { params?: never })
 
 export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
   title: string
@@ -40,8 +39,7 @@ export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
   condition?: (user: GlobalContext) => boolean
 } & (FileRoutesByTo[To] extends { params: infer P }
   ? { params: P }
-  : // biome-ignore lint/complexity/noBannedTypes: <explanation>
-    {})
+  : { params?: never })
 
 export type AppNavGroupProps = {
   title: string
