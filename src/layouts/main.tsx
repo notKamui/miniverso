@@ -14,12 +14,14 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
+import { useIsMobile } from '@/lib/hooks/use-mobile'
 import { UserButton } from '@daveyplate/better-auth-ui'
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()
+  const isMobile = useIsMobile()
 
   return (
     <SidebarProvider>
@@ -41,7 +43,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <UserButton />
+          <UserButton size={isMobile ? 'icon' : 'default'} />
         </header>
         <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
           {children}

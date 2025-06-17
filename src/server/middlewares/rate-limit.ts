@@ -4,7 +4,7 @@ import { createTokenBucketManager } from '@/lib/utils/rate-limit'
 import { badRequest } from '@/lib/utils/response'
 import { createMiddleware } from '@tanstack/react-start'
 
-const bucket = createTokenBucketManager<string>(10, 2)
+const bucket = createTokenBucketManager<string>(30, 1)
 
 export const $$rateLimit = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {

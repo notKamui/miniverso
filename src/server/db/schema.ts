@@ -1,11 +1,11 @@
 import { user } from '@/server/db/auth.schema'
 import type { InferSelectModel } from 'drizzle-orm'
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 export * from '@/server/db/auth.schema'
 
 export const timeEntriesTable = pgTable('time_entry', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),

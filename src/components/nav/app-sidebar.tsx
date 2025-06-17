@@ -11,7 +11,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { HomeIcon, StarIcon } from 'lucide-react'
+import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
 const sections: AppNavGroupProps[] = [
@@ -23,18 +23,18 @@ const sections: AppNavGroupProps[] = [
         to: '/',
         icon: HomeIcon,
       },
-      // {
-      //   title: 'Time recorder',
-      //   to: '/time',
-      //   icon: ClockIcon,
-      //   items: [
-      //     {
-      //       title: 'Statistics',
-      //       to: '/time/stats',
-      //     },
-      //   ],
-      //   condition: ({ user }) => !!user,
-      // },
+      {
+        title: 'Time recorder',
+        to: '/time',
+        icon: ClockIcon,
+        items: [
+          {
+            title: 'Statistics',
+            to: '/time/stats',
+          },
+        ],
+        condition: ({ user }) => !!user,
+      },
     ],
   },
 ]
