@@ -21,7 +21,6 @@ const sections: AppNavGroupProps[] = [
       {
         title: 'Home',
         to: '/',
-        params: {},
         icon: HomeIcon,
       },
       // {
