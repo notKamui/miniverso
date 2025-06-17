@@ -11,7 +11,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { HomeIcon, LogInIcon, LogOutIcon, StarIcon } from 'lucide-react'
+import { UserButton } from '@daveyplate/better-auth-ui'
+import { HomeIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 
 const sections: AppNavGroupProps[] = [
@@ -35,25 +36,6 @@ const sections: AppNavGroupProps[] = [
       //   ],
       //   condition: ({ user }) => !!user,
       // },
-    ],
-  },
-  {
-    title: 'Account',
-    items: [
-      {
-        title: 'Log In',
-        to: '/auth/$pathname',
-        params: { pathname: 'sign-in' },
-        icon: LogInIcon,
-        condition: ({ user }) => !user,
-      },
-      {
-        title: 'Log Out',
-        to: '/auth/$pathname',
-        params: { pathname: 'sign-out' },
-        icon: LogOutIcon,
-        condition: ({ user }) => !!user,
-      },
     ],
   },
 ]
@@ -102,5 +84,11 @@ function Header() {
 }
 
 function Footer() {
-  return <SidebarFooter>{/* <ThemeToggle /> */}</SidebarFooter>
+  const { open } = useSidebar()
+  return (
+    <SidebarFooter>
+      {/* <ThemeToggle /> */}
+      <UserButton size={open ? 'default' : 'icon'} />
+    </SidebarFooter>
+  )
 }
