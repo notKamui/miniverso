@@ -17,7 +17,7 @@ import {
 import {
   type GlobalContext,
   useGlobalContext,
-} from '@/hooks/use-global-context'
+} from '@/lib/hooks/use-global-context'
 import type { FileRoutesByTo } from '@/routeTree.gen'
 import { Link, useLinkProps } from '@tanstack/react-router'
 import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
