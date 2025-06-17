@@ -15,7 +15,7 @@
     "deploy": "bun check && sh ./deployment/_.deploy.sh"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.0.0",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/router-devtools": "^1.104.3",
     "@types/bun": "latest",
