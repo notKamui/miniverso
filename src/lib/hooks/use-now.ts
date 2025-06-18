@@ -1,5 +1,5 @@
-import { Time } from '@/lib/utils/time'
 import { useEffect, useState } from 'react'
+import { Time } from '@/lib/utils/time'
 
 export function useNow() {
   const [now, setNow] = useState(new Date())

@@ -1,4 +1,11 @@
 import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  type Row,
+  useReactTable,
+} from '@tanstack/react-table'
+import {
   Table,
   TableBody,
   TableCell,
@@ -8,13 +15,6 @@ import {
 } from '@/components/ui/table'
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { cn } from '@/lib/utils'
-import {
-  type ColumnDef,
-  type Row,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
 
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]

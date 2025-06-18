@@ -1,3 +1,4 @@
+import { CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -7,7 +8,6 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { Time } from '@/lib/utils/time'
-import { CalendarIcon } from 'lucide-react'
 
 export type CalendarSelectProps = {
   value?: Date

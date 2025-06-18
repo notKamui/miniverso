@@ -1,5 +1,5 @@
-import type { FileRoutesByTo } from '@/routeTree.gen'
 import { isMatch, useMatches } from '@tanstack/react-router'
+import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export type Crumb = {
   title: string

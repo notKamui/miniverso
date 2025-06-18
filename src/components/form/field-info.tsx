@@ -1,6 +1,6 @@
-import { text } from '@/components/ui/typography'
 import type { FieldApi } from '@tanstack/react-form'
 import { AnimatePresence, motion } from 'motion/react'
+import { text } from '@/components/ui/typography'
 
 type Field = FieldApi<
   any,

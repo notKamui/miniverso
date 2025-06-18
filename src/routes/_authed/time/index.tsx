@@ -1,9 +1,9 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Time } from '@/lib/utils/time'
 import { $getTimeEntriesByDay } from '@/server/functions/time-entry'
-import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed/time/')({
   loader: async () => {

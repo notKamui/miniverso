@@ -1,8 +1,7 @@
+import type { ReactFormApi } from '@tanstack/react-form'
 import { FieldInfo } from '@/components/form/field-info'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ReactFormApi } from '@tanstack/react-form'
-import type {} from 'zod'
 
 export interface FormInputProps<F extends Record<string, any>> {
   type: React.HTMLInputTypeAttribute

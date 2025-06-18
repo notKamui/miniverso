@@ -1,3 +1,15 @@
+import { Link, useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import type { ColumnDef } from '@tanstack/react-table'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EditIcon,
+  MoreVerticalIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
 import { DataTable } from '@/components/data/data-table'
@@ -20,18 +32,6 @@ import {
   $deleteTimeEntries,
   $updateTimeEntry,
 } from '@/server/functions/time-entry'
-import { Link, useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
-import type { ColumnDef } from '@tanstack/react-table'
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  EditIcon,
-  MoreVerticalIcon,
-  Trash2Icon,
-} from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
 
 export type TimeTableData = Omit<TimeEntry, 'startedAt' | 'endedAt'> & {
   startedAt: string

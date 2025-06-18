@@ -1,7 +1,7 @@
+import { authViewPaths } from '@daveyplate/better-auth-ui'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
 import type { FileRoutesByTo } from '@/routeTree.gen'
-import { authViewPaths } from '@daveyplate/better-auth-ui'
-import { Link, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
   loader: async ({ context: { user } }) => {

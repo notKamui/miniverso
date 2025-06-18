@@ -1,5 +1,5 @@
 import { authViewPaths, useAuthenticate } from '@daveyplate/better-auth-ui'
-import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed')({
   loader: ({ context: { user } }) => {

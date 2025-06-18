@@ -1,6 +1,6 @@
+import { ZodError, type ZodSchema, type z } from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { tryAsync, tryInline } from '@/lib/utils/try'
-import { ZodError, type ZodSchema, type z } from 'zod'
 
 export function validate<S extends ZodSchema>(
   schema: S,

@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import {
   ErrorComponent,
   type ErrorComponentProps,
@@ -7,6 +6,7 @@ import {
   useMatch,
   useRouter,
 } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 
 export function DefaultCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
   const router = useRouter()

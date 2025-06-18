@@ -1,5 +1,5 @@
-import { Button, buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+/** biome-ignore-all lint/nursery/noNestedComponentDefinitions: This is a shadcn/ui component */
+
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -11,6 +11,8 @@ import {
   DayPicker,
   getDefaultClassNames,
 } from 'react-day-picker'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 function Calendar({
   className,

@@ -1,3 +1,4 @@
+import { useForm } from '@tanstack/react-form'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,6 @@ import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
 import type { PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema'
-import { useForm } from '@tanstack/react-form'
 
 export function EditEntryDialog({
   entry,

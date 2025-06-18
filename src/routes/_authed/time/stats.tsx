@@ -1,3 +1,14 @@
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { z } from 'zod'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import {
   Select,
@@ -10,17 +21,6 @@ import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import { $getTimeStatsBy } from '@/server/functions/time-entry'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { z } from 'zod'
 
 type Stats = {
   unit: 'day' | 'month'

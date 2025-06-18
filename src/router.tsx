@@ -1,10 +1,10 @@
 import { createRouter as createTanstackRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
-import { DefaultCatchBoundary } from '@/components/default-catch-boundary'
-import { NotFound } from '@/components/not-found'
 import { QueryClient } from '@tanstack/react-query'
 import { routerWithQueryClient } from '@tanstack/react-router-with-query'
+import { DefaultCatchBoundary } from '@/components/default-catch-boundary'
+import { NotFound } from '@/components/not-found'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

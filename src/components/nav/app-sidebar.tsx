@@ -1,4 +1,7 @@
 //import { ThemeToggle } from '@app/components/theme/toggle'
+
+import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
+import { motion } from 'motion/react'
 import {
   AppNavGroup,
   type AppNavGroupProps,
@@ -11,8 +14,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
-import { motion } from 'motion/react'
 
 const sections: AppNavGroupProps[] = [
   {

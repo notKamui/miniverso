@@ -1,3 +1,6 @@
+import { Link, useLinkProps } from '@tanstack/react-router'
+import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,9 +23,6 @@ import {
   useGlobalContext,
 } from '@/lib/hooks/use-global-context'
 import type { FileRoutesByTo } from '@/routeTree.gen'
-import { Link, useLinkProps } from '@tanstack/react-router'
-import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
   title: string

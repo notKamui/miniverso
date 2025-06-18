@@ -11,11 +11,11 @@ export function useEvent(
   options?: boolean | AddEventListenerOptions,
 ): void
 export function useEvent(...args: Parameters<typeof window.addEventListener>) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: All of the args are dependencies
+  // biome-ignore lint/correctness/useExhaustiveDependencies: False positive
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
 
     window.addEventListener(...args)
     return () => window.removeEventListener(...args)
-  }, args)
+  }, [...args])
 }

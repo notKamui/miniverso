@@ -1,5 +1,5 @@
-import { badRequest } from '@/lib/utils/response'
 import { getEvent, getRequestIP } from '@tanstack/react-start/server'
+import { badRequest } from '@/lib/utils/response'
 
 export function checkIp(): string {
   const ip = getRequestIP() ?? getRequestIP(getEvent(), { xForwardedFor: true })

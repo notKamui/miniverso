@@ -1,3 +1,6 @@
+import { UserButton } from '@daveyplate/better-auth-ui'
+import { Link } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import {
   Breadcrumb,
@@ -15,9 +18,6 @@ import {
 } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-mobile'
-import { UserButton } from '@daveyplate/better-auth-ui'
-import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()

@@ -1,7 +1,7 @@
-import { env } from '@/lib/env/server'
-import { badRequest } from '@/lib/utils/response'
 import { createMiddleware } from '@tanstack/react-start'
 import { getRequestURL, isMethod } from '@tanstack/react-start/server'
+import { env } from '@/lib/env/server'
+import { badRequest } from '@/lib/utils/response'
 
 export const $$csrf = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {

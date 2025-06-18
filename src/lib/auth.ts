@@ -1,3 +1,7 @@
+import { serverOnly } from '@tanstack/react-start'
+import { betterAuth } from 'better-auth'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { reactStartCookies } from 'better-auth/react-start'
 import { env } from '@/lib/env/server'
 import {
   sendResetPasswordEmail,
@@ -5,10 +9,6 @@ import {
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as schema from '@/server/db/schema'
-import { serverOnly } from '@tanstack/react-start'
-import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { reactStartCookies } from 'better-auth/react-start'
 
 const getAuthConfig = serverOnly(() =>
   betterAuth({

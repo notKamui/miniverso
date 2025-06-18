@@ -1,7 +1,7 @@
-import { env } from '@/lib/env/server'
 import { serverOnly } from '@tanstack/react-start'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { env } from '@/lib/env/server'
 
 const getDB = serverOnly(() => {
   const postgresClient = postgres(env.DATABASE_URL)

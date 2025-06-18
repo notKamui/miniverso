@@ -1,4 +1,3 @@
-import { isMouseEvent, isTouchEvent } from '@/lib/utils/events'
 import {
   type MouseEvent,
   type TouchEvent,
@@ -6,6 +5,7 @@ import {
   useMemo,
   useRef,
 } from 'react'
+import { isMouseEvent, isTouchEvent } from '@/lib/utils/events'
 
 export type LongPressOptions = {
   threshold?: number

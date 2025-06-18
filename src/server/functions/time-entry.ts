@@ -1,12 +1,4 @@
 import '@/global-middleware'
-import { badRequest } from '@/lib/utils/response'
-import { Time } from '@/lib/utils/time'
-import { tryAsync } from '@/lib/utils/try'
-import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOrNull } from '@/server/db'
-import { timeEntriesTable } from '@/server/db/schema'
-import { $$auth } from '@/server/middlewares/auth'
-import { $$rateLimit } from '@/server/middlewares/rate-limit'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import {
@@ -21,6 +13,14 @@ import {
   sql,
 } from 'drizzle-orm'
 import { z } from 'zod'
+import { badRequest } from '@/lib/utils/response'
+import { Time } from '@/lib/utils/time'
+import { tryAsync } from '@/lib/utils/try'
+import { validate } from '@/lib/utils/validate'
+import { db, takeUniqueOrNull } from '@/server/db'
+import { timeEntriesTable } from '@/server/db/schema'
+import { $$auth } from '@/server/middlewares/auth'
+import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])

@@ -1,7 +1,7 @@
-import { auth } from '@/lib/auth'
-import { badRequest } from '@/lib/utils/response'
 import { createMiddleware } from '@tanstack/react-start'
 import { getWebRequest } from '@tanstack/react-start/server'
+import { auth } from '@/lib/auth'
+import { badRequest } from '@/lib/utils/response'
 
 export const $$auth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {

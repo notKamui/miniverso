@@ -1,9 +1,9 @@
-import { Toaster } from '@/components/ui/sonner'
-import { authClient } from '@/lib/auth-client'
 import { AuthQueryProvider } from '@daveyplate/better-auth-tanstack'
 import { AuthUIProviderTanstack } from '@daveyplate/better-auth-ui/tanstack'
 import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { Toaster } from '@/components/ui/sonner'
+import { authClient } from '@/lib/auth-client'
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()

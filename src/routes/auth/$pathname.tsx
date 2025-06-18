@@ -1,7 +1,7 @@
-import { authClient } from '@/lib/auth-client'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import { AuthCard, authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { authClient } from '@/lib/auth-client'
+import { crumbs } from '@/lib/hooks/use-crumbs'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,

@@ -1,5 +1,5 @@
-import type { Range } from '@/lib/utils/types'
 import { json } from '@tanstack/react-start'
+import type { Range } from '@/lib/utils/types'
 
 export function badRequest(
   message: any,
