@@ -1,21 +1,23 @@
 import { authClient } from '@/lib/auth-client'
 import { crumbs } from '@/lib/hooks/use-crumbs'
-import { AuthCard } from '@daveyplate/better-auth-ui'
+import { AuthCard, authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import {} from 'react'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
   beforeLoad: async ({ context: { user }, params: { pathname } }) => {
-    if (!user && !['sign-in', 'sign-up'].includes(pathname)) {
+    if (
+      !user &&
+      ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP].includes(pathname)
+    ) {
       throw redirect({
         to: '/auth/$pathname',
-        params: { pathname: 'sign-in' },
+        params: { pathname: authViewPaths.SIGN_IN },
       })
     }
   },
   loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
-    if (user && pathname === 'sign-out') {
+    if (user && pathname === authViewPaths.SIGN_OUT) {
       await authClient.signOut()
       await queryClient.invalidateQueries({ queryKey: ['user'] })
     }

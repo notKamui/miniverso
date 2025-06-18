@@ -1,5 +1,6 @@
 import { link, title } from '@/components/ui/typography'
 import type { FileRoutesByTo } from '@/routeTree.gen'
+import { authViewPaths } from '@daveyplate/better-auth-ui'
 import { Link, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
@@ -29,7 +30,7 @@ function NotLoggedIn() {
         Please{' '}
         <Link
           to="/auth/$pathname"
-          params={{ pathname: 'sign-in' }}
+          params={{ pathname: authViewPaths.SIGN_IN }}
           className={link()}
         >
           sign in
@@ -37,7 +38,7 @@ function NotLoggedIn() {
         or{' '}
         <Link
           to="/auth/$pathname"
-          params={{ pathname: 'sign-up' }}
+          params={{ pathname: authViewPaths.SIGN_UP }}
           className={link()}
         >
           sign up

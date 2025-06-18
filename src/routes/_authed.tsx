@@ -1,4 +1,4 @@
-import { useAuthenticate } from '@daveyplate/better-auth-ui'
+import { authViewPaths, useAuthenticate } from '@daveyplate/better-auth-ui'
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed')({
@@ -6,7 +6,7 @@ export const Route = createFileRoute('/_authed')({
     if (!user)
       throw redirect({
         to: '/auth/$pathname',
-        params: { pathname: 'sign-in' },
+        params: { pathname: authViewPaths.SIGN_IN },
       })
   },
   component: () => {
