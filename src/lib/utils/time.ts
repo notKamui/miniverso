@@ -14,6 +14,7 @@ export interface Time {
   compare(other: Time, type?: ShiftType): number
   toISOString(): string
   formatDay(options?: { short?: boolean }): string
+  formatDayNumber(): string
   formatTime(options?: { short?: boolean }): string
   formatDiff(other: Time): string
   isToday(): boolean
@@ -149,6 +150,14 @@ export namespace Time {
             })
     }
 
+    function formatDayNumber(): string {
+      return getDate().toLocaleDateString(['en'], {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    }
+
     function formatTime(options?: { short?: boolean }): string {
       return getDate().toLocaleTimeString(['en'], {
         hour: '2-digit',
@@ -215,6 +224,7 @@ export namespace Time {
       compare,
       toISOString,
       formatDay,
+      formatDayNumber,
       formatTime,
       formatDiff,
       isToday,
