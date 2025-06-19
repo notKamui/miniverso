@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { User } from 'better-auth'
+import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { Providers } from '@/providers'
 import { userQueryOptions } from '@/server/functions/get-user'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
+import type { Theme } from '@/server/functions/theme'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRouteWithContext<{
@@ -55,27 +57,41 @@ export const Route = createRootRouteWithContext<{
       crumbs: crumbs({ title: 'Home', to: '/' }),
     }
   },
-  component: () => {
-    useServerErrors()
-    const theme = useTheme()
-
-    return (
-      <html lang="en" className={cn(theme)} suppressHydrationWarning>
-        <head>
-          <ClientHintCheck />
-          <HeadContent />
-        </head>
-        <body className="min-h-svh antialiased">
-          <Providers>
-            <MainLayout>
-              <Outlet />
-            </MainLayout>
-          </Providers>
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-          <TanStackRouterDevtools position="bottom-right" />
-          <Scripts />
-        </body>
-      </html>
-    )
-  },
+  component: RouteComponent,
 })
+
+function RouteComponent() {
+  useServerErrors()
+  const theme = useTheme()
+
+  return (
+    <RootDocument theme={theme}>
+      <MainLayout>
+        <Outlet />
+      </MainLayout>
+    </RootDocument>
+  )
+}
+
+function RootDocument({
+  children,
+  theme,
+}: {
+  children: ReactNode
+  theme: Theme
+}) {
+  return (
+    <html lang="en" className={cn(theme)} suppressHydrationWarning>
+      <head>
+        <ClientHintCheck />
+        <HeadContent />
+      </head>
+      <body className="min-h-svh antialiased">
+        <Providers>{children}</Providers>
+        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <TanStackRouterDevtools position="bottom-right" />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
