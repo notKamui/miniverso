@@ -1,6 +1,11 @@
 node_modules
-.idea
 .DS_Store
+dist
+dist-ssr
+*.local
 .env
-.vinxi
 .output
+.vinxi
+count.txt
+.tanstack
+.nitro
