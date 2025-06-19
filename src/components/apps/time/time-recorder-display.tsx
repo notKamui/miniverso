@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNow } from '@/lib/hooks/use-now'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import type { TimeEntry } from '@/server/db/schema'

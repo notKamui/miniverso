@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { themeQueryOptions, useUpdateTheme } from '@/lib/hooks/use-theme'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/cn'
 
 const themes = [
   {

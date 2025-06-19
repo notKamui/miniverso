@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
 
 export type CalendarSelectProps = {

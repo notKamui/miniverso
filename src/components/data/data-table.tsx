@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useLongPress } from '@/lib/hooks/use-long-press'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/cn'
 
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]
