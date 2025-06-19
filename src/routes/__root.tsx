@@ -8,11 +8,15 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { User } from 'better-auth'
+import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
+import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
+import { cn } from '@/lib/utils'
 import { Providers } from '@/providers'
-import { $getUser } from '@/server/functions/get-user'
+import { userQueryOptions } from '@/server/functions/get-user'
+import { requestInfoQueryOptions } from '@/server/functions/request-info'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRouteWithContext<{
@@ -35,28 +39,33 @@ export const Route = createRootRouteWithContext<{
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
-    const user = await queryClient.fetchQuery({
-      queryKey: ['user'],
-      staleTime: 0,
-      queryFn: ({ signal }) => $getUser({ signal }),
-    })
-    return { user }
+    const [requestInfo, user] = await Promise.all([
+      await queryClient.fetchQuery(requestInfoQueryOptions()),
+      await queryClient.fetchQuery(userQueryOptions()),
+    ])
+
+    queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
+
+    return { user, requestInfo }
   },
-  loader: async ({ context: { user } }) => {
+  loader: async ({ context: { user, requestInfo } }) => {
     return {
       user,
+      requestInfo,
       crumbs: crumbs({ title: 'Home', to: '/' }),
     }
   },
   component: () => {
     useServerErrors()
+    const theme = useTheme()
 
     return (
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className={cn(theme)} suppressHydrationWarning>
         <head>
+          <ClientHintCheck />
           <HeadContent />
         </head>
-        <body>
+        <body className="min-h-svh antialiased">
           <Providers>
             <MainLayout>
               <Outlet />

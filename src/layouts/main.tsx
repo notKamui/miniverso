@@ -2,6 +2,7 @@ import { UserButton } from '@daveyplate/better-auth-ui'
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
+import { ThemeSwitcher } from '@/components/theme-switcher'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -43,7 +44,10 @@ export function MainLayout({ children }: { children: ReactNode }) {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <UserButton size={isMobile ? 'icon' : 'default'} variant="ghost" />
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <UserButton size={isMobile ? 'icon' : 'default'} variant="ghost" />
+          </div>
         </header>
         <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
           {children}

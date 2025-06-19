@@ -1,5 +1,3 @@
-//import { ThemeToggle } from '@app/components/theme/toggle'
-
 import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import {
@@ -84,5 +82,5 @@ function Header() {
 }
 
 function Footer() {
-  return <SidebarFooter>{/* <ThemeToggle /> */}</SidebarFooter>
+  return <SidebarFooter>{/* TODO: app version */}</SidebarFooter>
 }

@@ -6,15 +6,15 @@ import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import { DefaultCatchBoundary } from '@/components/default-catch-boundary'
 import { NotFound } from '@/components/not-found'
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 2, // 2 minutes
-    },
-  },
-})
-
 export function createRouter() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 2, // 2 minutes
+      },
+    },
+  })
+
   const router = routerWithQueryClient(
     createTanstackRouter({
       routeTree,
