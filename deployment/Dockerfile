@@ -18,8 +18,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/.drizzle ./.drizzle
 COPY deployment/drizzle.config.ts ./
+COPY deployment/run.sh ./
+
+RUN chmod +x run.sh
 
 RUN bun add drizzle-kit drizzle-orm postgres
 
 EXPOSE 3000
-CMD bunx drizzle-kit migrate; bun run .output/server/index.mjs
+CMD ["sh", "run.sh"]
