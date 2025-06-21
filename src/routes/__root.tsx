@@ -13,7 +13,7 @@ import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
-import { sidebarStateQueryOptions } from '@/lib/hooks/use-sidebar-state'
+import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
@@ -43,24 +43,24 @@ export const Route = createRootRouteWithContext<{
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
-    const [socialOAuth, requestInfo, sidebarState, user] = await Promise.all([
+    const [socialOAuth, requestInfo, user] = await Promise.all([
       queryClient.fetchQuery(socialOAuthQueryOptions()),
       queryClient.fetchQuery(requestInfoQueryOptions()),
-      queryClient.fetchQuery(sidebarStateQueryOptions()),
       queryClient.fetchQuery(userQueryOptions()),
     ])
 
-    return { user, requestInfo, socialOAuth, sidebarState }
-  },
-  loader: async ({
-    context: { user, requestInfo, socialOAuth, sidebarState, queryClient },
-  }) => {
     queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
+    queryClient.setQueryData(
+      sidebarStateQueryKey,
+      requestInfo.userPreferences.sidebar,
+    )
 
+    return { user, requestInfo, socialOAuth }
+  },
+  loader: async ({ context: { user, requestInfo, socialOAuth } }) => {
     return {
       user,
       requestInfo,
-      sidebarState,
       crumbs: crumbs({ title: 'Home', to: '/' }),
       socialOAuth,
     }
@@ -71,7 +71,6 @@ export const Route = createRootRouteWithContext<{
 function RouteComponent() {
   useServerErrors()
   const theme = useTheme()
-
   return (
     <RootDocument theme={theme}>
       <MainLayout>

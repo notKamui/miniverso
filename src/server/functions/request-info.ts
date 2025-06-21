@@ -4,6 +4,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { getWebRequest } from '@tanstack/react-start/server'
 import { getHints } from '@/components/client-hint-check'
+import { $getSidebarState } from '@/server/functions/sidebar'
 import { $getTheme } from '@/server/functions/theme'
 
 export const requestInfoQueryKey = ['requestInfo'] as const
@@ -21,6 +22,7 @@ export const $getRequestInfo = createServerFn({ method: 'GET' }).handler(
     return {
       hints: getHints(request),
       userPreferences: {
+        sidebar: await $getSidebarState(),
         theme: await $getTheme(),
       },
     }

@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { requestInfoQueryKey } from '@/server/functions/request-info'
 import {
   $getSidebarState,
   $setSidebarState,
@@ -43,7 +44,10 @@ export function useUpdateSidebarState() {
       )
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: sidebarStateQueryKey })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: sidebarStateQueryKey }),
+        queryClient.invalidateQueries({ queryKey: requestInfoQueryKey }),
+      ])
     },
   })
 }
