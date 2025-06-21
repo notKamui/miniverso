@@ -88,7 +88,7 @@ function RootDocument({
       </head>
       <body className="min-h-svh antialiased">
         <Providers>{children}</Providers>
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <ReactQueryDevtools buttonPosition="bottom-right" />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>
