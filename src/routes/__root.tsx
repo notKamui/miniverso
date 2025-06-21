@@ -11,16 +11,16 @@ import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
-import { env } from '@/lib/env/server'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
 import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
-import { userQueryOptions } from '@/server/functions/get-user'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
+import { socialOAuthQueryOptions } from '@/server/functions/social-oauth'
 import type { Theme } from '@/server/functions/theme'
+import { userQueryOptions } from '@/server/functions/user'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRouteWithContext<{
@@ -43,19 +43,11 @@ export const Route = createRootRouteWithContext<{
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
-    const [requestInfo, user] = await Promise.all([
-      await queryClient.fetchQuery(requestInfoQueryOptions()),
-      await queryClient.fetchQuery(userQueryOptions()),
+    const [requestInfo, user, socialOAuth] = await Promise.all([
+      queryClient.fetchQuery(requestInfoQueryOptions()),
+      queryClient.fetchQuery(userQueryOptions()),
+      queryClient.fetchQuery(socialOAuthQueryOptions()),
     ])
-
-    const socialOAuth = {
-      github: Boolean(
-        env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET,
-      ),
-      google: Boolean(
-        env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
-      ),
-    }
 
     return { user, requestInfo, socialOAuth }
   },
