@@ -11,6 +11,7 @@ import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
+import { env } from '@/lib/env/server'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
 import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
@@ -47,19 +48,31 @@ export const Route = createRootRouteWithContext<{
       await queryClient.fetchQuery(userQueryOptions()),
     ])
 
+    const socialOAuth = {
+      github: Boolean(
+        env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET,
+      ),
+      google: Boolean(
+        env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
+      ),
+    }
+
+    return { user, requestInfo, socialOAuth }
+  },
+  loader: async ({
+    context: { user, requestInfo, socialOAuth, queryClient },
+  }) => {
     queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
     queryClient.setQueryData(
       sidebarStateQueryKey,
       requestInfo.userPreferences.sidebar,
     )
 
-    return { user, requestInfo }
-  },
-  loader: async ({ context: { user, requestInfo } }) => {
     return {
       user,
       requestInfo,
       crumbs: crumbs({ title: 'Home', to: '/' }),
+      socialOAuth,
     }
   },
   component: RouteComponent,

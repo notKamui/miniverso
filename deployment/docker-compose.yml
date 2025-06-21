@@ -11,6 +11,8 @@ services:
       - BETTER_AUTH_SECRET=
       - GITHUB_OAUTH_CLIENT_ID=
       - GITHUB_OAUTH_CLIENT_SECRET=
+      - GOOGLE_OAUTH_CLIENT_ID=
+      - GOOGLE_OAUTH_CLIENT_SECRET=
       - RESEND_API_KEY=
       - RESEND_MAIL_DOMAIN=
     restart: unless-stopped

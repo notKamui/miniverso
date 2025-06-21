@@ -4,9 +4,14 @@ import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { authClient } from '@/lib/auth-client'
+import { useGlobalContext } from '@/lib/hooks/use-global-context'
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()
+  const { socialOAuth } = useGlobalContext()
+  const socialOAuthProviders = Object.entries(socialOAuth)
+    .filter(([, enabled]) => enabled)
+    .map(([provider]) => provider)
 
   return (
     <AuthQueryProvider>
@@ -16,7 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
         replace={(href) => router.navigate({ href, replace: true })}
         Link={({ href, ...props }) => <Link to={href} {...props} />}
         social={{
-          providers: ['github'],
+          providers: socialOAuthProviders,
         }}
       >
         {children}

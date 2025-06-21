@@ -55,7 +55,16 @@ const getAuthConfig = serverOnly(() =>
       github: {
         clientId: env.GITHUB_OAUTH_CLIENT_ID,
         clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
-        enabled: true,
+        enabled: Boolean(
+          env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET,
+        ),
+      },
+      google: {
+        clientId: env.GOOGLE_OAUTH_CLIENT_ID,
+        clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+        enabled: Boolean(
+          env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
+        ),
       },
     },
     plugins: [
