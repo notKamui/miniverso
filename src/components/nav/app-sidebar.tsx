@@ -10,10 +10,10 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  useSidebar,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
 import { env } from '@/lib/env/client'
+import { useSidebarState } from '@/lib/hooks/use-sidebar-state'
 
 const sections: AppNavGroupProps[] = [
   {
@@ -55,7 +55,7 @@ export function AppSidebar() {
 }
 
 function Header() {
-  const { open } = useSidebar()
+  const open = useSidebarState() === 'open'
   const MotionIcon = motion.create(StarIcon)
   return (
     <SidebarHeader className="flex flex-row justify-between">
@@ -69,6 +69,11 @@ function Header() {
         transition={{
           duration: 0.2,
         }}
+        initial={
+          open
+            ? { opacity: 1, x: 0, width: 'auto' }
+            : { opacity: 0, x: -100, width: 0 }
+        }
       >
         Miniverso
       </motion.h1>
@@ -85,7 +90,7 @@ function Header() {
 
 function Footer() {
   const [currentYear] = useState(() => new Date().getFullYear())
-  const { open } = useSidebar()
+  const open = useSidebarState() === 'open'
 
   return (
     <SidebarFooter className="overflow-hidden">

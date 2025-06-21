@@ -13,6 +13,7 @@ import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
+import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
@@ -47,6 +48,10 @@ export const Route = createRootRouteWithContext<{
     ])
 
     queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
+    queryClient.setQueryData(
+      sidebarStateQueryKey,
+      requestInfo.userPreferences.sidebar,
+    )
 
     return { user, requestInfo }
   },
