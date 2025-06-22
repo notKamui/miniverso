@@ -12,7 +12,6 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
-import { env } from '@/lib/env/client'
 import { useSidebarState } from '@/lib/hooks/use-sidebar-state'
 
 const sections: AppNavGroupProps[] = [
@@ -101,7 +100,7 @@ function Footer() {
             : '-translate-x-full w-0 opacity-0'
         }`}
       >
-        v{env.VITE_APP_VERSION} - {currentYear} ©{' '}
+        v{APP_VERSION} - {currentYear} ©{' '}
         <a href="https://github.com/notKamui" className="hover:underline">
           notKamui
         </a>

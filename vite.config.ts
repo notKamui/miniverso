@@ -5,15 +5,10 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 import pkg from './package.json'
 
 const config = defineConfig(async ({ mode }) => {
-  const injectedEnv = {
-    VITE_APP_VERSION: pkg.version,
-  } as const as NodeJS.ProcessEnv
-
   process.env = {
     ...process.env,
     ...import.meta.env,
     ...loadEnv(mode, process.cwd(), ''),
-    ...injectedEnv,
   }
 
   await import('./src/lib/env/server')
@@ -28,9 +23,13 @@ const config = defineConfig(async ({ mode }) => {
       }),
     ],
     define: {
-      'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
+      APP_VERSION: JSON.stringify(pkg.version),
     },
   }
 })
 
 export default config
+
+declare global {
+  const APP_VERSION: string
+}

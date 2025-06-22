@@ -1,3 +1,3 @@
 bunx drizzle-kit migrate && PID=$!
 wait $PID
-bun run ./output/server/index.mjs
+NODE_ENV=production bun run ./output/server/index.mjs
