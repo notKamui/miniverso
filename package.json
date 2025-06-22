@@ -12,7 +12,7 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "type-check": "bun tsc --noEmit",
-    "check": "bun lint && bun type-check",
+    "check": "bun lint --error-on-warnings && bun type-check",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",
     "auth:secret": "bunx @better-auth/cli@latest secret",
