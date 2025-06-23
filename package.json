@@ -4,7 +4,7 @@
   "type": "module",
   "version": "1.1.0",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "bunx -b vite dev --port 3000",
     "start": "bun .output/server/index.mjs",
     "build": "NODE_ENV=production vite build",
     "serve": "vite preview",
