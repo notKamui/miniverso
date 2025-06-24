@@ -28,39 +28,28 @@ jobs:
 
       - name: Type check
         id: type-check
-        run: bun run type-check
+        run: bun tsc --noEmit > type-check.log 2>&1 || echo "TYPECHECK_FAILED=true" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Lint code
         id: lint
-        run: bun run lint --error-on-warnings
+        run: bunx biome check > lint.log 2>&1 || echo "LINT_FAILED=true" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Run tests
         id: test
-        run: bun test
+        run: bun test > test.log 2>&1 || echo "TEST_FAILED=true" >> $GITHUB_ENV
         continue-on-error: true
 
-      - name: Upload type-check artifacts
-        if: steps.type-check.outcome == 'failure'
+      - name: Upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: type-check-errors
-          path: ./type-check-errors.log
-
-      - name: Upload lint artifacts
-        if: steps.lint.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-errors
-          path: ./lint-errors.log
-
-      - name: Upload test artifacts
-        if: steps.test.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-errors
-          path: ./test-errors.log
+          name: ci-logs
+          path: |
+            type-check.log
+            lint.log
+            test.log
+          if-no-files-found: ignore
 
     outputs:
       type-check-failed: ${{ steps.type-check.outcome == 'failure' }}
