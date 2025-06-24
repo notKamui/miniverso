@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { reactStartCookies } from 'better-auth/react-start'
 import { env } from '@/lib/env/server'
+import { buildObject } from '@/lib/utils/build-object'
 import {
   sendResetPasswordEmail,
   sendVerificationEmail,
@@ -10,7 +11,7 @@ import {
 import { db } from '@/server/db'
 import * as schema from '@/server/db/schema'
 
-const getAuthConfig = serverOnly(() =>
+export const auth = serverOnly(() =>
   betterAuth({
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     baseURL: env.BASE_URL,
@@ -51,17 +52,26 @@ const getAuthConfig = serverOnly(() =>
         }
       },
     },
-    socialProviders: {
-      github: {
-        clientId: env.GITHUB_OAUTH_CLIENT_ID,
-        clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
-        enabled: true,
+    socialProviders: buildObject(
+      Boolean(env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) && {
+        github: {
+          clientId: env.GITHUB_OAUTH_CLIENT_ID,
+          clientSecret: env.GITHUB_OAUTH_CLIENT_SECRET,
+          enabled: true,
+        },
       },
-    },
+      Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET) && {
+        google: {
+          clientId: env.GOOGLE_OAUTH_CLIENT_ID,
+          clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+          enabled: Boolean(
+            env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
+          ),
+        },
+      },
+    ),
     plugins: [
       reactStartCookies(), // WARN: should be the last plugin
     ],
   }),
-)
-
-export const auth = getAuthConfig()
+)()

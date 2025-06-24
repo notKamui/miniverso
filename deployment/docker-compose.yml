@@ -1,0 +1,41 @@
+services:
+  miniverso:
+    image: notkamui/miniverso:latest
+    container_name: miniverso
+    ports:
+      - "80:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://miniverso:miniverso@localhost:5432/miniverso
+      - BASE_URL=
+      - BETTER_AUTH_SECRET=
+      - GITHUB_OAUTH_CLIENT_ID=
+      - GITHUB_OAUTH_CLIENT_SECRET=
+      - GOOGLE_OAUTH_CLIENT_ID=
+      - GOOGLE_OAUTH_CLIENT_SECRET=
+      - RESEND_API_KEY=
+      - RESEND_MAIL_DOMAIN=
+    restart: unless-stopped
+    networks:
+      - miniverso
+
+  db:
+    image: postgres:17
+    container_name: db
+    environment:
+      - POSTGRES_USER=miniverso
+      - POSTGRES_PASSWORD=miniverso
+      - POSTGRES_DB=miniverso
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - miniverso
+
+volumes:
+  db_data:
+
+networks:
+  miniverso:

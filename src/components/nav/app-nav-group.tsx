@@ -16,12 +16,13 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar,
 } from '@/components/ui/sidebar'
 import {
   type GlobalContext,
   useGlobalContext,
 } from '@/lib/hooks/use-global-context'
+import { useIsMobile } from '@/lib/hooks/use-is-mobile'
+import { useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
 import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
@@ -71,7 +72,8 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
 }
 
 function MenuItem({ item }: { item: NavGroupItem }) {
-  const { isMobile, setOpenMobile } = useSidebar()
+  const isMobile = useIsMobile()
+  const { mutate: updateSidebarState } = useUpdateSidebarState()
   const linkProps = (useLinkProps({ to: item.to }) as any)[
     'data-status'
   ] as string
@@ -82,7 +84,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
 
   function handleLinkClick() {
     if (isMobile) {
-      setOpenMobile(false)
+      updateSidebarState('closed')
     }
   }
 

@@ -13,12 +13,14 @@ import { ClientHintCheck } from '@/components/client-hint-check'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
+import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
-import { userQueryOptions } from '@/server/functions/get-user'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
+import { socialOAuthQueryOptions } from '@/server/functions/social-oauth'
 import type { Theme } from '@/server/functions/theme'
+import { userQueryOptions } from '@/server/functions/user'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRouteWithContext<{
@@ -41,20 +43,26 @@ export const Route = createRootRouteWithContext<{
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
-    const [requestInfo, user] = await Promise.all([
-      await queryClient.fetchQuery(requestInfoQueryOptions()),
-      await queryClient.fetchQuery(userQueryOptions()),
+    const [socialOAuth, requestInfo, user] = await Promise.all([
+      queryClient.fetchQuery(socialOAuthQueryOptions()),
+      queryClient.fetchQuery(requestInfoQueryOptions()),
+      queryClient.fetchQuery(userQueryOptions()),
     ])
 
     queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
+    queryClient.setQueryData(
+      sidebarStateQueryKey,
+      requestInfo.userPreferences.sidebar,
+    )
 
-    return { user, requestInfo }
+    return { user, requestInfo, socialOAuth }
   },
-  loader: async ({ context: { user, requestInfo } }) => {
+  loader: async ({ context: { user, requestInfo, socialOAuth } }) => {
     return {
       user,
       requestInfo,
       crumbs: crumbs({ title: 'Home', to: '/' }),
+      socialOAuth,
     }
   },
   component: RouteComponent,
@@ -63,7 +71,6 @@ export const Route = createRootRouteWithContext<{
 function RouteComponent() {
   useServerErrors()
   const theme = useTheme()
-
   return (
     <RootDocument theme={theme}>
       <MainLayout>
@@ -88,7 +95,7 @@ function RootDocument({
       </head>
       <body className="min-h-svh antialiased">
         <Providers>{children}</Providers>
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <ReactQueryDevtools buttonPosition="bottom-right" />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

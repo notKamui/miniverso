@@ -18,14 +18,26 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
-import { useIsMobile } from '@/lib/hooks/use-mobile'
+import { useIsMobile } from '@/lib/hooks/use-is-mobile'
+import {
+  useSidebarState,
+  useUpdateSidebarState,
+} from '@/lib/hooks/use-sidebar-state'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()
   const isMobile = useIsMobile(true)
+  const sidebarOpen = useSidebarState() === 'open'
+  const { mutate: updateSidebarState } = useUpdateSidebarState()
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      defaultOpen={sidebarOpen}
+      open={sidebarOpen}
+      onOpenChange={(open) => {
+        updateSidebarState(open ? 'open' : 'closed')
+      }}
+    >
       <AppSidebar />
       <SidebarInset>
         <header className="flex flex-row items-center justify-between border-b bg-background pr-1.5 pl-4">
