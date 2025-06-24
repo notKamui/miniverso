@@ -43,21 +43,21 @@ jobs:
 
       - name: Upload type-check artifacts
         if: steps.type-check.outcome == 'failure'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: type-check-errors
           path: ./type-check-errors.log
 
       - name: Upload lint artifacts
         if: steps.lint.outcome == 'failure'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lint-errors
           path: ./lint-errors.log
 
       - name: Upload test artifacts
         if: steps.test.outcome == 'failure'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-errors
           path: ./test-errors.log
