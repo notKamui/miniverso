@@ -1,0 +1,78 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Type check
+        id: type-check
+        run: bun run type-check
+        continue-on-error: true
+
+      - name: Lint code
+        id: lint
+        run: bun run lint --error-on-warnings
+        continue-on-error: true
+
+      - name: Run tests
+        id: test
+        run: bun test
+        continue-on-error: true
+
+      - name: Upload type-check artifacts
+        if: steps.type-check.outcome == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          name: type-check-errors
+          path: ./type-check-errors.log
+
+      - name: Upload lint artifacts
+        if: steps.lint.outcome == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-errors
+          path: ./lint-errors.log
+
+      - name: Upload test artifacts
+        if: steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-errors
+          path: ./test-errors.log
+
+    outputs:
+      type-check-failed: ${{ steps.type-check.outcome == 'failure' }}
+      lint-failed: ${{ steps.lint.outcome == 'failure' }}
+      test-failed: ${{ steps.test.outcome == 'failure' }}
+
+  prevent-merge:
+    needs: checks
+    runs-on: ubuntu-latest
+    if: needs.checks.outputs.type-check-failed == 'true' || needs.checks.outputs.lint-failed == 'true' || needs.checks.outputs.test-failed == 'true'
+    steps:
+      - name: Prevent merge
+        run: |
+          echo "## Merge prevented due to failed checks. Please fix the issues before merging."
+          exit 1
