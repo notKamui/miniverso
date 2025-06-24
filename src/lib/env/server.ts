@@ -25,4 +25,5 @@ export const env = createEnv({
   extends: [],
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
+  skipValidation: process.env.BUILD_ENV === 'production',
 })

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bunx -b vite dev --port 3000",
     "start": "bun .output/server/index.mjs",
-    "build": "NODE_ENV=production bunx -b vite build",
+    "build": "NODE_ENV=production BUILD_ENV=production bunx -b vite build",
     "serve": "vite preview",
     "test": "vitest run",
     "lint": "biome check",
