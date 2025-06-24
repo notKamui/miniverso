@@ -65,7 +65,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^6.3.5",
+    "vite": "npm:rolldown-vite@latest",
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "^3.25.67"
   },
@@ -84,6 +84,8 @@
     "web-vitals": "^5.0.3"
   },
   "overrides": {
-    "@tanstack/react-router": "^1.121.34"
+    "@vitejs/plugin-react": "npm:@vitejs/plugin-react-oxc@latest",
+    "@tanstack/react-router": "^1.121.34",
+    "vite": "npm:rolldown-vite@latest"
   }
 }
