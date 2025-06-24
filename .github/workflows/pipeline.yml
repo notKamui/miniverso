@@ -8,60 +8,41 @@ on:
       - opened
       - synchronize
       - reopened
+      - ready_for_review
 
 jobs:
-  checks:
+  type-check:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - run: bun install
+      - name: Run type check
+        run: bun type-check
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Type check
-        id: type-check
-        run: bun tsc --noEmit > type-check.log 2>&1 || echo "TYPECHECK_FAILED=true" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Lint code
-        id: lint
-        run: bunx biome check > lint.log 2>&1 || echo "LINT_FAILED=true" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Run tests
-        id: test
-        run: bun test > test.log 2>&1 || echo "TEST_FAILED=true" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Upload logs
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-logs
-          path: |
-            type-check.log
-            lint.log
-            test.log
-          if-no-files-found: ignore
-
-    outputs:
-      type-check-failed: ${{ steps.type-check.outcome == 'failure' }}
-      lint-failed: ${{ steps.lint.outcome == 'failure' }}
-      test-failed: ${{ steps.test.outcome == 'failure' }}
-
-  prevent-merge:
-    needs: checks
+  lint:
     runs-on: ubuntu-latest
-    if: needs.checks.outputs.type-check-failed == 'true' || needs.checks.outputs.lint-failed == 'true' || needs.checks.outputs.test-failed == 'true'
+    if: github.event.pull_request.draft == false
     steps:
-      - name: Prevent merge
-        run: |
-          echo "## Merge prevented due to failed checks. Please fix the issues before merging."
-          exit 1
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - name: Run lint
+        run: bun lint --error-on-warnings
+
+  test:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - name: Run tests
+        run: bun test
