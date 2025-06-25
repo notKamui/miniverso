@@ -1,5 +1,5 @@
-#!/bin/sh
-set -e
+#!/bin/bash
+set -euo pipefail
 
 export APP_VERSION=$(awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json)
 if [ -z "$APP_VERSION" ]; then
