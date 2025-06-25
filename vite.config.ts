@@ -18,9 +18,7 @@ const config = defineConfig(async ({ mode }) => {
     plugins: [
       viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
       tailwindcss(),
-      tanstackStart({
-        target: 'bun',
-      }),
+      tanstackStart({ target: 'node-server' }),
     ],
     define: {
       APP_VERSION: JSON.stringify(pkg.version),
