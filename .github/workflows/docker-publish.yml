@@ -27,6 +27,12 @@ jobs:
       - name: Build application
         run: bun run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .output/
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -34,6 +40,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: .output/
 
       - name: Extract version from package.json
         id: version
