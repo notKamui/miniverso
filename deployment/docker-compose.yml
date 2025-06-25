@@ -1,12 +1,12 @@
 services:
   miniverso:
-    image: notkamui/miniverso:latest
+    image: notkamui/miniverso:1.1.0
     container_name: miniverso
     ports:
-      - "80:3000"
+      - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgres://miniverso:miniverso@localhost:5432/miniverso
+      - DATABASE_URL=postgres://miniverso:miniverso@db:5432/miniverso
       - BASE_URL=
       - BETTER_AUTH_SECRET=
       - GITHUB_OAUTH_CLIENT_ID=
