@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 docker build \
   -t notkamui/miniverso:latest \
