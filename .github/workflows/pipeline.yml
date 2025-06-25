@@ -13,7 +13,7 @@ on:
 
 jobs:
   type-check:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-4vcpu-ubuntu-2204
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
