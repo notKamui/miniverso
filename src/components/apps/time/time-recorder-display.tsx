@@ -158,7 +158,11 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       <div className="flex flex-row gap-4 max-sm:flex-col">
         <div className="flex flex-row items-center">
           <Button size="icon" className="h-[36px] rounded-r-none" asChild>
-            <Link to="/time/$day" params={{ day: dayBefore.toISOString() }}>
+            <Link
+              to="/time/$day"
+              from="/"
+              params={{ day: dayBefore.toISOString() }}
+            >
               <ChevronLeftIcon />
             </Link>
           </Button>
@@ -175,7 +179,11 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
               disabled={isToday}
               asChild
             >
-              <Link to="/time/$day" params={{ day: dayAfter.toISOString() }}>
+              <Link
+                to="/time/$day"
+                from="/"
+                params={{ day: dayAfter.toISOString() }}
+              >
                 <ChevronRightIcon />
               </Link>
             </Button>

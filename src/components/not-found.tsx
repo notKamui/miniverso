@@ -10,7 +10,9 @@ export function NotFound({ children }: { children?: any }) {
       <p className="flex flex-wrap items-center gap-2">
         <Button onClick={() => window.history.back()}>Go back</Button>
         <Button asChild>
-          <Link to="/">Start Over</Link>
+          <Link to="/" from="/">
+            Start Over
+          </Link>
         </Button>
       </p>
     </div>

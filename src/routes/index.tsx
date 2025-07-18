@@ -30,6 +30,7 @@ function NotLoggedIn() {
         Please{' '}
         <Link
           to="/auth/$pathname"
+          from="/"
           params={{ pathname: authViewPaths.SIGN_IN }}
           className={link()}
         >
@@ -38,6 +39,7 @@ function NotLoggedIn() {
         or{' '}
         <Link
           to="/auth/$pathname"
+          from="/"
           params={{ pathname: authViewPaths.SIGN_UP }}
           className={link()}
         >
@@ -71,7 +73,7 @@ function Main() {
           <div key={app.to} className="container rounded-md border p-4">
             <h4 className={title({ h: 4 })}>{app.title}</h4>
             <p>{app.description}</p>
-            <Link to={app.to} className={link()}>
+            <Link to={app.to} from="/" className={link()}>
               Open
             </Link>
           </div>
