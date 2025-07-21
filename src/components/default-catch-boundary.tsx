@@ -31,12 +31,15 @@ export function DefaultCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
         </Button>
         {isRoot ? (
           <Button asChild variant="secondary">
-            <Link to="/">Home</Link>
+            <Link to="/" from="/">
+              Home
+            </Link>
           </Button>
         ) : (
           <Button asChild variant="secondary">
             <Link
               to="/"
+              from="/"
               onClick={(e) => {
                 e.preventDefault()
                 window.history.back()

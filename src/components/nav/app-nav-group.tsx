@@ -99,6 +99,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
         <SidebarMenuButton asChild tooltip={item.title}>
           <Link
             to={item.to}
+            from="/"
             params={(item as any).params}
             onClick={handleLinkClick}
           >
@@ -121,6 +122,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
                     <SidebarMenuSubButton asChild>
                       <Link
                         to={subItem.to}
+                        from="/"
                         params={(subItem as any).params}
                         onClick={handleLinkClick}
                       >

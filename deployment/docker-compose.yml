@@ -1,6 +1,6 @@
 services:
   miniverso:
-    image: notkamui/miniverso:1.1.0
+    image: notkamui/miniverso:1.1.1
     container_name: miniverso
     ports:
       - "80:3000"
