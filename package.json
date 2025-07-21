@@ -69,7 +69,7 @@
     "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react-swc": "^3.10.2",
+    "@vitejs/plugin-react-swc": "^3.11.0",
     "cross-env": "^7.0.3",
     "drizzle-kit": "0.31.4",
     "jsdom": "^26.1.0",
