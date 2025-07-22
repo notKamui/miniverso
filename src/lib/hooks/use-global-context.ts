@@ -1,7 +1,7 @@
-import { Route } from '@/routes/__root'
+import { useLoaderData } from '@tanstack/react-router'
 
 export function useGlobalContext() {
-  return Route.useLoaderData()
+  return useLoaderData({ from: '__root__' })
 }
 
 export type GlobalContext = ReturnType<typeof useGlobalContext>

@@ -48,12 +48,10 @@ export const Route = createRootRouteWithContext<{
       queryClient.fetchQuery(requestInfoQueryOptions()),
       queryClient.fetchQuery(userQueryOptions()),
     ])
+    const { theme, sidebar } = requestInfo.userPreferences
 
-    queryClient.setQueryData(themeQueryKey, requestInfo.userPreferences.theme)
-    queryClient.setQueryData(
-      sidebarStateQueryKey,
-      requestInfo.userPreferences.sidebar,
-    )
+    queryClient.setQueryData(themeQueryKey, theme)
+    queryClient.setQueryData(sidebarStateQueryKey, sidebar)
 
     return { user, requestInfo, socialOAuth }
   },
@@ -71,6 +69,7 @@ export const Route = createRootRouteWithContext<{
 function RouteComponent() {
   useServerErrors()
   const theme = useTheme()
+
   return (
     <RootDocument theme={theme}>
       <MainLayout>
