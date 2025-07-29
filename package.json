@@ -86,5 +86,9 @@
   "overrides": {
     "@tanstack/react-router": "1.130.2",
     "vite": "npm:rolldown-vite@latest"
+  },
+  "engines": {
+    "node": ">=22",
+    "bun": ">=1.2.19"
   }
 }
