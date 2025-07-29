@@ -21,7 +21,14 @@ export function useTheme() {
   const { requestInfo } = useGlobalContext()
   const { data: theme } = useSuspenseQuery(themeQueryOptions())
 
-  return theme ?? requestInfo?.hints.theme ?? 'dark'
+  function getBrowserPreferredTheme() {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
+  }
+
+  return theme ?? requestInfo?.hints.theme ?? getBrowserPreferredTheme()
 }
 
 export function useUpdateTheme() {
