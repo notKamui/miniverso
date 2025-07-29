@@ -21,7 +21,7 @@ export function useTheme() {
   const { requestInfo } = useGlobalContext()
   const { data: theme } = useSuspenseQuery(themeQueryOptions())
 
-  return theme ?? requestInfo.hints.theme
+  return theme ?? requestInfo?.hints.theme ?? 'dark'
 }
 
 export function useUpdateTheme() {

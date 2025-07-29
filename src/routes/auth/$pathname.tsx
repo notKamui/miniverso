@@ -16,8 +16,6 @@ export const Route = createFileRoute('/auth/$pathname')({
     }
 
     if (user && pathname === authViewPaths.SIGN_OUT) {
-      console.log('Signing out user...')
-
       await queryClient.invalidateQueries({ queryKey: ['user'] })
     }
 

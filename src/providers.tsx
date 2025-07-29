@@ -9,7 +9,7 @@ import { useGlobalContext } from '@/lib/hooks/use-global-context'
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()
   const { socialOAuth } = useGlobalContext()
-  const socialOAuthProviders = Object.entries(socialOAuth)
+  const socialOAuthProviders = Object.entries(socialOAuth ?? {})
     .filter(([, enabled]) => enabled)
     .map(([provider]) => provider)
 
