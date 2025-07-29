@@ -1,11 +1,13 @@
 import { AuthCard, authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { authClient } from '@/lib/auth-client'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
-  beforeLoad: async ({ context: { user }, params: { pathname } }) => {
+  beforeLoad: async ({
+    context: { user, queryClient },
+    params: { pathname },
+  }) => {
     if (
       !user &&
       ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP].includes(pathname)
@@ -15,13 +17,12 @@ export const Route = createFileRoute('/auth/$pathname')({
         params: { pathname: authViewPaths.SIGN_IN },
       })
     }
-  },
-  loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
+
     if (user && pathname === authViewPaths.SIGN_OUT) {
-      await authClient.signOut()
       await queryClient.invalidateQueries({ queryKey: ['user'] })
     }
-
+  },
+  loader: async () => {
     return {
       crumbs: crumbs({ title: 'Auth', to: '/auth/$pathname' }),
     }
