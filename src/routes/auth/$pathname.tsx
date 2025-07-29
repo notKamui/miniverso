@@ -4,10 +4,7 @@ import { crumbs } from '@/lib/hooks/use-crumbs'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
-  beforeLoad: async ({
-    context: { user, queryClient },
-    params: { pathname },
-  }) => {
+  loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
     if (
       !user &&
       ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP].includes(pathname)
@@ -19,10 +16,11 @@ export const Route = createFileRoute('/auth/$pathname')({
     }
 
     if (user && pathname === authViewPaths.SIGN_OUT) {
+      console.log('Signing out user...')
+
       await queryClient.invalidateQueries({ queryKey: ['user'] })
     }
-  },
-  loader: async () => {
+
     return {
       crumbs: crumbs({ title: 'Auth', to: '/auth/$pathname' }),
     }
