@@ -14,6 +14,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
+import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
 import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
 import { Route as AuthedTimeDayRouteImport } from './routes/_authed/time/$day'
@@ -33,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthPathnameRoute = AuthPathnameRouteImport.update({
   id: '/auth/$pathname',
   path: '/auth/$pathname',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountPathnameRoute = AccountPathnameRouteImport.update({
+  id: '/account/$pathname',
+  path: '/account/$pathname',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
@@ -58,6 +64,7 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
   '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
   '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
   '/_authed/time/$day': typeof AuthedTimeDayRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
@@ -81,13 +90,26 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/$pathname' | '/time/$day' | '/time/stats' | '/time'
+  fullPaths:
+    | '/'
+    | '/account/$pathname'
+    | '/auth/$pathname'
+    | '/time/$day'
+    | '/time/stats'
+    | '/time'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/$pathname' | '/time/$day' | '/time/stats' | '/time'
+  to:
+    | '/'
+    | '/account/$pathname'
+    | '/auth/$pathname'
+    | '/time/$day'
+    | '/time/stats'
+    | '/time'
   id:
     | '__root__'
     | '/'
     | '/_authed'
+    | '/account/$pathname'
     | '/auth/$pathname'
     | '/_authed/time/$day'
     | '/_authed/time/stats'
@@ -97,6 +119,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
+  AccountPathnameRoute: typeof AccountPathnameRoute
   AuthPathnameRoute: typeof AuthPathnameRoute
 }
 export interface FileServerRoutesByFullPath {
@@ -142,6 +165,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/$pathname'
       fullPath: '/auth/$pathname'
       preLoaderRoute: typeof AuthPathnameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/$pathname': {
+      id: '/account/$pathname'
+      path: '/account/$pathname'
+      fullPath: '/account/$pathname'
+      preLoaderRoute: typeof AccountPathnameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/time/': {
@@ -197,6 +227,7 @@ const AuthedRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
+  AccountPathnameRoute: AccountPathnameRoute,
   AuthPathnameRoute: AuthPathnameRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,30 +1,8 @@
-import type { FieldApi } from '@tanstack/react-form'
 import { AnimatePresence, motion } from 'motion/react'
 import { text } from '@/components/ui/typography'
+import type { ReactFormField } from '@/lib/utils/types'
 
-type Field = FieldApi<
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
->
-
-export function FieldInfo({ field }: { field: Field }) {
+export function FieldInfo({ field }: { field: ReactFormField }) {
   return (
     <AnimatePresence>
       {field.state.meta.isTouched && field.state.meta.errors.length && (

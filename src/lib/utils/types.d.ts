@@ -1,3 +1,4 @@
+import type { FieldApi, ReactFormApi } from '@tanstack/react-form'
 import type { HTMLAttributes, RefObject } from 'react'
 
 export type Compute<T> = { [K in keyof T]: T[K] } & {}
@@ -30,4 +31,45 @@ export type WithRef<
 
 export type PartialExcept<T, K extends keyof T> = Compute<
   Partial<T> & Pick<T, K>
+>
+
+export type ReactForm<F extends Record<string, any>> = ReactFormApi<
+  F,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any
+>
+
+export type ReactFormField = FieldApi<
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any
 >

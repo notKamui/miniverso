@@ -1,14 +1,14 @@
-import type { ReactFormApi } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 import { FieldInfo } from '@/components/form/field-info'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import type { ReactForm } from '@/lib/utils/types'
 
 export type TextInputProps<F extends Record<string, any>> = Omit<
   ComponentProps<typeof Textarea>,
   'form'
 > & {
-  form: ReactFormApi<F, any, any, any, any, any, any, any, any, any>
+  form: ReactForm<F>
   name: keyof F
   label: string
 }
