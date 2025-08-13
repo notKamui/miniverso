@@ -13,6 +13,7 @@ import * as schema from '@/server/db/schema'
 
 export const auth = serverOnly(() =>
   betterAuth({
+    telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     baseURL: env.BASE_URL,
     emailAndPassword: {
