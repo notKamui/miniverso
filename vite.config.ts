@@ -16,6 +16,9 @@ const config = defineConfig(async ({ mode }) => {
   await import('./src/lib/env/client')
 
   return {
+    optimizeDeps: {
+      exclude: ['.vite'],
+    },
     plugins: [
       viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
       tailwindcss(),

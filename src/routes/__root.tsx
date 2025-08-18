@@ -1,4 +1,4 @@
-import { TanstackDevtools } from '@tanstack/react-devtools'
+import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import {
@@ -95,7 +95,7 @@ function RootDocument({
       </head>
       <body className="min-h-svh antialiased">
         <Providers>{children}</Providers>
-        <TanstackDevtools
+        <TanStackDevtools
           plugins={[
             {
               name: 'Tanstack Query',

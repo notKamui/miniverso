@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/nursery/noNestedComponentDefinitions: This is a shadcn/ui component */
+/** biome-ignore-all lint/correctness/noNestedComponentDefinitions: This is a shadcn/ui component */
 
 import {
   ChevronDownIcon,
