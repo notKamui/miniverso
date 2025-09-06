@@ -31,7 +31,9 @@ export function createRouter() {
 
   setupRouterSsrQueryIntegration({
     router,
-    queryClient,
+    queryClient: queryClient as unknown as Parameters<
+      typeof setupRouterSsrQueryIntegration
+    >[0]['queryClient'],
   })
 
   return router
