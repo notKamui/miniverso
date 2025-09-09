@@ -1,6 +1,5 @@
 @import "tailwindcss";
-
-@source "../node_modules/@daveyplate/better-auth-ui";
+@import "@daveyplate/better-auth-ui/css";
 
 @plugin "tailwindcss-animate";
 
