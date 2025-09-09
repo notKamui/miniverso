@@ -4,7 +4,7 @@
   "type": "module",
   "version": "1.1.2",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "bun migrate && vite dev --port 3000",
     "start": "node --env-file-if-exists=.env .output/server/index.mjs",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build",
     "serve": "vite preview",
@@ -15,6 +15,7 @@
     "check": "bun lint --error-on-warnings && bun type-check",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",
+    "migrate": "bun db migrate",
     "auth:secret": "bunx @better-auth/cli@latest secret",
     "auth:generate": "bunx @better-auth/cli@latest generate --y --output ./src/server/db/auth.schema.ts && bun lint:fix ./src/server/db/auth.schema.ts",
     "deploy": "bun check && sh ./deployment/_.deploy.sh",

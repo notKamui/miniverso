@@ -10,3 +10,7 @@ async function applyDatabaseMigrations() {
 export default async () => {
   await applyDatabaseMigrations()
 }
+
+if (process.argv.includes('--migrate')) {
+  await applyDatabaseMigrations()
+}
