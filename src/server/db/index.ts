@@ -10,15 +10,16 @@ const initDB = serverOnly(() => {
 
 export const db = initDB()
 
-export function takeUniqueOrNull<T extends any[]>(values: T): T[number] | null {
-  return values.length > 0 ? values[0] : null
-}
+export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
+  values: T,
+) => T[number] | null
 
-export function takeUniqueOr<T extends any[]>(
-  or: () => never,
-): (values: T) => T[number] {
-  return (values: T): T[number] => {
-    if (values.length === 0) or()
+export function takeUniqueOr<
+  T extends any[],
+  E extends T[number] | null | undefined = never,
+>(or: () => E): (values: T) => E extends never ? T[number] : E {
+  return (values) => {
+    if (values.length === 0) return or()
     return values[0]
   }
 }
