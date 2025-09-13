@@ -1,5 +1,5 @@
 bun = "1.2.21"
-node = "22.17.1"
+node = "22.19.0"
 
 [settings]
 auto-install = true
