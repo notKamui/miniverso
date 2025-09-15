@@ -12,5 +12,5 @@ export default async () => {
 }
 
 if (process.argv.includes('--migrate')) {
-  await applyDatabaseMigrations()
+  applyDatabaseMigrations()
 }
