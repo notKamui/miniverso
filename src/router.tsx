@@ -6,6 +6,10 @@ import { NotFound } from '@/components/not-found'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
 
+type OverrideQueryClient = Parameters<
+  typeof setupRouterSsrQueryIntegration
+>[0]['queryClient']
+
 export function createRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -31,9 +35,7 @@ export function createRouter() {
 
   setupRouterSsrQueryIntegration({
     router,
-    queryClient: queryClient as unknown as Parameters<
-      typeof setupRouterSsrQueryIntegration
-    >[0]['queryClient'],
+    queryClient: queryClient as unknown as OverrideQueryClient,
   })
 
   return router

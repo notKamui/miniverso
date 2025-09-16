@@ -23,6 +23,10 @@ export function Providers({ children }: { children: ReactNode }) {
         social={{
           providers: socialOAuthProviders,
         }}
+        captcha={{
+          provider: 'hcaptcha',
+          siteKey: '10000000-ffff-ffff-ffff-000000000001',
+        }}
       >
         {children}
         <Toaster closeButton duration={5000} richColors visibleToasts={5} />
