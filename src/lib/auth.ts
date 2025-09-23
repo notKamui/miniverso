@@ -9,12 +9,12 @@ import {
   sendVerificationEmail,
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
-import * as schema from '@/server/db/schema'
+import * as authSchema from '@/server/db/auth.schema'
 
 export const auth = serverOnly(() =>
   betterAuth({
     telemetry: { enabled: false },
-    database: drizzleAdapter(db, { provider: 'pg', schema }),
+    database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     baseURL: env.BASE_URL,
     emailAndPassword: {
       enabled: true,

@@ -19,7 +19,7 @@ import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOrNull } from '@/server/db'
-import { timeEntriesTable } from '@/server/db/schema'
+import { timeEntriesTable } from '@/server/db/time.schema'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
