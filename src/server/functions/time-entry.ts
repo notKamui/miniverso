@@ -1,5 +1,3 @@
-import '@/global-middleware'
-
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import {
@@ -25,7 +23,7 @@ import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .validator(validate(z.object({ date: z.date() })))
+  .inputValidator(validate(z.object({ date: z.date() })))
   .handler(async ({ context: { user }, data: { date } }) => {
     const dayBegin = new Date(date)
     dayBegin.setHours(0, 0, 0, 0)
@@ -51,7 +49,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .validator(
+  .inputValidator(
     validate(
       z.object({ date: z.date(), type: z.enum(['week', 'month', 'year']) }),
     ),
@@ -109,7 +107,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
-  .validator(validate(z.object({ startedAt: z.date() })))
+  .inputValidator(validate(z.object({ startedAt: z.date() })))
   .handler(async ({ context: { user }, data: { startedAt } }) => {
     const timeEntry = await db
       .insert(timeEntriesTable)
@@ -127,7 +125,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
-  .validator(
+  .inputValidator(
     validate(
       z.object({
         id: z.string(),
@@ -173,7 +171,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
 
 export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
-  .validator(validate(z.object({ ids: z.array(z.string()) })))
+  .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
   .handler(async ({ context: { user }, data: { ids } }) => {
     const timeEntry = await db
       .delete(timeEntriesTable)

@@ -22,10 +22,7 @@ const config = defineConfig(async ({ mode }) => {
     plugins: [
       viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
       tailwindcss(),
-      tanstackStart({
-        customViteReactPlugin: true,
-        target: 'node-server',
-      }),
+      tanstackStart(),
       react(),
     ],
     define: {

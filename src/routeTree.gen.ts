@@ -8,19 +8,15 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from '@tanstack/react-start/server'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
 import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
 import { Route as AuthedTimeDayRouteImport } from './routes/_authed/time/$day'
-import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
-
-const rootServerRouteImport = createServerRootRoute()
 
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
@@ -46,6 +42,11 @@ const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
   path: '/time/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
   id: '/time/stats',
   path: '/time/stats',
@@ -56,11 +57,6 @@ const AuthedTimeDayRoute = AuthedTimeDayRouteImport.update({
   path: '/time/$day',
   getParentRoute: () => AuthedRoute,
 } as any)
-const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth/$pathname': typeof AuthPathnameRoute
   '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/time': typeof AuthedTimeIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +73,7 @@ export interface FileRoutesByTo {
   '/auth/$pathname': typeof AuthPathnameRoute
   '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/time': typeof AuthedTimeIndexRoute
 }
 export interface FileRoutesById {
@@ -86,6 +84,7 @@ export interface FileRoutesById {
   '/auth/$pathname': typeof AuthPathnameRoute
   '/_authed/time/$day': typeof AuthedTimeDayRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/time/': typeof AuthedTimeIndexRoute
 }
 export interface FileRouteTypes {
@@ -96,6 +95,7 @@ export interface FileRouteTypes {
     | '/auth/$pathname'
     | '/time/$day'
     | '/time/stats'
+    | '/api/auth/$'
     | '/time'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -104,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth/$pathname'
     | '/time/$day'
     | '/time/stats'
+    | '/api/auth/$'
     | '/time'
   id:
     | '__root__'
@@ -113,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth/$pathname'
     | '/_authed/time/$day'
     | '/_authed/time/stats'
+    | '/api/auth/$'
     | '/_authed/time/'
   fileRoutesById: FileRoutesById
 }
@@ -121,27 +123,7 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   AccountPathnameRoute: typeof AccountPathnameRoute
   AuthPathnameRoute: typeof AuthPathnameRoute
-}
-export interface FileServerRoutesByFullPath {
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRoutesByTo {
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/auth/$'
-  fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth/$'
-  id: '__root__' | '/api/auth/$'
-  fileServerRoutesById: FileServerRoutesById
-}
-export interface RootServerRouteChildren {
-  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedTimeIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/time/stats': {
       id: '/_authed/time/stats'
       path: '/time/stats'
@@ -194,17 +183,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/time/$day'
       preLoaderRoute: typeof AuthedTimeDayRouteImport
       parentRoute: typeof AuthedRoute
-    }
-  }
-}
-declare module '@tanstack/react-start/server' {
-  interface ServerFileRoutesByPath {
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
     }
   }
 }
@@ -229,13 +207,17 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   AccountPathnameRoute: AccountPathnameRoute,
   AuthPathnameRoute: AuthPathnameRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.tsx'
+declare module '@tanstack/react-start' {
+  interface Register {
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
 }
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>()

@@ -13,9 +13,7 @@
       "!**/bun.lock",
       "!**/src/routeTree.gen.ts",
       "!**/.drizzle",
-      "!**/.output",
-      "!**/.tanstack",
-      "!**/.nitro"
+      "!**/dist"
     ]
   },
   "formatter": {

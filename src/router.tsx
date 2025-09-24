@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { createRouter as createTanstackRouter } from '@tanstack/react-router'
+import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { DefaultCatchBoundary } from '@/components/default-catch-boundary'
 import { NotFound } from '@/components/not-found'
@@ -10,16 +10,16 @@ type OverrideQueryClient = Parameters<
   typeof setupRouterSsrQueryIntegration
 >[0]['queryClient']
 
-export function createRouter() {
+export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 2, // 2 minutes
       },
     },
-  })
+  }) as unknown as QueryClient & OverrideQueryClient
 
-  const router = createTanstackRouter({
+  const router = createRouter({
     routeTree,
     context: {
       user: null,
@@ -35,14 +35,15 @@ export function createRouter() {
 
   setupRouterSsrQueryIntegration({
     router,
-    queryClient: queryClient as unknown as OverrideQueryClient,
+    queryClient,
   })
 
   return router
 }
 
+// TODO: remove this once migrated
 declare module '@tanstack/react-router' {
   interface Register {
-    router: ReturnType<typeof createRouter>
+    router: ReturnType<typeof getRouter>
   }
 }
