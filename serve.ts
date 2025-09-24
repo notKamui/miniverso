@@ -1,6 +1,11 @@
-import { file } from 'bun'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import middie from '@fastify/middie'
+import fastifyStatic from '@fastify/static'
+import Fastify from 'fastify'
 import { env } from '@/lib/env/server'
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const DEVELOPMENT = env.NODE_ENV === 'development'
 const PORT = Number.parseFloat(process.env.PORT || '3000')
 
@@ -12,112 +17,151 @@ async function applyDatabaseMigrations() {
   console.log('Migrations completed successfully.')
 }
 
-async function createViteDevServer() {
-  const vite = await import('vite')
-  const viteDevServer = await vite.createServer({
-    server: { port: 5173, host: true },
+async function createViteMiddleware() {
+  const { createServer } = await import('vite')
+
+  const vite = await createServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
   })
-  await viteDevServer.listen()
-  console.log('Vite dev server started on http://localhost:5173')
-  return viteDevServer
+
+  return vite
 }
 
-function isViteAsset(pathname: string): boolean {
-  return (
-    pathname.startsWith('/@') ||
-    pathname.startsWith('/node_modules') ||
-    pathname.endsWith('.js') ||
-    pathname.endsWith('.css') ||
-    pathname.endsWith('.svg') ||
-    pathname.startsWith('/src/')
+function convertRequest(fastifyRequest: any): Request {
+  const url = new URL(
+    fastifyRequest.url,
+    `http://${fastifyRequest.headers.host}`,
   )
-}
 
-async function createDevelopmentFetchHandler(viteDevServer: any) {
-  return async function developmentFetch(request: Request): Promise<Response> {
-    try {
-      const url = new URL(request.url)
-
-      // Proxy Vite assets (HMR, static files, etc.)
-      if (isViteAsset(url.pathname)) {
-        const viteUrl = `http://localhost:5173${url.pathname}${url.search}`
-        const viteResponse = await fetch(viteUrl, {
-          method: request.method,
-          headers: request.headers,
-          body: request.body,
-        })
-
-        return new Response(viteResponse.body, {
-          status: viteResponse.status,
-          statusText: viteResponse.statusText,
-          headers: viteResponse.headers,
-        })
+  const headers = new Headers()
+  for (const [key, value] of Object.entries(fastifyRequest.headers)) {
+    if (typeof value === 'string') {
+      headers.set(key, value)
+    } else if (Array.isArray(value)) {
+      for (const v of value) {
+        headers.append(key, v)
       }
-
-      // Load the server entry through Vite
-      const { default: serverEntry } =
-        await viteDevServer.ssrLoadModule('./src/server.ts')
-      return await serverEntry.fetch(request)
-    } catch (error) {
-      console.error('Development server error:', error)
-      return new Response('Internal Server Error', { status: 500 })
     }
   }
+
+  const init: RequestInit = {
+    method: fastifyRequest.method,
+    headers,
+  }
+
+  if (
+    fastifyRequest.body &&
+    (fastifyRequest.method === 'POST' ||
+      fastifyRequest.method === 'PUT' ||
+      fastifyRequest.method === 'PATCH')
+  ) {
+    init.body = JSON.stringify(fastifyRequest.body)
+  }
+
+  return new Request(url.toString(), init)
 }
 
-async function createProductionFetchHandler() {
-  const { default: handler } = await import('./dist/server/server.js')
+async function convertResponse(response: Response, fastifyReply: any) {
+  fastifyReply.status(response.status)
 
-  return async function productionFetch(request: Request): Promise<Response> {
-    try {
-      const url = new URL(request.url)
+  response.headers.forEach((value, key) => {
+    fastifyReply.header(key, value)
+  })
 
-      // Serve static files from dist/client
-      if (url.pathname !== '/' && !url.pathname.startsWith('/api')) {
-        const filePath = `./dist/client${url.pathname}`
-        const staticFile = file(filePath)
-
-        if (await staticFile.exists()) {
-          return new Response(staticFile)
-        }
-      }
-
-      // Handle all other requests with the React Start handler
-      return await handler.fetch(request)
-    } catch (error) {
-      console.error('Production server error:', error)
-      return new Response('Internal Server Error', { status: 500 })
-    }
+  if (response.body) {
+    const body = await response.arrayBuffer()
+    return fastifyReply.send(Buffer.from(body))
   }
+
+  return fastifyReply.send()
 }
 
 async function startDevelopmentServer() {
-  const viteDevServer = await createViteDevServer()
-  const fetchHandler = await createDevelopmentFetchHandler(viteDevServer)
-
-  Bun.serve({
-    port: PORT,
-    fetch: fetchHandler,
+  const fastify = Fastify({
+    logger: {
+      level: 'warn',
+    },
   })
 
-  console.log(`Development server is running on http://localhost:${PORT}`)
+  await fastify.register(middie)
+
+  const vite = await createViteMiddleware()
+  fastify.use(vite.middlewares)
+
+  fastify.all('*', async (request, reply) => {
+    try {
+      const webRequest = convertRequest(request)
+
+      const { default: serverEntry } =
+        await vite.ssrLoadModule('./src/server.ts')
+      const response = await serverEntry.fetch(webRequest)
+
+      return convertResponse(response, reply)
+    } catch (error) {
+      fastify.log.error('SSR error:')
+      fastify.log.error(error)
+      reply.status(500).send('Internal Server Error')
+    }
+  })
+
+  try {
+    await fastify.listen({ port: PORT, host: '0.0.0.0' })
+    console.log(`Development server is running on http://localhost:${PORT}`)
+  } catch (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
 }
 
 async function startProductionServer() {
-  const fetchHandler = await createProductionFetchHandler()
-
-  Bun.serve({
-    port: PORT,
-    fetch: fetchHandler,
+  const fastify = Fastify({
+    logger: {
+      level: 'warn',
+    },
   })
 
-  console.log(`Production server is running on http://localhost:${PORT}`)
+  await fastify.register(fastifyStatic, {
+    root: join(__dirname, 'dist/client'),
+    prefix: '/',
+    wildcard: false,
+  })
+
+  const { default: handler } = await import('./dist/server/server.js')
+
+  fastify.setNotFoundHandler(async (request, reply) => {
+    try {
+      const webRequest = convertRequest(request)
+      const response = await handler.fetch(webRequest)
+
+      return convertResponse(response, reply)
+    } catch (error) {
+      fastify.log.error('Production server error:')
+      fastify.log.error(error)
+      reply.status(500).send('Internal Server Error')
+    }
+  })
+
+  try {
+    await fastify.listen({ port: PORT, host: '0.0.0.0' })
+    console.log(`Production server is running on http://localhost:${PORT}`)
+  } catch (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
 }
 
-await applyDatabaseMigrations()
+async function main() {
+  await applyDatabaseMigrations()
 
-if (DEVELOPMENT) {
-  await startDevelopmentServer()
-} else {
-  await startProductionServer()
+  if (DEVELOPMENT) {
+    await startDevelopmentServer()
+  } else {
+    await startProductionServer()
+  }
 }
+
+main().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
+})
