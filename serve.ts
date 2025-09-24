@@ -1,13 +1,16 @@
 import express from 'express'
 import { toNodeHandler } from 'srvx/node'
+import type { ViteDevServer } from 'vite'
 import { env } from '@/lib/env/server'
 
-const DEVELOPMENT = env.NODE_ENV === 'development'
-const PORT = env.PORT
+function isDevelopment() {
+  return env.NODE_ENV === 'development'
+}
 
-const app = express()
+type NodeHandler = ReturnType<typeof toNodeHandler>
+type FetchHandler = Parameters<typeof toNodeHandler>[0]
 
-async function applyDatabaseMigrations() {
+async function runDatabaseMigrations() {
   const { db } = await import('./src/server/db')
   console.log('Running migrations...')
   const { migrate } = await import('drizzle-orm/postgres-js/migrator')
@@ -15,41 +18,66 @@ async function applyDatabaseMigrations() {
   console.log('Migrations completed successfully.')
 }
 
-await applyDatabaseMigrations()
-
-if (DEVELOPMENT) {
-  const viteDevServer = await import('vite').then((vite) =>
-    vite.createServer({
-      server: { middlewareMode: true },
-    }),
-  )
-  app.use(viteDevServer.middlewares)
-  app.use(async (req, res, next) => {
+function createDevNodeHandlerMiddleware(
+  viteDevServer: ViteDevServer,
+  toNodeHandler: (handler: FetchHandler) => NodeHandler,
+): express.RequestHandler {
+  return async (req, res, next) => {
     try {
-      const { default: serverEntry } =
-        await viteDevServer.ssrLoadModule('./src/server.ts')
-      const handler = toNodeHandler(serverEntry.fetch)
-      await handler(req, res)
+      const server = await viteDevServer.ssrLoadModule('./src/server.ts')
+      await toNodeHandler(server.default.fetch)(req, res)
     } catch (error) {
       if (typeof error === 'object' && error instanceof Error) {
         viteDevServer.ssrFixStacktrace(error)
       }
       next(error)
     }
-  })
-} else {
-  const { default: handler } = await import('./dist/server/server.js')
-  const nodeHandler = toNodeHandler(handler.fetch)
-  app.use('/', express.static('dist/client'))
-  app.use(async (req, res, next) => {
+  }
+}
+
+function createNodeHandlerMiddleware(
+  nodeHandler: NodeHandler,
+): express.RequestHandler {
+  return async (req, res, next) => {
     try {
       await nodeHandler(req, res)
     } catch (error) {
       next(error)
     }
+  }
+}
+
+async function setupDevelopment(app: express.Express) {
+  const vite = await import('vite')
+  const viteDevServer = await vite.createServer({
+    server: { middlewareMode: true },
+  })
+  app.use(viteDevServer.middlewares)
+  app.use(createDevNodeHandlerMiddleware(viteDevServer, toNodeHandler))
+}
+
+async function setupProduction(app: express.Express) {
+  const server = await import('./dist/server/server.js')
+  const nodeHandler = toNodeHandler(server.default.fetch)
+  app.use('/', express.static('dist/client'))
+  app.use(createNodeHandlerMiddleware(nodeHandler))
+}
+
+function startServer(app: express.Express, port: number) {
+  app.listen(port, () => {
+    const mode = isDevelopment() ? '[DEV]' : '[PROD]'
+    console.log(`${mode}: Server is running on http://localhost:${port}`)
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`)
-})
+await runDatabaseMigrations()
+
+const app = express()
+
+if (isDevelopment()) {
+  await setupDevelopment(app)
+} else {
+  await setupProduction(app)
+}
+
+startServer(app, env.PORT)

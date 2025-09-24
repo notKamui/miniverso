@@ -1,6 +1,6 @@
 declare module '*/dist/server/server.js' {
   const handler: {
-    fetch: (request: Request, env?: any) => Promise<Response> | Response
+    fetch: (request: Request) => Promise<Response> | Response
   }
   export default handler
 }
