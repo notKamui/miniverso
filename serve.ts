@@ -7,6 +7,16 @@ const PORT = Number.parseFloat(process.env.PORT || '3000')
 
 const app = express()
 
+async function applyDatabaseMigrations() {
+  const { db } = await import('./src/server/db')
+  console.log('Running migrations...')
+  const { migrate } = await import('drizzle-orm/postgres-js/migrator')
+  await migrate(db, { migrationsFolder: './.drizzle' })
+  console.log('Migrations completed successfully.')
+}
+
+await applyDatabaseMigrations()
+
 if (DEVELOPMENT) {
   const viteDevServer = await import('vite').then((vite) =>
     vite.createServer({
