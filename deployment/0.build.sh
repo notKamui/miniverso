@@ -3,3 +3,5 @@ set -euo pipefail
 
 bun install --frozen-lockfile && \
 bun run build
+
+rm -rf node_modules
