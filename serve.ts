@@ -7,7 +7,7 @@ import { env } from '@/lib/env/server'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DEVELOPMENT = env.NODE_ENV === 'development'
-const PORT = Number.parseFloat(process.env.PORT || '3000')
+const PORT = env.PORT
 
 async function applyDatabaseMigrations() {
   const { db } = await import('./src/server/db')
