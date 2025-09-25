@@ -39,7 +39,10 @@ export const Route = createRootRouteWithContext<{
         title: 'Miniverso',
       },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/favicon.ico' },
+    ],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
     const [socialOAuth, requestInfo, user] = await Promise.all([

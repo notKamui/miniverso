@@ -33,7 +33,8 @@ async function buildStaticRoutes(
       try {
         const file = Bun.file(filepath)
 
-        if ((await file.exists()) && file.size === 0) continue
+        if (!file || !(await file.exists())) continue
+        if (file.size === 0) continue
 
         const bytes = await file.bytes()
         const contentType = file.type || 'application/octet-stream'
