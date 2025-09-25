@@ -5,6 +5,27 @@ import { env } from '@/lib/env/server'
 const CLIENT_DIR = './dist/client'
 const SERVER_ENTRY = './dist/server/server.js'
 
+// Configuration (can be driven by env vars; using process.env directly to avoid extending typed env schema)
+const MAX_PRELOAD_BYTES = Number(
+  process.env.STATIC_PRELOAD_MAX_BYTES ?? 2 * 1024 * 1024, // 2MB default
+)
+
+// Comma-separated include patterns (simple glob * -> .*). If provided, only matching files are eligible.
+const INCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_INCLUDE || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map(globToRegExp)
+
+// Comma-separated exclude patterns; applied after include.
+const EXCLUDE_PATTERNS = (
+  process.env.STATIC_PRELOAD_EXCLUDE || '*.map,*.txt,*.LICENSE.txt'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map(globToRegExp)
+
 async function runDatabaseMigrations() {
   const { db } = await import('./src/server/db')
   console.log('Running migrations...')
@@ -13,47 +34,87 @@ async function runDatabaseMigrations() {
   console.log('Migrations completed successfully.')
 }
 
+function globToRegExp(glob: string): RegExp {
+  // Escape regex significant chars except * then replace * with .*
+  const escaped = glob
+    .replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&')
+    .replace(/\*/g, '.*')
+  return new RegExp(`^${escaped}$`, 'i')
+}
+
+interface PreloadedAssetMeta {
+  route: string
+  size: number
+  type: string
+}
+
+interface StaticPreloadResult {
+  responses: Record<string, () => Response>
+  skipped: PreloadedAssetMeta[]
+  loaded: PreloadedAssetMeta[]
+}
+
+function shouldInclude(relativePath: string): boolean {
+  const fileName = relativePath.split(/[/\\]/).pop() || relativePath
+  if (INCLUDE_PATTERNS.length > 0) {
+    if (!INCLUDE_PATTERNS.some((r) => r.test(fileName))) return false
+  }
+  if (EXCLUDE_PATTERNS.some((r) => r.test(fileName))) return false
+  return true
+}
+
 async function buildStaticRoutes(
   clientDir: string,
-): Promise<Record<string, Response>> {
-  const routes: Record<string, Response> = {}
-  const loadedFiles: { route: string; size: number; type: string }[] = []
+): Promise<StaticPreloadResult> {
+  const responses: StaticPreloadResult['responses'] = {}
+  const loaded: PreloadedAssetMeta[] = []
+  const skipped: PreloadedAssetMeta[] = []
 
   console.log(`📦 Loading static assets from ${clientDir}...`)
-  let fileCount = 0
-  let totalSize = 0
+  let loadedBytesTotal = 0
 
   try {
     const files = await readdir(clientDir, { recursive: true })
-
     for (const relativePath of files) {
       const filepath = join(clientDir, relativePath)
-      const route = `/${relativePath.replace(/\\/g, '/')}` // Handle Windows paths
-
+      const route = `/${relativePath.replace(/\\/g, '/')}`
       try {
         const file = Bun.file(filepath)
-
         if (!file || !(await file.exists())) continue
         if (file.size === 0) continue
 
-        const bytes = await file.bytes()
-        const contentType = file.type || 'application/octet-stream'
-
-        routes[route] = new Response(bytes, {
-          headers: {
-            'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache for hashed assets
-          },
-        })
-
-        fileCount++
-        totalSize += bytes.byteLength
-
-        loadedFiles.push({
+        const fileMeta: PreloadedAssetMeta = {
           route,
-          size: bytes.byteLength,
-          type: contentType,
-        })
+          size: file.size,
+          type: file.type || 'application/octet-stream',
+        }
+
+        const include = shouldInclude(relativePath)
+        const tooBig = file.size > MAX_PRELOAD_BYTES
+        if (!include || tooBig) {
+          skipped.push(fileMeta)
+          responses[route] = () => {
+            const file = Bun.file(filepath)
+            return new Response(file, {
+              headers: {
+                'Content-Type': fileMeta.type,
+                'Cache-Control': 'public, max-age=3600',
+              },
+            })
+          }
+          continue
+        }
+
+        const bytes = await file.bytes()
+        responses[route] = () =>
+          new Response(bytes, {
+            headers: {
+              'Content-Type': fileMeta.type,
+              'Cache-Control': 'public, max-age=31536000, immutable',
+            },
+          })
+        loaded.push({ ...fileMeta, size: bytes.byteLength })
+        loadedBytesTotal += bytes.byteLength
       } catch (error: any) {
         if (error?.code !== 'EISDIR') {
           console.error(`❌ Failed to load ${filepath}:`, error)
@@ -61,29 +122,52 @@ async function buildStaticRoutes(
       }
     }
 
-    if (fileCount > 0) {
+    if (loaded.length > 0) {
       console.log(
-        `✅ Loaded ${fileCount} static files (${(totalSize / 1024 / 1024).toFixed(2)} MB) into memory`,
+        `✅ Preloaded ${loaded.length} static files (${(loadedBytesTotal / 1024 / 1024).toFixed(2)} MB) into memory`,
       )
+    } else {
+      console.warn('⚠️ No static files preloaded')
+    }
 
-      console.log('\n📁 Static files loaded:')
-      loadedFiles
+    if (skipped.length > 0) {
+      const big = skipped.filter((f) => f.size > MAX_PRELOAD_BYTES).length
+      const filtered = skipped.length - big
+      console.log(
+        `ℹ️ Skipped ${skipped.length} files (${big} too large, ${filtered} filtered by pattern) – will serve from disk on demand`,
+      )
+    }
+
+    const VERBOSE = (process.env.STATIC_PRELOAD_VERBOSE || 'true') === 'true'
+    if (VERBOSE) {
+      console.log('\n📁 Preloaded files:')
+      loaded
         .sort((a, b) => a.route.localeCompare(b.route))
-        .forEach((file) => {
-          const sizeKB = (file.size / 1024).toFixed(2)
+        .forEach((f) => {
+          const sizeKB = (f.size / 1024).toFixed(2)
           console.log(
-            `   ${file.route.padEnd(50)} ${sizeKB.padStart(10)} KB  [${file.type}]`,
+            `   ${f.route.padEnd(50)} ${sizeKB.padStart(10)} KB  [${f.type}]`,
           )
         })
-    } else {
-      console.warn(`⚠️ No static files found in ${clientDir}`)
+      if (skipped.length) {
+        console.log('\n🚫 Skipped files:')
+        skipped
+          .sort((a, b) => a.route.localeCompare(b.route))
+          .forEach((f) => {
+            const sizeKB = (f.size / 1024).toFixed(2)
+            const reason = f.size > MAX_PRELOAD_BYTES ? 'too large' : 'filtered'
+            console.log(
+              `   ${f.route.padEnd(50)} ${sizeKB.padStart(10)} KB  (${reason})`,
+            )
+          })
+      }
     }
   } catch (error) {
-    console.error(`❌ Failed to load static files from ${clientDir}:`)
+    console.error(`❌ Failed during static preload from ${clientDir}:`)
     console.error(error)
   }
 
-  return routes
+  return { responses, skipped, loaded }
 }
 
 async function startServer() {
@@ -99,20 +183,13 @@ async function startServer() {
     process.exit(1)
   }
 
-  const staticRoutes = await buildStaticRoutes(CLIENT_DIR)
+  const { responses: preloaded } = await buildStaticRoutes(CLIENT_DIR)
 
   const server = Bun.serve({
     port: env.PORT,
     routes: {
-      ...staticRoutes,
-      '/*': (request) => {
-        try {
-          return handler.fetch(request)
-        } catch (error) {
-          console.error('Server handler error:', error)
-          return new Response('Internal Server Error', { status: 500 })
-        }
-      },
+      ...preloaded,
+      '/*': handler.fetch,
     },
     error(error) {
       console.error('Uncaught server error:', error)
