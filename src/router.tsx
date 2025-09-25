@@ -40,10 +40,3 @@ export function getRouter() {
 
   return router
 }
-
-// TODO: remove this once migrated
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: ReturnType<typeof getRouter>
-  }
-}
