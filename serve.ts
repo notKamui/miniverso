@@ -256,6 +256,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   }
 
   let totalPreloadedBytes = 0
+  const gzSizes: Record<string, number> = {}
 
   try {
     const glob = buildCompositeGlob()
@@ -294,6 +295,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
           routes[route] = buildResponseFactory(asset)
           loaded.push({ ...metadata, size: bytes.byteLength })
           totalPreloadedBytes += bytes.byteLength
+          if (gz) gzSizes[route] = gz.byteLength
         } else {
           routes[route] = makeOnDemandFactory(filepath, metadata.type)
           skipped.push(metadata)
@@ -315,14 +317,9 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
         60,
       )
 
-      const formatFileSize = (bytes: number) => {
+      function formatKB(bytes: number) {
         const kb = bytes / 1024
-        // Rough gzip estimation (typically 30-70% compression)
-        const gzipKb = kb * 0.35
-        return {
-          size: kb < 100 ? kb.toFixed(2) : kb.toFixed(1),
-          gzip: gzipKb < 100 ? gzipKb.toFixed(2) : gzipKb.toFixed(1),
-        }
+        return kb < 100 ? kb.toFixed(2) : kb.toFixed(1)
       }
 
       if (loaded.length > 0) {
@@ -330,11 +327,15 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
         loaded
           .sort((a, b) => a.route.localeCompare(b.route))
           .forEach((file) => {
-            const { size, gzip } = formatFileSize(file.size)
+            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
             const paddedPath = file.route.padEnd(maxPathLength)
-            const sizeStr = `${size.padStart(7)} kB`
-            const gzipStr = `gzip: ${gzip.padStart(6)} kB`
-            console.log(`   ${paddedPath} ${sizeStr} │ ${gzipStr}`)
+            const gzSize = gzSizes[file.route]
+            if (gzSize) {
+              const gzStr = `${formatKB(gzSize).padStart(7)} kB`
+              console.log(`   ${paddedPath} ${sizeStr} │ gzip: ${gzStr}`)
+            } else {
+              console.log(`   ${paddedPath} ${sizeStr}`)
+            }
           })
       }
 
@@ -343,11 +344,9 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
         skipped
           .sort((a, b) => a.route.localeCompare(b.route))
           .forEach((file) => {
-            const { size, gzip } = formatFileSize(file.size)
+            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
             const paddedPath = file.route.padEnd(maxPathLength)
-            const sizeStr = `${size.padStart(7)} kB`
-            const gzipStr = `gzip: ${gzip.padStart(6)} kB`
-            console.log(`   ${paddedPath} ${sizeStr} │ ${gzipStr}`)
+            console.log(`   ${paddedPath} ${sizeStr}`)
           })
       }
 
