@@ -29,6 +29,7 @@ const config = defineConfig(async ({ mode }) => {
       react(),
       bunServer({
         beforeStartHooks: ['server.migrations'],
+        additionalDistPaths: ['.drizzle'],
       }),
     ],
     define: {

@@ -17,6 +17,7 @@ export function bundleBunServer(
     minify?: boolean
     beforeStartHooks?: string[]
     afterStartHooks?: string[]
+    additionalDistPaths?: string[]
   } = {},
 ): Plugin {
   const entry = options.entry
@@ -26,6 +27,7 @@ export function bundleBunServer(
   const minify = options.minify ?? false
   const beforeHooks = options.beforeStartHooks ?? []
   const afterHooks = options.afterStartHooks ?? []
+  const additionalDistPaths = options.additionalDistPaths ?? ['.drizzle']
 
   async function buildInlineWrapper(): Promise<string> {
     // We generate a temporary wrapper file that imports the base serve.ts (which exports main())
@@ -79,24 +81,38 @@ run().catch(e => { console.error('[bunServer] Fatal error starting server:', e);
     await fs.mkdir(path, { recursive: true })
   }
 
-  async function copyMigrations() {
-    const src = '.drizzle'
-    const dst = join(distRoot, '.drizzle')
-    if (!existsSync(src)) return
-    const entries = (await fs.readdir(src, { recursive: true })) as string[]
-    for (const rel of entries) {
-      const from = join(src, rel)
-      const to = join(dst, rel)
-      const stat = await fs.stat(from).catch(() => null)
+  async function copyAdditionalPaths() {
+    for (const relPath of additionalDistPaths) {
+      if (!existsSync(relPath)) {
+        console.warn(`[bundle-server] Skipping missing path: ${relPath}`)
+        continue
+      }
+      const stat = await fs.stat(relPath).catch(() => null)
       if (!stat) continue
-      if (stat.isDirectory()) {
-        await ensureDir(to)
-      } else {
-        await ensureDir(dirname(to))
-        await fs.copyFile(from, to)
+      const targetBase = join(distRoot, relPath)
+      if (stat.isFile()) {
+        await ensureDir(dirname(targetBase))
+        await fs.copyFile(relPath, targetBase)
+        console.log(`[bundle-server] Copied file: ${relPath}`)
+      } else if (stat.isDirectory()) {
+        const entries = (await fs.readdir(relPath, {
+          recursive: true,
+        })) as string[]
+        for (const entryRel of entries) {
+          const from = join(relPath, entryRel)
+          const st = await fs.stat(from).catch(() => null)
+          if (!st) continue
+          const to = join(targetBase, entryRel)
+          if (st.isDirectory()) {
+            await ensureDir(to)
+          } else {
+            await ensureDir(dirname(to))
+            await fs.copyFile(from, to)
+          }
+        }
+        console.log(`[bundle-server] Copied directory: ${relPath}`)
       }
     }
-    console.log('[bundle-server] Copied .drizzle migrations')
   }
 
   async function copyFullPackageJson() {
@@ -163,7 +179,7 @@ run().catch(e => { console.error('[bunServer] Fatal error starting server:', e);
           `[bundle-server] ✅ Bundled entrypoint '${entry}' -> ${outFile}`,
         )
         await Promise.all([
-          copyMigrations(),
+          copyAdditionalPaths(),
           copyFullPackageJson(),
           copyLockfile(),
         ])
