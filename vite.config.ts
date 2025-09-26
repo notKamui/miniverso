@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import pkg from './package.json'
-import { bundleServer } from './plugins/bundleServer'
+import { bundleBunServer } from './plugins/bundleBunServer'
 
 const config = defineConfig(async ({ mode }) => {
   process.env = {
@@ -27,7 +27,7 @@ const config = defineConfig(async ({ mode }) => {
       tailwindcss(),
       tanstackStart(),
       react(),
-      bundleServer(),
+      bundleBunServer(),
     ],
     define: {
       APP_VERSION: JSON.stringify(pkg.version),

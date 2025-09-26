@@ -16,7 +16,7 @@ import type { Plugin } from 'vite'
  * - Avoids extra esbuild direct dependency (Bun implements API internally)
  * - Mirrors output path expected by production `serve.ts` (SERVER_ENTRY)
  */
-export function bundleServer(
+export function bundleBunServer(
   options: { entry?: string; outFile?: string; minify?: boolean } = {},
 ): Plugin {
   // We bundle the production runtime orchestrator (serve.ts) – not the SSR handler.
@@ -50,24 +50,39 @@ export function bundleServer(
     console.log('[bundle-server] Copied .drizzle migrations')
   }
 
-  async function writeMinimalPackageJson() {
+  async function copyFullPackageJson() {
     const rootPkgPath = 'package.json'
     if (!existsSync(rootPkgPath)) return
-    const pkg = JSON.parse(readFileSync(rootPkgPath, 'utf8'))
-    const minimal = {
-      name: pkg.name,
-      version: pkg.version,
-      private: true,
-      type: pkg.type || 'module',
-      scripts: { start: 'bun entrypoint.js' },
-      dependencies: pkg.dependencies || {},
+    const raw = readFileSync(rootPkgPath, 'utf8')
+    try {
+      const pkg = JSON.parse(raw)
+      // Replace scripts with a single start script pointing at entrypoint.js
+      pkg.scripts = { start: 'bun entrypoint.js' }
+      await fs.writeFile(
+        join(distRoot, 'package.json'),
+        JSON.stringify(pkg, null, 2) + '\n',
+        'utf8',
+      )
+      console.log(
+        '[bundle-server] Wrote pruned package.json (start only) to dist/',
+      )
+    } catch {
+      // Fallback: just copy raw if parsing somehow fails
+      await fs.writeFile(join(distRoot, 'package.json'), raw, 'utf8')
+      console.warn(
+        '[bundle-server] Failed to prune scripts; copied full package.json',
+      )
     }
-    await fs.writeFile(
-      join(distRoot, 'package.json'),
-      JSON.stringify(minimal, null, 2) + '\n',
-      'utf8',
-    )
-    console.log('[bundle-server] Wrote minimal dist/package.json')
+  }
+
+  async function copyLockfile() {
+    const lockFiles = ['bun.lock', 'bun.lockb']
+    for (const lockFile of lockFiles) {
+      if (existsSync(lockFile)) {
+        await fs.copyFile(lockFile, join(distRoot, lockFile))
+      }
+    }
+    console.log('[bundle-server] Copied lockfiles to dist/')
   }
 
   return {
@@ -90,7 +105,6 @@ export function bundleServer(
           legalComments: 'none',
           banner: { js: '// Bundled runtime entrypoint (serve.ts)' },
           external: [
-            // Let these resolve at runtime (already present in deps)
             'postgres',
             'drizzle-orm',
             'drizzle-orm/postgres-js',
@@ -100,8 +114,11 @@ export function bundleServer(
         console.log(
           `[bundle-server] ✅ Bundled entrypoint '${entry}' -> ${outFile}`,
         )
-
-        await Promise.all([copyMigrations(), writeMinimalPackageJson()])
+        await Promise.all([
+          copyMigrations(),
+          copyFullPackageJson(),
+          copyLockfile(),
+        ])
 
         // Defensive: remove any stray .map files (from other plugins) if present
         try {
@@ -127,4 +144,4 @@ export function bundleServer(
   }
 }
 
-export default bundleServer
+export default bundleBunServer
