@@ -1,6 +1,7 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { captcha } from 'better-auth/plugins'
 import { reactStartCookies } from 'better-auth/react-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
@@ -72,6 +73,10 @@ export const auth = createServerOnlyFn(() =>
       },
     ),
     plugins: [
+      captcha({
+        provider: 'hcaptcha',
+        secretKey: env.HCAPTCHA_SECRET,
+      }),
       reactStartCookies(), // WARN: should be the last plugin
     ],
   }),

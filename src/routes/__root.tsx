@@ -16,6 +16,7 @@ import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
+import { hcaptchaInfoQueryOptions } from '@/server/functions/hcaptcha'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
 import { socialOAuthQueryOptions } from '@/server/functions/social-oauth'
 import type { Theme } from '@/server/functions/theme'
@@ -45,7 +46,8 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
-    const [socialOAuth, requestInfo, user] = await Promise.all([
+    const [hcaptchaInfo, socialOAuth, requestInfo, user] = await Promise.all([
+      queryClient.fetchQuery(hcaptchaInfoQueryOptions()),
       queryClient.fetchQuery(socialOAuthQueryOptions()),
       queryClient.fetchQuery(requestInfoQueryOptions()),
       queryClient.fetchQuery(userQueryOptions()),
@@ -55,14 +57,11 @@ export const Route = createRootRouteWithContext<{
     queryClient.setQueryData(themeQueryKey, theme)
     queryClient.setQueryData(sidebarStateQueryKey, sidebar)
 
-    return { user, requestInfo, socialOAuth }
+    return { user, requestInfo, socialOAuth, hcaptchaInfo }
   },
-  loader: async ({ context: { user, requestInfo, socialOAuth } }) => {
+  loader: async () => {
     return {
-      user,
-      requestInfo,
       crumbs: crumbs({ title: 'Home', to: '/' }),
-      socialOAuth,
     }
   },
   component: RouteComponent,

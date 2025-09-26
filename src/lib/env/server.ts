@@ -17,6 +17,8 @@ export const env = createEnv({
     GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1).optional(),
     RESEND_API_KEY: z.string().min(1),
     RESEND_MAIL_DOMAIN: z.string().min(1),
+    HCAPTCHA_SITEKEY: z.string().min(1),
+    HCAPTCHA_SECRET: z.string().min(1),
     DISABLE_CSRF: z
       .string()
       .default('false')
