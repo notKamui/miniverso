@@ -11,13 +11,67 @@ import type { Plugin } from 'vite'
  * dist/entrypoint.js. The default entry path has changed due to relocation.
  */
 export function bundleBunServer(
-  options: { entry?: string; outFile?: string; minify?: boolean } = {},
+  options: {
+    entry?: string
+    outFile?: string
+    minify?: boolean
+    beforeStartHooks?: string[]
+    afterStartHooks?: string[]
+  } = {},
 ): Plugin {
   const entry = options.entry
     ? options.entry
     : join(fileURLToPath(new URL('.', import.meta.url)), 'serve.ts')
   const outFile = options.outFile ?? 'dist/entrypoint.js'
   const minify = options.minify ?? false
+  const beforeHooks = options.beforeStartHooks ?? []
+  const afterHooks = options.afterStartHooks ?? []
+
+  async function buildInlineWrapper(): Promise<string> {
+    // We generate a temporary wrapper file that imports the base serve.ts (which exports main())
+    // and inlines the configured hooks directly so they are visible in the final bundled output.
+    const wrapperPath = join('.mini_tmp', 'bunServer-inline-entry.ts')
+    await fs.mkdir(dirname(wrapperPath), { recursive: true })
+
+    function emitImports(list: string[], kind: 'before' | 'after') {
+      return list
+        .map((spec, idx) => {
+          const [mod, named] = spec.split('#')
+          const local = `${kind}Hook${idx}`
+          if (named) return `import { ${named} as ${local} } from '${mod}'`
+          return `import ${local} from '${mod}'`
+        })
+        .join('\n')
+    }
+
+    const beforeImports = emitImports(beforeHooks, 'before')
+    const afterImports = emitImports(afterHooks, 'after')
+    const beforeArray = beforeHooks.map((_, i) => `beforeHook${i}`).join(', ')
+    const afterArray = afterHooks.map((_, i) => `afterHook${i}`).join(', ')
+
+    const source = `// AUTO-GENERATED INLINE ENTRY (bundleBunServer)
+// Hooks are inlined so that their code is visible in the final entrypoint bundle.
+import { main as baseMain } from '${entry.replace(/\\/g, '/')}'
+${beforeImports}${beforeImports ? '\n' : ''}${afterImports}${afterImports ? '\n' : ''}
+
+async function run() {
+  const beforeHooks = [${beforeArray}].filter(Boolean)
+  const afterHooks = [${afterArray}].filter(Boolean)
+  if (beforeHooks.length) console.log('[bunServer] Running', beforeHooks.length, 'before hook(s)')
+  for (const hook of beforeHooks) {
+    try { await hook() } catch (err) { console.error('[bunServer] Error in before hook:', err); process.exit(1) }
+  }
+  await baseMain()
+  if (afterHooks.length) console.log('[bunServer] Scheduling', afterHooks.length, 'after hook(s)')
+  for (const hook of afterHooks) {
+    Promise.resolve().then(() => hook()).catch(e => console.error('[bunServer] Error in after hook:', e))
+  }
+}
+run().catch(e => { console.error('[bunServer] Fatal error starting server:', e); process.exit(1) })
+`
+    await fs.writeFile(wrapperPath, source, 'utf8')
+    return wrapperPath
+  }
   let applied = false
   const distRoot = 'dist'
 
@@ -86,8 +140,9 @@ export function bundleBunServer(
       if (applied) return
       applied = true
       try {
+        const wrapper = await buildInlineWrapper()
         await build({
-          entryPoints: [entry],
+          entryPoints: [wrapper],
           outfile: outFile,
           platform: 'node',
           format: 'esm',
@@ -128,6 +183,16 @@ export function bundleBunServer(
           }
         } catch (e) {
           console.warn('[bundle-server] Warning while cleaning .map files:', e)
+        }
+        // Cleanup temporary inline wrapper directory
+        try {
+          if (existsSync('.mini_tmp')) {
+            await fs.rm('.mini_tmp', { recursive: true, force: true })
+            // eslint-disable-next-line no-console
+            console.log('[bundle-server] Cleaned temporary .mini_tmp directory')
+          }
+        } catch (e) {
+          console.warn('[bundle-server] Failed to remove .mini_tmp:', e)
         }
       } catch (err) {
         console.error('[bundle-server] ❌ Error bundling server entry:', err)

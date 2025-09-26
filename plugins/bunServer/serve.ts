@@ -1,67 +1,10 @@
 /**
- * TanStack Start Production Server with Bun
- *
- * A high-performance production server for TanStack Start applications that
- * implements intelligent static asset loading with configurable memory management.
- *
- * Features:
- * - Hybrid loading strategy (preload small files, serve large files on-demand)
- * - Configurable file filtering with include/exclude patterns
- * - Memory-efficient response generation
- * - Production-ready caching headers
- *
- * Environment Variables:
- *
- * PORT (number)
- *   - Server port number
- *   - Default: 3000
- *
- * STATIC_PRELOAD_MAX_BYTES (number)
- *   - Maximum file size in bytes to preload into memory
- *   - Files larger than this will be served on-demand from disk
- *   - Default: 5242880 (5MB)
- *   - Example: STATIC_PRELOAD_MAX_BYTES=5242880 (5MB)
- *
- * STATIC_PRELOAD_INCLUDE (string)
- *   - Comma-separated list of glob patterns for files to include
- *   - If specified, only matching files are eligible for preloading
- *   - Patterns are matched against filenames only, not full paths
- *   - Example: STATIC_PRELOAD_INCLUDE="*.js,*.css,*.woff2"
- *
- * STATIC_PRELOAD_EXCLUDE (string)
- *   - Comma-separated list of glob patterns for files to exclude
- *   - Applied after include patterns
- *   - Patterns are matched against filenames only, not full paths
- *   - Example: STATIC_PRELOAD_EXCLUDE="*.map,*.txt"
- *
- * STATIC_PRELOAD_VERBOSE (boolean)
- *   - Enable detailed logging of loaded and skipped files
- *   - Default: false
- *   - Set to "true" to enable verbose output
- *
- * STATIC_PRELOAD_ETAG (boolean)
- *   - Enable ETag generation and conditional 304 responses for preloaded assets
- *   - Default: true
- *
- * STATIC_PRELOAD_GZIP (boolean)
- *   - Enable gzip precompression for eligible preloaded assets
- *   - Default: true
- *
- * STATIC_PRELOAD_GZIP_MIN_BYTES (number)
- *   - Minimum size (in bytes) before a file is considered for gzip
- *   - Default: 1024 (1KB)
- *
- * STATIC_PRELOAD_GZIP_TYPES (string)
- *   - Comma-separated list of MIME types or prefixes (ending with /) that can be gzip-precompressed
- *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
+ * Clean base production server (hooks/migrations injected by bundler wrapper)
  */
 
-// Configuration
+// ------------------------------ Configuration ------------------------------
 const PORT = Number(process.env.PORT || '3000')
 
-// Support running either from project root (with dist/) or from inside the dist folder itself.
-// If we detect a local ./server/server.js relative path (typical inside dist), use that.
-// Otherwise fall back to ./dist/server/server.js (running from project root).
 async function resolveServerEntry(): Promise<string> {
   const primary = './server/server.js'
   try {
@@ -85,32 +28,24 @@ async function resolveClientDir(): Promise<string> {
 let SERVER_ENTRY = './dist/server/server.js'
 let CLIENT_DIR = './dist/client'
 
-// Preloading configuration from environment variables
+// ---------------------------- Static Asset Setup --------------------------
 const MAX_PRELOAD_BYTES = Number(
-  process.env.STATIC_PRELOAD_MAX_BYTES ?? 5 * 1024 * 1024, // 5MB default
+  process.env.STATIC_PRELOAD_MAX_BYTES ?? 5 * 1024 * 1024,
 )
-
-// Parse comma-separated include patterns (no defaults)
 const INCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_INCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
   .map(globToRegExp)
-
-// Parse comma-separated exclude patterns (no defaults)
 const EXCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_EXCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
   .map(globToRegExp)
-
-// Verbose logging flag
 const VERBOSE = process.env.STATIC_PRELOAD_VERBOSE === 'true'
-
-// Optional features
 const ENABLE_ETAG = (process.env.STATIC_PRELOAD_ETAG || 'true') === 'true'
 const ENABLE_GZIP = (process.env.STATIC_PRELOAD_GZIP || 'true') === 'true'
-const GZIP_MIN_BYTES = Number(process.env.STATIC_PRELOAD_GZIP_MIN_BYTES || 1024) // 1KB
+const GZIP_MIN_BYTES = Number(process.env.STATIC_PRELOAD_GZIP_MIN_BYTES || 1024)
 const GZIP_TYPES = (
   process.env.STATIC_PRELOAD_GZIP_TYPES ||
   'text/,application/javascript,application/json,application/xml,image/svg+xml'
@@ -131,23 +66,20 @@ interface AssetMetadata {
   size: number
   type: string
 }
-
 interface PreloadResult {
   routes: Record<string, (req: Request) => Response | Promise<Response>>
-  loaded: Array<AssetMetadata>
-  skipped: Array<AssetMetadata>
+  loaded: AssetMetadata[]
+  skipped: AssetMetadata[]
 }
 
-function shouldInclude(relativePath: string): boolean {
+function shouldInclude(relativePath: string) {
   const fileName = relativePath.split(/[/\\]/).pop() ?? relativePath
-  if (INCLUDE_PATTERNS.length > 0) {
-    if (!INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
-      return false
-    }
-  }
-  if (EXCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
+  if (
+    INCLUDE_PATTERNS.length > 0 &&
+    !INCLUDE_PATTERNS.some((p) => p.test(fileName))
+  )
     return false
-  }
+  if (EXCLUDE_PATTERNS.some((p) => p.test(fileName))) return false
   return true
 }
 
@@ -166,14 +98,12 @@ interface InMemoryAsset {
   size: number
 }
 
-function computeEtag(data: Uint8Array): string {
+function computeEtag(data: Uint8Array) {
   const hash = Bun.hash(data)
   return `W/"${hash.toString(16)}-${data.byteLength}"`
 }
 
-function buildResponseFactory(
-  asset: InMemoryAsset,
-): (req: Request) => Response {
+function buildResponseFactory(asset: InMemoryAsset) {
   return (req: Request) => {
     const headers: Record<string, string> = {
       'Content-Type': asset.type,
@@ -198,19 +128,14 @@ function buildResponseFactory(
     ) {
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
-      const gzCopy = new Uint8Array(asset.gz)
-      return new Response(gzCopy, { status: 200, headers })
+      return new Response(new Uint8Array(asset.gz), { status: 200, headers })
     }
     headers['Content-Length'] = String(asset.raw.byteLength)
-    const rawCopy = new Uint8Array(asset.raw)
-    return new Response(rawCopy, { status: 200, headers })
+    return new Response(new Uint8Array(asset.raw), { status: 200, headers })
   }
 }
 
-async function gzipMaybe(
-  data: Uint8Array<ArrayBuffer>,
-  type: string,
-): Promise<Uint8Array | undefined> {
+async function gzipMaybe(data: Uint8Array<ArrayBuffer>, type: string) {
   if (!ENABLE_GZIP) return undefined
   if (data.byteLength < GZIP_MIN_BYTES) return undefined
   if (!matchesCompressible(type)) return undefined
@@ -222,15 +147,13 @@ async function gzipMaybe(
 }
 
 function makeOnDemandFactory(filepath: string, type: string) {
-  return (_req: Request) => {
-    const f = Bun.file(filepath)
-    return new Response(f, {
+  return (_req: Request) =>
+    new Response(Bun.file(filepath), {
       headers: {
         'Content-Type': type,
         'Cache-Control': 'public, max-age=3600',
       },
     })
-  }
 }
 
 function buildCompositeGlob(): Bun.Glob {
@@ -244,24 +167,21 @@ function buildCompositeGlob(): Bun.Glob {
 }
 
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
-  const routes: Record<string, (req: Request) => Response | Promise<Response>> =
-    {}
-  const loaded: Array<AssetMetadata> = []
-  const skipped: Array<AssetMetadata> = []
+  const routes: PreloadResult['routes'] = {}
+  const loaded: AssetMetadata[] = []
+  const skipped: AssetMetadata[] = []
   console.log(`📦 Loading static assets from ${clientDir}...`)
   console.log(
     `   Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`,
   )
-  if (INCLUDE_PATTERNS.length > 0) {
+  if (INCLUDE_PATTERNS.length > 0)
     console.log(
       `   Include patterns: ${process.env.STATIC_PRELOAD_INCLUDE ?? ''}`,
     )
-  }
-  if (EXCLUDE_PATTERNS.length > 0) {
+  if (EXCLUDE_PATTERNS.length > 0)
     console.log(
       `   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`,
     )
-  }
   console.log('   ETag generation:', ENABLE_ETAG ? 'enabled' : 'disabled')
   console.log('   Gzip precompression:', ENABLE_GZIP ? 'enabled' : 'disabled')
   if (ENABLE_GZIP) {
@@ -277,9 +197,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
       const route = `/${relativePath}`
       try {
         const file = Bun.file(filepath)
-        if (!(await file.exists()) || file.size === 0) {
-          continue
-        }
+        if (!(await file.exists()) || file.size === 0) continue
         const metadata: AssetMetadata = {
           route,
           size: file.size,
@@ -307,10 +225,9 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
           routes[route] = makeOnDemandFactory(filepath, metadata.type)
           skipped.push(metadata)
         }
-      } catch (error: unknown) {
-        if (error instanceof Error && error.name !== 'EISDIR') {
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'EISDIR')
           console.error(`❌ Failed to load ${filepath}:`, error)
-        }
       }
     }
     if (loaded.length > 0 || skipped.length > 0) {
@@ -371,7 +288,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
     console.log()
     if (loaded.length > 0) {
       console.log(
-        `✅ Preloaded ${String(loaded.length)} files (${(totalPreloadedBytes / 1024 / 1024).toFixed(2)} MB) into memory`,
+        `✅ Preloaded ${loaded.length} files (${(totalPreloadedBytes / 1024 / 1024).toFixed(2)} MB) into memory`,
       )
     } else {
       console.log('ℹ️  No files preloaded into memory')
@@ -380,7 +297,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
       const tooLarge = skipped.filter((f) => f.size > MAX_PRELOAD_BYTES).length
       const filtered = skipped.length - tooLarge
       console.log(
-        `ℹ️  ${String(skipped.length)} files will be served on-demand (${String(tooLarge)} too large, ${String(filtered)} filtered)`,
+        `ℹ️  ${skipped.length} files on-demand (${tooLarge} too large, ${filtered} filtered)`,
       )
     }
   } catch (error) {
@@ -405,45 +322,22 @@ async function startServer() {
   const { routes } = await buildStaticRoutes(CLIENT_DIR)
   const server = Bun.serve({
     port: PORT,
-    routes: {
-      ...routes,
-      '/*': (req: Request) => handler.fetch(req),
-    },
+    routes: { ...routes, '/*': (req: Request) => handler.fetch(req) },
     error(error) {
       console.error('Uncaught server error:', error)
       return new Response('Internal Server Error', { status: 500 })
     },
   })
-  console.log(
-    `\n🚀 Server running at http://localhost:${String(server.port)}\n`,
-  )
+  console.log(`\n🚀 Server running at http://localhost:${server.port}\n`)
 }
 
-import { drizzle } from 'drizzle-orm/postgres-js'
-import { migrate } from 'drizzle-orm/postgres-js/migrator'
-import postgres from 'postgres'
-
-async function runDatabaseMigrations() {
-  const postgresClient = postgres(process.env.DATABASE_URL!)
-  const db = drizzle({ client: postgresClient })
-  console.log('ℹ️ Running migrations...')
-  await migrate(db, { migrationsFolder: './.drizzle' })
-  console.log('✅ Migrations completed successfully.\n')
-}
-
-async function main() {
+export async function main() {
   SERVER_ENTRY = await resolveServerEntry()
   CLIENT_DIR = await resolveClientDir()
   console.log(`ℹ️  Resolved SERVER_ENTRY: ${SERVER_ENTRY}`)
   console.log(`ℹ️  Resolved CLIENT_DIR:  ${CLIENT_DIR}`)
-  await runDatabaseMigrations().catch((error: unknown) => {
-    console.error('Failed to run database migrations:', error)
-    process.exit(1)
-  })
   await startServer().catch((error: unknown) => {
     console.error('Failed to start server:', error)
     process.exit(1)
   })
 }
-
-main()

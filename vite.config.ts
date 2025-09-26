@@ -27,7 +27,9 @@ const config = defineConfig(async ({ mode }) => {
       tailwindcss(),
       tanstackStart(),
       react(),
-      bunServer(),
+      bunServer({
+        beforeStartHooks: ['server.migrations'],
+      }),
     ],
     define: {
       APP_VERSION: JSON.stringify(pkg.version),
