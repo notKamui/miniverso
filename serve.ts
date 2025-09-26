@@ -72,6 +72,18 @@ const EXCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_EXCLUDE ?? '')
 // Verbose logging flag
 const VERBOSE = process.env.STATIC_PRELOAD_VERBOSE === 'true'
 
+// Optional features
+const ENABLE_ETAG = (process.env.STATIC_PRELOAD_ETAG || 'true') === 'true'
+const ENABLE_GZIP = (process.env.STATIC_PRELOAD_GZIP || 'true') === 'true'
+const GZIP_MIN_BYTES = Number(process.env.STATIC_PRELOAD_GZIP_MIN_BYTES || 1024) // 1KB
+const GZIP_TYPES = (
+  process.env.STATIC_PRELOAD_GZIP_TYPES ||
+  'text/,application/javascript,application/json,application/xml,image/svg+xml'
+)
+  .split(',')
+  .map((v) => v.trim())
+  .filter(Boolean)
+
 /**
  * Convert a simple glob pattern to a regular expression
  * Supports * wildcard for matching any characters
@@ -97,7 +109,7 @@ interface AssetMetadata {
  * Result of static asset preloading process
  */
 interface PreloadResult {
-  routes: Record<string, () => Response>
+  routes: Record<string, (req: Request) => Response | Promise<Response>>
   loaded: Array<AssetMetadata>
   skipped: Array<AssetMetadata>
 }
@@ -121,12 +133,110 @@ function shouldInclude(relativePath: string): boolean {
   return true
 }
 
+function matchesCompressible(type: string) {
+  return GZIP_TYPES.some((t) =>
+    t.endsWith('/') ? type.startsWith(t) : type === t,
+  )
+}
+
+interface InMemoryAsset {
+  raw: Uint8Array
+  gz?: Uint8Array
+  etag?: string
+  type: string
+  immutable: boolean
+  size: number
+}
+
+function computeEtag(data: Uint8Array): string {
+  const hash = Bun.hash(data)
+  return `W/"${hash.toString(16)}-${data.byteLength}"`
+}
+
+function buildResponseFactory(
+  asset: InMemoryAsset,
+): (req: Request) => Response {
+  return (req: Request) => {
+    const headers: Record<string, string> = {
+      'Content-Type': asset.type,
+      'Cache-Control': asset.immutable
+        ? 'public, max-age=31536000, immutable'
+        : 'public, max-age=3600',
+    }
+
+    if (ENABLE_ETAG && asset.etag) {
+      const ifNone = req.headers.get('if-none-match')
+      if (ifNone && ifNone === asset.etag) {
+        return new Response(null, {
+          status: 304,
+          headers: { ETag: asset.etag },
+        })
+      }
+      headers.ETag = asset.etag
+    }
+
+    if (
+      ENABLE_GZIP &&
+      asset.gz &&
+      req.headers.get('accept-encoding')?.includes('gzip')
+    ) {
+      console.log(`Serving precompressed asset for ${req.url}`)
+
+      headers['Content-Encoding'] = 'gzip'
+      headers['Content-Length'] = String(asset.gz.byteLength)
+      const gzCopy = new Uint8Array(asset.gz)
+      return new Response(gzCopy, { status: 200, headers })
+    }
+
+    headers['Content-Length'] = String(asset.raw.byteLength)
+    const rawCopy = new Uint8Array(asset.raw)
+    return new Response(rawCopy, { status: 200, headers })
+  }
+}
+
+async function gzipMaybe(
+  data: Uint8Array<ArrayBuffer>,
+  type: string,
+): Promise<Uint8Array | undefined> {
+  if (!ENABLE_GZIP) return undefined
+  if (data.byteLength < GZIP_MIN_BYTES) return undefined
+  if (!matchesCompressible(type)) return undefined
+  try {
+    return Bun.gzipSync(data)
+  } catch {
+    return undefined
+  }
+}
+
+function makeOnDemandFactory(filepath: string, type: string) {
+  return (_req: Request) => {
+    const f = Bun.file(filepath)
+    return new Response(f, {
+      headers: {
+        'Content-Type': type,
+        'Cache-Control': 'public, max-age=3600',
+      },
+    })
+  }
+}
+
+function buildCompositeGlob(): Bun.Glob {
+  const raw = (process.env.STATIC_PRELOAD_INCLUDE || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (raw.length === 0) return new Bun.Glob('**/*')
+  if (raw.length === 1) return new Bun.Glob(raw[0])
+  return new Bun.Glob(`{${raw.join(',')}}`)
+}
+
 /**
  * Build static routes with intelligent preloading strategy
  * Small files are loaded into memory, large files are served on-demand
  */
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
-  const routes: Record<string, () => Response> = {}
+  const routes: Record<string, (req: Request) => Response | Promise<Response>> =
+    {}
   const loaded: Array<AssetMetadata> = []
   const skipped: Array<AssetMetadata> = []
 
@@ -148,7 +258,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   let totalPreloadedBytes = 0
 
   try {
-    const glob = new Bun.Glob('**/*')
+    const glob = buildCompositeGlob()
     for await (const relativePath of glob.scan({ cwd: clientDir })) {
       const filepath = `${clientDir}/${relativePath}`
       const route = `/${relativePath}`
@@ -170,31 +280,22 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
         const withinSizeLimit = file.size <= MAX_PRELOAD_BYTES
 
         if (matchesPattern && withinSizeLimit) {
-          // Preload small files into memory
-          const bytes = await file.bytes()
-
-          routes[route] = () =>
-            new Response(bytes, {
-              headers: {
-                'Content-Type': metadata.type,
-                'Cache-Control': 'public, max-age=31536000, immutable',
-              },
-            })
-
+          const bytes = new Uint8Array(await file.arrayBuffer())
+          const gz = await gzipMaybe(bytes, metadata.type)
+          const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined
+          const asset: InMemoryAsset = {
+            raw: bytes,
+            gz,
+            etag,
+            type: metadata.type,
+            immutable: true,
+            size: bytes.byteLength,
+          }
+          routes[route] = buildResponseFactory(asset)
           loaded.push({ ...metadata, size: bytes.byteLength })
           totalPreloadedBytes += bytes.byteLength
         } else {
-          // Serve large or filtered files on-demand
-          routes[route] = () => {
-            const fileOnDemand = Bun.file(filepath)
-            return new Response(fileOnDemand, {
-              headers: {
-                'Content-Type': metadata.type,
-                'Cache-Control': 'public, max-age=3600',
-              },
-            })
-          }
-
+          routes[route] = makeOnDemandFactory(filepath, metadata.type)
           skipped.push(metadata)
         }
       } catch (error: unknown) {
@@ -315,7 +416,7 @@ async function startServer() {
     port: PORT,
     routes: {
       ...routes,
-      '/*': handler.fetch.bind(handler),
+      '/*': (req: Request) => handler.fetch(req),
     },
     error(error) {
       console.error('Uncaught server error:', error)
