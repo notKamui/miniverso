@@ -8,10 +8,13 @@ import { useGlobalContext } from '@/lib/hooks/use-global-context'
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()
-  const { socialOAuth } = useGlobalContext()
+  const { socialOAuth, hcaptchaInfo } = useGlobalContext()
   const socialOAuthProviders = Object.entries(socialOAuth ?? {})
     .filter(([, enabled]) => enabled)
     .map(([provider]) => provider)
+  const captcha = hcaptchaInfo
+    ? ({ provider: 'hcaptcha', siteKey: hcaptchaInfo.siteKey } as const)
+    : undefined
 
   return (
     <AuthQueryProvider>
@@ -23,10 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
         social={{
           providers: socialOAuthProviders,
         }}
-        captcha={{
-          provider: 'hcaptcha',
-          siteKey: '10000000-ffff-ffff-ffff-000000000001',
-        }}
+        captcha={captcha}
       >
         {children}
         <Toaster closeButton duration={5000} richColors visibleToasts={5} />
