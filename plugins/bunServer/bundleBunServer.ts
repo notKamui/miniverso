@@ -4,23 +4,15 @@ import { build } from 'esbuild'
 import type { Plugin } from 'vite'
 
 /**
- * bundleServer plugin
+ * bundleServer plugin (relocated to plugins/server/)
  *
- * After the client build finishes, this plugin bundles the runtime entrypoint
- * (`serve.ts` by default – your production Bun server / entry) into a single
- * ESM file inside `dist/entrypoint.js` so deployments can just run:
- *   bun dist/entrypoint.js
- *
- * Rationale:
- * - Keeps server entry deterministic & tree-shaken
- * - Avoids extra esbuild direct dependency (Bun implements API internally)
- * - Mirrors output path expected by production `serve.ts` (SERVER_ENTRY)
+ * Bundles the production runtime entrypoint (Bun server orchestrator) into
+ * dist/entrypoint.js. The default entry path has changed due to relocation.
  */
 export function bundleBunServer(
   options: { entry?: string; outFile?: string; minify?: boolean } = {},
 ): Plugin {
-  // We bundle the production runtime orchestrator (serve.ts) – not the SSR handler.
-  const entry = options.entry ?? 'serve.ts'
+  const entry = options.entry ?? 'plugins/bunServer/serve.ts'
   const outFile = options.outFile ?? 'dist/entrypoint.js'
   const minify = options.minify ?? false
   let applied = false
@@ -56,18 +48,16 @@ export function bundleBunServer(
     const raw = readFileSync(rootPkgPath, 'utf8')
     try {
       const pkg = JSON.parse(raw)
-      // Replace scripts with a single start script pointing at entrypoint.js
       pkg.scripts = { start: 'bun entrypoint.js' }
       await fs.writeFile(
         join(distRoot, 'package.json'),
-        JSON.stringify(pkg, null, 2) + '\n',
+        `${JSON.stringify(pkg, null, 2)}\n`,
         'utf8',
       )
       console.log(
         '[bundle-server] Wrote pruned package.json (start only) to dist/',
       )
     } catch {
-      // Fallback: just copy raw if parsing somehow fails
       await fs.writeFile(join(distRoot, 'package.json'), raw, 'utf8')
       console.warn(
         '[bundle-server] Failed to prune scripts; copied full package.json',
@@ -96,14 +86,14 @@ export function bundleBunServer(
         await build({
           entryPoints: [entry],
           outfile: outFile,
-          platform: 'node', // Bun is Node-compatible for this code path
+          platform: 'node',
           format: 'esm',
           target: 'esnext',
           bundle: true,
           sourcemap: false,
           minify,
           legalComments: 'none',
-          banner: { js: '// Bundled runtime entrypoint (serve.ts)' },
+          banner: { js: '// Bundled runtime entrypoint (serve.ts relocated)' },
           external: [
             'postgres',
             'drizzle-orm',
@@ -120,7 +110,6 @@ export function bundleBunServer(
           copyLockfile(),
         ])
 
-        // Defensive: remove any stray .map files (from other plugins) if present
         try {
           if (existsSync(distRoot)) {
             const entries = (await fs.readdir(distRoot, {
