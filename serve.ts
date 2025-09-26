@@ -270,6 +270,12 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
       `   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`,
     )
   }
+  console.log('   ETag generation:', ENABLE_ETAG ? 'enabled' : 'disabled')
+  console.log('   Gzip precompression:', ENABLE_GZIP ? 'enabled' : 'disabled')
+  if (ENABLE_GZIP) {
+    console.log(`      Gzip min size: ${(GZIP_MIN_BYTES / 1024).toFixed(2)} kB`)
+    console.log(`      Gzip types: ${GZIP_TYPES.join(', ')}`)
+  }
 
   let totalPreloadedBytes = 0
   const gzSizes: Record<string, number> = {}
