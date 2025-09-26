@@ -126,9 +126,6 @@ function shouldInclude(relativePath: string): boolean {
  * Small files are loaded into memory, large files are served on-demand
  */
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
-  const { readdir } = await import('node:fs/promises')
-  const { join } = await import('node:path')
-
   const routes: Record<string, () => Response> = {}
   const loaded: Array<AssetMetadata> = []
   const skipped: Array<AssetMetadata> = []
@@ -151,11 +148,10 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   let totalPreloadedBytes = 0
 
   try {
-    const files = await readdir(clientDir, { recursive: true })
-
-    for (const relativePath of files) {
-      const filepath = join(clientDir, relativePath)
-      const route = `/${relativePath.replace(/\\/g, '/')}` // Handle Windows paths
+    const glob = new Bun.Glob('**/*')
+    for await (const relativePath of glob.scan({ cwd: clientDir })) {
+      const filepath = `${clientDir}/${relativePath}`
+      const route = `/${relativePath}`
 
       try {
         const file = Bun.file(filepath)
