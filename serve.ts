@@ -59,12 +59,34 @@
  *   bun run server.ts
  */
 
-import { env } from '@/lib/env/server'
-
 // Configuration
-const PORT = env.PORT
-const CLIENT_DIR = './dist/client'
-const SERVER_ENTRY = './dist/server/server.js'
+const PORT = Number(process.env.PORT || '3000')
+
+// Support running either from project root (with dist/) or from inside the dist folder itself.
+// If we detect a local ./server/server.js relative path (typical inside dist), use that.
+// Otherwise fall back to ./dist/server/server.js (running from project root).
+async function resolveServerEntry(): Promise<string> {
+  const primary = './server/server.js'
+  try {
+    const f = Bun.file(primary)
+    if (await f.exists()) return primary
+  } catch {}
+  return './dist/server/server.js'
+}
+
+async function resolveClientDir(): Promise<string> {
+  const candidate = './client'
+  try {
+    const g = new Bun.Glob('*')
+    for await (const _ of g.scan({ cwd: candidate, onlyFiles: false })) {
+      return candidate
+    }
+  } catch {}
+  return './dist/client'
+}
+
+let SERVER_ENTRY = './dist/server/server.js'
+let CLIENT_DIR = './dist/client'
 
 // Preloading configuration from environment variables
 const MAX_PRELOAD_BYTES = Number(
@@ -450,24 +472,36 @@ async function startServer() {
   )
 }
 
-async function runDatabaseMigrations() {
-  const { default: postgres } = await import('postgres')
-  const { drizzle } = await import('drizzle-orm/postgres-js')
-  const { migrate } = await import('drizzle-orm/postgres-js/migrator')
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import postgres from 'postgres'
 
-  const postgresClient = postgres(env.DATABASE_URL)
+async function runDatabaseMigrations() {
+  // const { default: postgres } = await import('postgres')
+  // const { drizzle } = await import('drizzle-orm/postgres-js')
+  // const { migrate } = await import('drizzle-orm/postgres-js/migrator')
+
+  const postgresClient = postgres(process.env.DATABASE_URL!)
   const db = drizzle({ client: postgresClient })
   console.log('ℹ️ Running migrations...')
   await migrate(db, { migrationsFolder: './.drizzle' })
   console.log('✅ Migrations completed successfully.\n')
 }
 
-await runDatabaseMigrations().catch((error: unknown) => {
-  console.error('Failed to run database migrations:', error)
-  process.exit(1)
-})
+async function main() {
+  // Resolve dynamic paths (supports execution from project root or dist folder)
+  SERVER_ENTRY = await resolveServerEntry()
+  CLIENT_DIR = await resolveClientDir()
+  console.log(`ℹ️  Resolved SERVER_ENTRY: ${SERVER_ENTRY}`)
+  console.log(`ℹ️  Resolved CLIENT_DIR:  ${CLIENT_DIR}`)
+  await runDatabaseMigrations().catch((error: unknown) => {
+    console.error('Failed to run database migrations:', error)
+    process.exit(1)
+  })
+  await startServer().catch((error: unknown) => {
+    console.error('Failed to start server:', error)
+    process.exit(1)
+  })
+}
 
-await startServer().catch((error: unknown) => {
-  console.error('Failed to start server:', error)
-  process.exit(1)
-})
+main()
