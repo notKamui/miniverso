@@ -39,6 +39,22 @@
  *   - Default: false
  *   - Set to "true" to enable verbose output
  *
+ * STATIC_PRELOAD_ETAG (boolean)
+ *   - Enable ETag generation and conditional 304 responses for preloaded assets
+ *   - Default: true
+ *
+ * STATIC_PRELOAD_GZIP (boolean)
+ *   - Enable gzip precompression for eligible preloaded assets
+ *   - Default: true
+ *
+ * STATIC_PRELOAD_GZIP_MIN_BYTES (number)
+ *   - Minimum size (in bytes) before a file is considered for gzip
+ *   - Default: 1024 (1KB)
+ *
+ * STATIC_PRELOAD_GZIP_TYPES (string)
+ *   - Comma-separated list of MIME types or prefixes (ending with /) that can be gzip-precompressed
+ *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
+ *
  * Usage:
  *   bun run server.ts
  */
