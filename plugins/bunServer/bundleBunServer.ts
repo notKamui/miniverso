@@ -1,5 +1,6 @@
 import { existsSync, promises as fs, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
 import type { Plugin } from 'vite'
 
@@ -12,7 +13,9 @@ import type { Plugin } from 'vite'
 export function bundleBunServer(
   options: { entry?: string; outFile?: string; minify?: boolean } = {},
 ): Plugin {
-  const entry = options.entry ?? 'plugins/bunServer/serve.ts'
+  const entry = options.entry
+    ? options.entry
+    : join(fileURLToPath(new URL('.', import.meta.url)), 'serve.ts')
   const outFile = options.outFile ?? 'dist/entrypoint.js'
   const minify = options.minify ?? false
   let applied = false
