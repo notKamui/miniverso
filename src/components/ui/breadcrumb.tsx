@@ -56,7 +56,6 @@ const BreadcrumbPage = ({
   <span
     tabIndex={-1}
     ref={ref}
-    role="link"
     aria-disabled="true"
     aria-current="page"
     className={cn('font-normal text-foreground', className)}

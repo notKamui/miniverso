@@ -6,8 +6,9 @@ services:
       - "80:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgres://miniverso:miniverso@db:5432/miniverso
       - BASE_URL=
+      - PORT=
+      - DATABASE_URL=postgres://miniverso:miniverso@db:5432/miniverso
       - BETTER_AUTH_SECRET=
       - GITHUB_OAUTH_CLIENT_ID=
       - GITHUB_OAUTH_CLIENT_SECRET=

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -13,9 +13,7 @@
       "!**/bun.lock",
       "!**/src/routeTree.gen.ts",
       "!**/.drizzle",
-      "!**/.output",
-      "!**/.tanstack",
-      "!**/.nitro"
+      "!**/dist"
     ]
   },
   "formatter": {
@@ -36,7 +34,8 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "off",
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noUnknownAtRules": "off"
       },
       "style": {
         "noNonNullAssertion": "off",

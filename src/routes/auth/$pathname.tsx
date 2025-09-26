@@ -1,4 +1,4 @@
-import { AuthCard, authViewPaths } from '@daveyplate/better-auth-ui'
+import { AuthView, authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 
@@ -31,7 +31,7 @@ function RouteComponent() {
 
   return (
     <div className="mb-0 flex h-full flex-col items-center justify-center">
-      <AuthCard pathname={pathname} />
+      <AuthView pathname={pathname} />
     </div>
   )
 }

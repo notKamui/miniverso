@@ -24,7 +24,7 @@ export const $getSidebarState = createServerFn({ method: 'GET' }).handler(
 )
 
 export const $setSidebarState = createServerFn({ method: 'POST' })
-  .validator(validate(SidebarStateSchema))
+  .inputValidator(validate(SidebarStateSchema))
   .handler(async ({ data }) => {
     setCookie(key, data, {
       path: '/',

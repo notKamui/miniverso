@@ -1,15 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
+import { DevTools } from '@/components/devtools'
 import { MainLayout } from '@/layouts/main'
 import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
@@ -40,7 +39,10 @@ export const Route = createRootRouteWithContext<{
         title: 'Miniverso',
       },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/favicon.ico' },
+    ],
   }),
   beforeLoad: async ({ context: { queryClient } }) => {
     const [socialOAuth, requestInfo, user] = await Promise.all([
@@ -94,8 +96,7 @@ function RootDocument({
       </head>
       <body className="min-h-svh antialiased">
         <Providers>{children}</Providers>
-        <ReactQueryDevtools buttonPosition="bottom-right" />
-        <TanStackRouterDevtools position="bottom-right" />
+        <DevTools />
         <Scripts />
       </body>
     </html>

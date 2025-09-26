@@ -1,5 +1,3 @@
-import '@/global-middleware'
-
 import { createServerFn } from '@tanstack/react-start'
 import {
   deleteCookie,
@@ -21,7 +19,7 @@ export const $getTheme = createServerFn({ method: 'GET' }).handler(() => {
 })
 
 export const $setTheme = createServerFn({ method: 'POST' })
-  .validator(validate(ThemeSchema))
+  .inputValidator(validate(ThemeSchema))
   .handler(async ({ data }) => {
     if (data === 'system') {
       deleteCookie(key)

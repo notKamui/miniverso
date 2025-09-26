@@ -1,4 +1,4 @@
-import { serverOnly } from '@tanstack/react-start'
+import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { reactStartCookies } from 'better-auth/react-start'
@@ -9,11 +9,12 @@ import {
   sendVerificationEmail,
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
-import * as schema from '@/server/db/schema'
+import * as authSchema from '@/server/db/auth.schema'
 
-export const auth = serverOnly(() =>
+export const auth = createServerOnlyFn(() =>
   betterAuth({
-    database: drizzleAdapter(db, { provider: 'pg', schema }),
+    telemetry: { enabled: false },
+    database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     baseURL: env.BASE_URL,
     emailAndPassword: {
       enabled: true,

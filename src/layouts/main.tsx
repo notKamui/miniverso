@@ -41,7 +41,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         <header className="flex flex-row items-center justify-between border-b bg-background pr-1.5 pl-4">
-          <div className="flex h-16 shrink-0 items-center gap-2 ">
+          <div className="flex h-16 shrink-0 items-center gap-2">
             <SidebarTrigger className="-ml-1 z-50" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>

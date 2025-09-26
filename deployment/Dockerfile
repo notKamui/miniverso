@@ -1,10 +1,12 @@
-FROM node:22-alpine
+FROM oven/bun:1-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
 COPY ./public ./public
-COPY ./.output ./.output
+COPY ./dist ./dist
 COPY ./.drizzle ./.drizzle
+COPY ./node_modules ./node_modules
+COPY serve.ts ./
 
 EXPOSE 3000
-CMD ["node", ".output/server/index.mjs"]
+CMD ["bun", "serve.ts"]

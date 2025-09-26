@@ -1,4 +1,4 @@
-import { EmailTemplate } from '@daveyplate/better-auth-ui'
+import { EmailTemplate } from '@daveyplate/better-auth-ui/server'
 import { Resend } from 'resend'
 import { env } from '@/lib/env/server'
 

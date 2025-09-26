@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node-terminal",
+      "name": "debug server-side",
+      "request": "launch",
+      "command": "bun dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "debug client-side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000"
+    }
+  ]
+}

@@ -1,11 +1,5 @@
-node_modules
 .DS_Store
+node_modules
 dist
-dist-ssr
 *.local
 .env
-.output
-.vinxi
-count.txt
-.tanstack
-.nitro
