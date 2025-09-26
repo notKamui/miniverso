@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: ./.output/
+          path: ./dist/
           include-hidden-files: true
           if-no-files-found: error
 
@@ -44,13 +44,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: .output/
+          path: dist/
 
       - name: Extract version from package.json
         id: version
         run: |
           APP_VERSION=$(awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json)
           echo "APP_VERSION=${APP_VERSION}" >> $GITHUB_ENV
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install production dependencies
+        run: bun install --frozen-lockfile --production
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3

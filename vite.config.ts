@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
@@ -20,12 +21,10 @@ const config = defineConfig(async ({ mode }) => {
       exclude: ['.vite'],
     },
     plugins: [
+      devtools(),
       viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
       tailwindcss(),
-      tanstackStart({
-        customViteReactPlugin: true,
-        target: 'node-server',
-      }),
+      tanstackStart(),
       react(),
     ],
     define: {
