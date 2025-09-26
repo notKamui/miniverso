@@ -45,9 +45,10 @@
 
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import { env } from '@/lib/env/server'
 
 // Configuration
-const PORT = Number(process.env.PORT ?? 3000)
+const PORT = env.PORT
 const CLIENT_DIR = './dist/client'
 const SERVER_ENTRY = './dist/server/server.js'
 
