@@ -43,8 +43,6 @@
  *   bun run server.ts
  */
 
-import { readdir } from 'node:fs/promises'
-import { join } from 'node:path'
 import { env } from '@/lib/env/server'
 
 // Configuration
@@ -128,6 +126,9 @@ function shouldInclude(relativePath: string): boolean {
  * Small files are loaded into memory, large files are served on-demand
  */
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
+  const { readdir } = await import('node:fs/promises')
+  const { join } = await import('node:path')
+
   const routes: Record<string, () => Response> = {}
   const loaded: Array<AssetMetadata> = []
   const skipped: Array<AssetMetadata> = []
@@ -332,9 +333,13 @@ async function startServer() {
 }
 
 async function runDatabaseMigrations() {
-  const { db } = await import('./src/server/db')
-  console.log('ℹ️ Running migrations...')
+  const { default: postgres } = await import('postgres')
+  const { drizzle } = await import('drizzle-orm/postgres-js')
   const { migrate } = await import('drizzle-orm/postgres-js/migrator')
+
+  const postgresClient = postgres(env.DATABASE_URL)
+  const db = drizzle({ client: postgresClient })
+  console.log('ℹ️ Running migrations...')
   await migrate(db, { migrationsFolder: './.drizzle' })
   console.log('✅ Migrations completed successfully.\n')
 }
