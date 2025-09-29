@@ -6,10 +6,6 @@ import { NotFound } from '@/components/not-found'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
 
-type OverrideQueryClient = Parameters<
-  typeof setupRouterSsrQueryIntegration
->[0]['queryClient']
-
 export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -17,7 +13,7 @@ export function getRouter() {
         staleTime: 1000 * 60 * 2, // 2 minutes
       },
     },
-  }) as unknown as QueryClient & OverrideQueryClient
+  })
 
   const router = createRouter({
     routeTree,
