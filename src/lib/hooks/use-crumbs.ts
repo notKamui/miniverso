@@ -1,9 +1,15 @@
 import { isMatch, useMatches } from '@tanstack/react-router'
-import type { LinkOptions } from '@/lib/utils/types'
 
 export type Crumb = {
   title: string
-  link?: LinkOptions
+  link?: {
+    to: string
+    params?: any
+    search?: any
+    hash?: any
+    state?: any
+    from?: string
+  }
 }
 
 export function crumbs(...crumbs: (Crumb | null | undefined | boolean)[]) {
