@@ -75,7 +75,7 @@ function CrumbLink({ crumb, last }: { crumb: Crumb; last: boolean }) {
       <BreadcrumbItem>
         {crumb.to && !last ? (
           <BreadcrumbLink asChild>
-            <Link to={crumb.to} from="/">
+            <Link to={crumb.to} params={crumb.params} from="/">
               {crumb.title}
             </Link>
           </BreadcrumbLink>

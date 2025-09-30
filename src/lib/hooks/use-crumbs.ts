@@ -4,10 +4,11 @@ import type { FileRoutesByTo } from '@/routeTree.gen'
 export type Crumb = {
   title: string
   to?: keyof FileRoutesByTo
+  params?: Record<string, any>
 }
 
-export function crumbs(...crumbs: Crumb[]) {
-  return crumbs
+export function crumbs(...crumbs: (Crumb | null | undefined | boolean)[]) {
+  return crumbs.filter(Boolean)
 }
 
 export function useCrumbs() {

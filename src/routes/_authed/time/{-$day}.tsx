@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { crumbs } from '@/lib/hooks/use-crumbs'
@@ -9,28 +9,40 @@ import {
   $getTimeEntriesByDay,
 } from '@/server/functions/time-entry'
 
-export const Route = createFileRoute('/_authed/time/$day')({
+export const Route = createFileRoute('/_authed/time/{-$day}')({
   loader: async ({ params: { day } }) => {
     const time = Time.from(day)
-    if (time.isToday()) throw redirect({ to: '/time' })
 
-    const [entries, notEnded] = Collection.partition(
-      await $getTimeEntriesByDay({
-        data: { date: time.getDate() },
-      }),
-      (entry) => entry.endedAt !== null,
-    )
+    let entries = await $getTimeEntriesByDay({
+      data: { date: time.getDate() },
+    })
+
+    if (!time.isToday()) {
+      const [ended, notEnded] = Collection.partition(
+        entries,
+        (e) => e.endedAt !== null,
+      )
+      entries = ended
+      await $deleteTimeEntries({ data: { ids: notEnded.map((e) => e.id) } })
+    }
 
     entries.sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
-    await $deleteTimeEntries({ data: { ids: notEnded.map((e) => e.id) } })
+
+    const breadcrumbs = time.isToday()
+      ? crumbs({ title: 'Time recorder' })
+      : crumbs(
+          {
+            title: 'Time recorder',
+            to: '/time/{-$day}',
+            params: { day: undefined },
+          },
+          { title: time.formatDayNumber() },
+        )
 
     return {
       entries,
       date: time.getDate(),
-      crumbs: crumbs(
-        { title: 'Time recorder', to: '/time' },
-        { title: time.formatDayNumber() },
-      ),
+      crumbs: breadcrumbs,
     }
   },
   component: RouteComponent,
