@@ -20,7 +20,10 @@ export const Route = createFileRoute('/auth/$pathname')({
     }
 
     return {
-      crumbs: crumbs({ title: 'Auth', to: '/auth/$pathname' }),
+      crumbs: crumbs({
+        title: 'Auth',
+        link: { to: '/auth/$pathname', params: { pathname } },
+      }),
     }
   },
   component: RouteComponent,

@@ -1,5 +1,6 @@
 import type { FieldApi, ReactFormApi } from '@tanstack/react-form'
 import type { HTMLAttributes, RefObject } from 'react'
+import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export type Compute<T> = { [K in keyof T]: T[K] } & {}
 
@@ -73,3 +74,8 @@ export type ReactFormField = FieldApi<
   any,
   any
 >
+
+export type LinkOptions<To extends keyof FileRoutesByTo = any> = {
+  to: To
+  params?: Record<string, any>
+}

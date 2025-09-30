@@ -141,7 +141,10 @@ export const Route = createFileRoute('/_authed/time/stats')({
       date,
       type,
       crumbs: crumbs(
-        { title: 'Time recorder', to: '/time' },
+        {
+          title: 'Time recorder',
+          link: { to: '/time/{-$day}', params: { day: undefined } },
+        },
         { title: 'Statistics' },
       ),
     }

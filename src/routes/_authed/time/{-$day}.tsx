@@ -33,8 +33,7 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
       : crumbs(
           {
             title: 'Time recorder',
-            to: '/time/{-$day}',
-            params: { day: undefined },
+            link: { to: '/time/{-$day}', params: { day: undefined } },
           },
           { title: time.formatDayNumber() },
         )
