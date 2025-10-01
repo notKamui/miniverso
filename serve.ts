@@ -462,12 +462,18 @@ async function runDatabaseMigrations() {
   console.log('✅ Migrations completed successfully.\n')
 }
 
-await runDatabaseMigrations().catch((error: unknown) => {
-  console.error('Failed to run database migrations:', error)
-  process.exit(1)
-})
+async function main() {
+  const [migrationError] = await tryAsync(runDatabaseMigrations())
+  if (migrationError) {
+    console.error('❌ Failed to run database migrations:', migrationError)
+    process.exit(1)
+  }
 
-await startServer().catch((error: unknown) => {
-  console.error('Failed to start server:', error)
-  process.exit(1)
-})
+  const [serverError] = await tryAsync(startServer())
+  if (serverError) {
+    console.error('❌ Failed to start server:', serverError)
+    process.exit(1)
+  }
+}
+
+await main()
