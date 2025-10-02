@@ -202,8 +202,6 @@ function buildResponseFactory(
       asset.gz &&
       req.headers.get('accept-encoding')?.includes('gzip')
     ) {
-      console.log(`Serving precompressed asset for ${req.url}`)
-
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
       const gzCopy = new Uint8Array(asset.gz)
