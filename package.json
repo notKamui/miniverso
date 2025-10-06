@@ -76,11 +76,11 @@
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.5",
     "jsdom": "^27.0.0",
+    "vite": "npm:rolldown-vite@latest",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
-    "vite": "npm:rolldown-vite@latest",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   },
