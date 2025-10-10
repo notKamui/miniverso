@@ -66,30 +66,26 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
     const [startDate, endDate] = Time.from(date).getRange(type)
     const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
+    type GroupBy = typeof groupBy
 
     const unitQuery = {
-      day: sql<
-        typeof groupBy
-      >`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
-      month: sql<
-        typeof groupBy
-      >`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
+      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
     }[groupBy]
 
     const dayOrMonthQuery = {
       week: sql`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
       month: sql`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
       year: sql`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
-    }[type].mapWith(Number)
+    }[type]
+
+    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`
 
     const result = await db
       .select({
         unit: unitQuery,
-        total:
-          sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`.mapWith(
-            Number,
-          ),
-        dayOrMonth: dayOrMonthQuery,
+        dayOrMonth: dayOrMonthQuery.mapWith(Number),
+        total: totalQuery.mapWith(Number),
       })
       .from(timeEntriesTable)
       .where(
