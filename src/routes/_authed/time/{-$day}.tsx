@@ -40,7 +40,7 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 
     return {
       entries,
-      date: time.getDate(),
+      time,
       crumbs: breadcrumbs,
     }
   },
@@ -48,8 +48,7 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 })
 
 function RouteComponent() {
-  const { entries, date } = Route.useLoaderData()
-  const time = Time.from(date)
+  const { entries, time } = Route.useLoaderData()
 
   return (
     <div className="space-y-8">

@@ -138,7 +138,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
     return {
       stats,
-      date,
+      time,
       type,
       crumbs: crumbs(
         {
@@ -155,8 +155,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   //const { theme } = useTheme()
-  const { stats, date, type } = Route.useLoaderData()
-  const time = Time.from(date)
+  const { stats, time, type } = Route.useLoaderData()
 
   const chart = CHARTS[type](stats, time)
 

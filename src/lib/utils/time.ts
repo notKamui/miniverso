@@ -1,3 +1,5 @@
+import { createSerializationAdapter } from '@tanstack/react-router'
+
 type ShiftType =
   | 'years'
   | 'months'
@@ -8,8 +10,8 @@ type ShiftType =
   | 'milliseconds'
 
 type RangeType = 'day' | 'week' | 'month' | 'year'
-
 export interface Time {
+  _tag: typeof Time.symbol
   shift(type: ShiftType, count: number): Time
   compare(other: Time, type?: ShiftType): number
   toISOString(): string
@@ -26,6 +28,8 @@ export interface Time {
 }
 
 export namespace Time {
+  export const symbol = Symbol('Time')
+
   export function formatTime(ms: number) {
     const hours = Math.floor(ms / (1000 * 60 * 60))
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
@@ -220,6 +224,7 @@ export namespace Time {
     }
 
     return {
+      _tag: Time.symbol,
       shift,
       compare,
       toISOString,
@@ -235,4 +240,12 @@ export namespace Time {
       setTime,
     }
   }
+
+  export const adapter = createSerializationAdapter({
+    key: 'Time',
+    test: (v): v is Time =>
+      typeof v === 'object' && (v as any)._tag === Time.symbol,
+    toSerializable: (v) => v.getDate(),
+    fromSerializable: (v) => from(v),
+  })
 }
