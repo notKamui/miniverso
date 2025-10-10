@@ -11,7 +11,6 @@ type ShiftType =
 
 type RangeType = 'day' | 'week' | 'month' | 'year'
 export interface Time {
-  _tag: typeof Time.symbol
   shift(type: ShiftType, count: number): Time
   compare(other: Time, type?: ShiftType): number
   toISOString(): string
@@ -27,9 +26,9 @@ export interface Time {
   setTime(time: string): Time
 }
 
-export namespace Time {
-  export const symbol = Symbol('Time')
+const symbol = Symbol('Time')
 
+export namespace Time {
   export function formatTime(ms: number) {
     const hours = Math.floor(ms / (1000 * 60 * 60))
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
@@ -224,7 +223,8 @@ export namespace Time {
     }
 
     return {
-      _tag: Time.symbol,
+      // @ts-expect-error hidden property for serialization adapter
+      _tag: symbol,
       shift,
       compare,
       toISOString,
@@ -243,8 +243,7 @@ export namespace Time {
 
   export const adapter = createSerializationAdapter({
     key: 'Time',
-    test: (v): v is Time =>
-      typeof v === 'object' && (v as any)._tag === Time.symbol,
+    test: (v): v is Time => typeof v === 'object' && (v as any)._tag === symbol,
     toSerializable: (v) => v.getDate(),
     fromSerializable: (v) => from(v),
   })
