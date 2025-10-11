@@ -36,65 +36,65 @@ export class Time {
   }
 
   shift(type: ShiftType, count: number): Time {
-    const d = new Date(this.date)
+    const date = new Date(this.date)
     switch (type) {
       case 'years':
-        d.setFullYear(d.getFullYear() + count)
+        date.setFullYear(date.getFullYear() + count)
         break
       case 'months':
-        d.setMonth(d.getMonth() + count)
+        date.setMonth(date.getMonth() + count)
         break
       case 'days':
-        d.setDate(d.getDate() + count)
+        date.setDate(date.getDate() + count)
         break
       case 'hours':
-        d.setHours(d.getHours() + count)
+        date.setHours(date.getHours() + count)
         break
       case 'minutes':
-        d.setMinutes(d.getMinutes() + count)
+        date.setMinutes(date.getMinutes() + count)
         break
       case 'seconds':
-        d.setSeconds(d.getSeconds() + count)
+        date.setSeconds(date.getSeconds() + count)
         break
       case 'milliseconds':
-        d.setMilliseconds(d.getMilliseconds() + count)
+        date.setMilliseconds(date.getMilliseconds() + count)
         break
       default:
         throw new Error('Unknown shift type')
     }
-    return new Time(d)
+    return new Time(date)
   }
 
   compare(other: Time, type: ShiftType = 'milliseconds'): number {
-    const a = new Date(this.date)
-    const b = new Date(other.date)
+    const date = new Date(this.date)
+    const otherDate = new Date(other.date)
 
     if (type === 'years') {
-      a.setMonth(0)
-      b.setMonth(0)
+      date.setMonth(0)
+      otherDate.setMonth(0)
     }
     if (type === 'months') {
-      a.setDate(0)
-      b.setDate(0)
+      date.setDate(0)
+      otherDate.setDate(0)
     }
     if (type === 'days') {
-      a.setHours(0)
-      b.setHours(0)
+      date.setHours(0)
+      otherDate.setHours(0)
     }
     if (type === 'hours') {
-      a.setMinutes(0)
-      b.setMinutes(0)
+      date.setMinutes(0)
+      otherDate.setMinutes(0)
     }
     if (type === 'minutes') {
-      a.setSeconds(0)
-      b.setSeconds(0)
+      date.setSeconds(0)
+      otherDate.setSeconds(0)
     }
     if (type === 'seconds') {
-      a.setMilliseconds(0)
-      b.setMilliseconds(0)
+      date.setMilliseconds(0)
+      otherDate.setMilliseconds(0)
     }
 
-    return a.getTime() - b.getTime()
+    return date.getTime() - otherDate.getTime()
   }
 
   toISOString(): string {
@@ -188,20 +188,20 @@ export class Time {
   }
 
   setDay(time: Date | Time): Time {
-    const d = new Date(this.date)
+    const date = new Date(this.date)
     const target = time instanceof Date ? time : time.getDate()
-    d.setFullYear(target.getFullYear())
-    d.setMonth(target.getMonth())
-    d.setDate(target.getDate())
-    return new Time(d)
+    date.setFullYear(target.getFullYear())
+    date.setMonth(target.getMonth())
+    date.setDate(target.getDate())
+    return new Time(date)
   }
 
   setTime(time: string): Time {
-    const d = new Date(this.date)
+    const date = new Date(this.date)
     const [hours, minutes] = time.split(':').map(Number)
-    d.setHours(hours)
-    d.setMinutes(minutes)
-    return new Time(d)
+    date.setHours(hours)
+    date.setMinutes(minutes)
+    return new Time(date)
   }
 
   static adapter = createSerializationAdapter({

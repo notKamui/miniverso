@@ -76,14 +76,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const isToday = time.isToday()
 
   function onDateChange(time: Time) {
-    if (time.isToday())
-      return router.navigate({
-        to: '/time/{-$day}',
-        params: { day: undefined },
-      })
     router.navigate({
       to: '/time/{-$day}',
-      params: { day: time.toISOString() },
+      params: { day: time.isToday() ? undefined : time.formatDayNumber() },
     })
   }
 
@@ -165,7 +160,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
             <Link
               to="/time/{-$day}"
               from="/"
-              params={{ day: dayBefore.toISOString() }}
+              params={{ day: dayBefore.formatDayNumber() }}
             >
               <ChevronLeftIcon />
             </Link>
@@ -186,7 +181,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
               <Link
                 to="/time/{-$day}"
                 from="/"
-                params={{ day: dayAfter.toISOString() }}
+                params={{ day: dayAfter.formatDayNumber() }}
               >
                 <ChevronRightIcon />
               </Link>
