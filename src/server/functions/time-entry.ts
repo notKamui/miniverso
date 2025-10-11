@@ -16,7 +16,7 @@ import { badRequest } from '@/lib/utils/response'
 import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOrNull } from '@/server/db'
+import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import { timeEntriesTable } from '@/server/db/time.schema'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
@@ -104,20 +104,20 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
   .inputValidator(validate(z.object({ startedAt: z.date() })))
-  .handler(async ({ context: { user }, data: { startedAt } }) => {
-    const timeEntry = await db
+  .handler(({ context: { user }, data: { startedAt } }) =>
+    db
       .insert(timeEntriesTable)
       .values({
         userId: user.id,
         startedAt,
       })
       .returning()
-      .then(takeUniqueOrNull)
-
-    if (!timeEntry) throw notFound()
-
-    return timeEntry
-  })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      ),
+  )
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
