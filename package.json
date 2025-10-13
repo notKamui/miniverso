@@ -7,7 +7,6 @@
     "dev": "cross-env NODE_ENV=development bun migrate && cross-env NODE_ENV=development vite dev --port 3000",
     "start": "bun run --env-file=.env serve.ts",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build",
-    "test": "vitest run",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "type-check": "bun tsc --noEmit",
@@ -81,8 +80,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
     "vite": "7.1.16",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@latest"
