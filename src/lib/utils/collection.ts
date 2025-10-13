@@ -23,6 +23,21 @@ export namespace Collection {
     return result
   }
 
+  export function groupBy<T, K extends PropertyKey>(
+    array: T[],
+    keySelector: (value: T) => K,
+  ): Record<K, T[]> {
+    const result = {} as Record<K, T[]>
+    for (const value of array) {
+      const key = keySelector(value)
+      if (!result[key]) {
+        result[key] = []
+      }
+      result[key].push(value)
+    }
+    return result
+  }
+
   export function range(first: number, lastExcluded: number): number[] {
     if (lastExcluded < first) {
       throw new Error('lastExcluded must be greater than first')
