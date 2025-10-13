@@ -1,13 +1,14 @@
+import { setSystemTime } from 'bun:test'
+
 export function installFakeNow(seedMs: number) {
-  const original = Date.now
-  let current = seedMs
-  ;(Date.now as any) = () => current
-  const advance = (ms: number) => {
-    current += ms
-    return current
+  setSystemTime(seedMs)
+  function advance(ms: number) {
+    const next = Date.now() + ms
+    setSystemTime(next)
+    return next
   }
-  const restore = () => {
-    ;(Date.now as any) = original
+  function restore() {
+    setSystemTime()
   }
   return { advance, restore }
 }
