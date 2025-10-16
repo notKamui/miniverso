@@ -1,25 +1,15 @@
-import { notFound } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import {
-  and,
-  eq,
-  gte,
-  inArray,
-  isNotNull,
-  isNull,
-  lte,
-  or,
-  sql,
-} from 'drizzle-orm'
-import { z } from 'zod'
-import { badRequest } from '@/lib/utils/response'
-import { Time } from '@/lib/utils/time'
-import { tryAsync } from '@/lib/utils/try'
-import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
-import { timeEntriesTable } from '@/server/db/time.schema'
-import { $$auth } from '@/server/middlewares/auth'
-import { $$rateLimit } from '@/server/middlewares/rate-limit'
+import {notFound} from '@tanstack/react-router'
+import {createServerFn} from '@tanstack/react-start'
+import {and, eq, gte, inArray, isNotNull, isNull, lte, or, sql,} from 'drizzle-orm'
+import {z} from 'zod'
+import {badRequest} from '@/lib/utils/response'
+import {Time} from '@/lib/utils/time'
+import {tryAsync} from '@/lib/utils/try'
+import {validate} from '@/lib/utils/validate'
+import {db, takeUniqueOr, takeUniqueOrNull} from '@/server/db'
+import {timeEntriesTable} from '@/server/db/time.schema'
+import {$$auth} from '@/server/middlewares/auth'
+import {$$rateLimit} from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
@@ -30,7 +20,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     const dayEnd = new Date(date)
     dayEnd.setHours(23, 59, 59, 999)
 
-    const result = await db
+    return db
       .select()
       .from(timeEntriesTable)
       .where(
@@ -42,9 +32,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
             lte(timeEntriesTable.endedAt, dayEnd),
           ),
         ),
-      )
-
-    return result
+      );
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
@@ -81,7 +69,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
     const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`
 
-    const result = await db
+    return db
       .select({
         unit: unitQuery,
         dayOrMonth: dayOrMonthQuery.mapWith(Number),
@@ -96,9 +84,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
           lte(timeEntriesTable.endedAt, endDate.getDate()),
         ),
       )
-      .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
-
-    return result
+      .groupBy(({unit, dayOrMonth}) => [unit, dayOrMonth])
   })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })

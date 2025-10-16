@@ -19,7 +19,7 @@ export const env = createEnv({
     RESEND_MAIL_DOMAIN: z.string().min(1),
     HCAPTCHA_SITEKEY: z.string().min(1),
     HCAPTCHA_SECRET: z.string().min(1),
-    DISABLE_CSRF: z
+    DISABLE_CORS: z
       .string()
       .default('false')
       .transform((s) => s !== 'false' && s !== '0'),
