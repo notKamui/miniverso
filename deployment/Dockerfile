@@ -6,7 +6,7 @@ COPY ./public ./public
 COPY ./dist ./dist
 COPY ./.drizzle ./.drizzle
 COPY ./node_modules ./node_modules
-COPY serve.ts ./
+COPY dist/serve.js ./
 
 EXPOSE 3000
-CMD ["bun", "serve.ts"]
+CMD ["bun", "serve.js"]
