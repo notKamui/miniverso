@@ -11,25 +11,7 @@ const config = defineConfig({
     devtools(),
     viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
-    tanstackStart({
-      sitemap: {
-        enabled: true,
-        host: 'https://mini.notkamui.com',
-      },
-      prerender: {
-        enabled: true,
-        failOnError: true,
-        autoSubfolderIndex: true,
-        concurrency: 14,
-        crawlLinks: true,
-        filter: ({ path }: any) => !path.startsWith('/testing'),
-        retryCount: 2,
-        retryDelay: 2000,
-        onSuccess: (page) => {
-          console.log(`Rendered ${page.page.path}`)
-        },
-      },
-    }),
+    tanstackStart(),
     react(),
   ],
   define: {
