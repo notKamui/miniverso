@@ -7,7 +7,11 @@ export const Route = createFileRoute('/auth/$pathname')({
   loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
     if (
       !user &&
-      ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP].includes(pathname)
+      ![
+        authViewPaths.SIGN_IN,
+        authViewPaths.SIGN_UP,
+        authViewPaths.FORGOT_PASSWORD,
+      ].includes(pathname)
     ) {
       throw redirect({
         to: '/auth/$pathname',
@@ -20,7 +24,13 @@ export const Route = createFileRoute('/auth/$pathname')({
     }
 
     return {
-      crumbs: crumbs({ title: 'Auth', to: '/auth/$pathname' }),
+      crumbs: crumbs({
+        title: 'Auth',
+        link: {
+          to: '/auth/$pathname',
+          params: { pathname },
+        },
+      }),
     }
   },
   component: RouteComponent,
@@ -31,7 +41,7 @@ function RouteComponent() {
 
   return (
     <div className="mb-0 flex h-full flex-col items-center justify-center">
-      <AuthView pathname={pathname} />
+      <AuthView pathname={pathname} socialLayout="grid" />
     </div>
   )
 }

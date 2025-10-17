@@ -9,16 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
-import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedTimeChar123DayChar125RouteImport } from './routes/_authed/time/{-$day}'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
-import { Route as AuthedTimeDayRouteImport } from './routes/_authed/time/$day'
 
-const AuthedRoute = AuthedRouteImport.update({
+const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -37,55 +36,48 @@ const AccountPathnameRoute = AccountPathnameRouteImport.update({
   path: '/account/$pathname',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
-  id: '/time/',
-  path: '/time/',
-  getParentRoute: () => AuthedRoute,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedTimeChar123DayChar125Route =
+  AuthedTimeChar123DayChar125RouteImport.update({
+    id: '/time/{-$day}',
+    path: '/time/{-$day}',
+    getParentRoute: () => AuthedRouteRoute,
+  } as any)
 const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
   id: '/time/stats',
   path: '/time/stats',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedTimeDayRoute = AuthedTimeDayRouteImport.update({
-  id: '/time/$day',
-  path: '/time/$day',
-  getParentRoute: () => AuthedRoute,
+  getParentRoute: () => AuthedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
-  '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
+  '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/time': typeof AuthedTimeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
-  '/time/$day': typeof AuthedTimeDayRoute
   '/time/stats': typeof AuthedTimeStatsRoute
+  '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/time': typeof AuthedTimeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authed': typeof AuthedRouteWithChildren
+  '/_authed': typeof AuthedRouteRouteWithChildren
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
-  '/_authed/time/$day': typeof AuthedTimeDayRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
+  '/_authed/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/_authed/time/': typeof AuthedTimeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -93,34 +85,31 @@ export interface FileRouteTypes {
     | '/'
     | '/account/$pathname'
     | '/auth/$pathname'
-    | '/time/$day'
     | '/time/stats'
+    | '/time/{-$day}'
     | '/api/auth/$'
-    | '/time'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account/$pathname'
     | '/auth/$pathname'
-    | '/time/$day'
     | '/time/stats'
+    | '/time/{-$day}'
     | '/api/auth/$'
-    | '/time'
   id:
     | '__root__'
     | '/'
     | '/_authed'
     | '/account/$pathname'
     | '/auth/$pathname'
-    | '/_authed/time/$day'
     | '/_authed/time/stats'
+    | '/_authed/time/{-$day}'
     | '/api/auth/$'
-    | '/_authed/time/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthedRoute: typeof AuthedRouteWithChildren
+  AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
   AccountPathnameRoute: typeof AccountPathnameRoute
   AuthPathnameRoute: typeof AuthPathnameRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -132,7 +121,7 @@ declare module '@tanstack/react-router' {
       id: '/_authed'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AuthedRouteImport
+      preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -156,13 +145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountPathnameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/time/': {
-      id: '/_authed/time/'
-      path: '/time'
-      fullPath: '/time'
-      preLoaderRoute: typeof AuthedTimeIndexRouteImport
-      parentRoute: typeof AuthedRoute
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -170,41 +152,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/time/{-$day}': {
+      id: '/_authed/time/{-$day}'
+      path: '/time/{-$day}'
+      fullPath: '/time/{-$day}'
+      preLoaderRoute: typeof AuthedTimeChar123DayChar125RouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
     '/_authed/time/stats': {
       id: '/_authed/time/stats'
       path: '/time/stats'
       fullPath: '/time/stats'
       preLoaderRoute: typeof AuthedTimeStatsRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/_authed/time/$day': {
-      id: '/_authed/time/$day'
-      path: '/time/$day'
-      fullPath: '/time/$day'
-      preLoaderRoute: typeof AuthedTimeDayRouteImport
-      parentRoute: typeof AuthedRoute
+      parentRoute: typeof AuthedRouteRoute
     }
   }
 }
 
-interface AuthedRouteChildren {
-  AuthedTimeDayRoute: typeof AuthedTimeDayRoute
+interface AuthedRouteRouteChildren {
   AuthedTimeStatsRoute: typeof AuthedTimeStatsRoute
-  AuthedTimeIndexRoute: typeof AuthedTimeIndexRoute
+  AuthedTimeChar123DayChar125Route: typeof AuthedTimeChar123DayChar125Route
 }
 
-const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedTimeDayRoute: AuthedTimeDayRoute,
+const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedTimeStatsRoute: AuthedTimeStatsRoute,
-  AuthedTimeIndexRoute: AuthedTimeIndexRoute,
+  AuthedTimeChar123DayChar125Route: AuthedTimeChar123DayChar125Route,
 }
 
-const AuthedRouteWithChildren =
-  AuthedRoute._addFileChildren(AuthedRouteChildren)
+const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
+  AuthedRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthedRoute: AuthedRouteWithChildren,
+  AuthedRouteRoute: AuthedRouteRouteWithChildren,
   AccountPathnameRoute: AccountPathnameRoute,
   AuthPathnameRoute: AuthPathnameRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

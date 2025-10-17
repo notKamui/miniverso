@@ -16,16 +16,32 @@ export namespace Collection {
     array: T[],
     keySelector: (value: T) => K,
   ): Record<K, T> {
-    const result: Record<K, T> = {} as any
+    const result = {} as Record<K, T>
     for (const value of array) {
       result[keySelector(value)] = value
     }
     return result
   }
 
+  export function groupBy<T, K extends PropertyKey>(
+    array: T[],
+    keySelector: (value: T) => K,
+  ): Record<K, T[]> {
+    const result = {} as Record<K, T[]>
+    for (const value of array) {
+      const key = keySelector(value)
+      if (!result[key]) {
+        result[key] = []
+      }
+      result[key].push(value)
+    }
+    return result
+  }
+
   export function range(first: number, lastExcluded: number): number[] {
-    if (lastExcluded < first)
+    if (lastExcluded < first) {
       throw new Error('lastExcluded must be greater than first')
+    }
     return Array.from(Array(lastExcluded - first), (_, i) => i + first)
   }
 }

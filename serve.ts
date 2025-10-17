@@ -60,6 +60,7 @@
  */
 
 import { env } from '@/lib/env/server'
+import { tryAsync, tryInline } from '@/lib/utils/try'
 
 // Configuration
 const PORT = env.PORT
@@ -169,6 +170,11 @@ function computeEtag(data: Uint8Array): string {
   return `W/"${hash.toString(16)}-${data.byteLength}"`
 }
 
+function formatKB(bytes: number) {
+  const kb = bytes / 1024
+  return kb < 100 ? kb.toFixed(2) : kb.toFixed(1)
+}
+
 function buildResponseFactory(
   asset: InMemoryAsset,
 ): (req: Request) => Response {
@@ -196,8 +202,6 @@ function buildResponseFactory(
       asset.gz &&
       req.headers.get('accept-encoding')?.includes('gzip')
     ) {
-      console.log(`Serving precompressed asset for ${req.url}`)
-
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
       const gzCopy = new Uint8Array(asset.gz)
@@ -217,11 +221,9 @@ async function gzipMaybe(
   if (!ENABLE_GZIP) return undefined
   if (data.byteLength < GZIP_MIN_BYTES) return undefined
   if (!matchesCompressible(type)) return undefined
-  try {
-    return Bun.gzipSync(data)
-  } catch {
-    return undefined
-  }
+  const [error, gz] = tryInline(() => Bun.gzipSync(data))
+  if (error) return undefined
+  return gz
 }
 
 function makeOnDemandFactory(filepath: string, type: string) {
@@ -339,11 +341,6 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
         60,
       )
 
-      function formatKB(bytes: number) {
-        const kb = bytes / 1024
-        return kb < 100 ? kb.toFixed(2) : kb.toFixed(1)
-      }
-
       if (loaded.length > 0) {
         console.log('\n📁 Preloaded into memory:')
         loaded
@@ -419,17 +416,18 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
 async function startServer() {
   console.log('🚀 Starting production server...')
 
-  let handler: { fetch: (request: Request) => Response | Promise<Response> }
-  try {
-    const serverModule = (await import(SERVER_ENTRY)) as {
-      default: { fetch: (request: Request) => Response | Promise<Response> }
-    }
-    handler = serverModule.default
-    console.log('✅ TanStack Start handler loaded')
-  } catch (error) {
-    console.error('❌ Failed to load server handler:', error)
+  type Fetch = (request: Request) => Response | Promise<Response>
+
+  const [error, module] = await tryAsync(
+    import(SERVER_ENTRY) as Promise<{ default: { fetch: Fetch } }>,
+  )
+
+  if (error) {
+    console.error('❌ Failed to load server module:', error)
     process.exit(1)
   }
+
+  const handler = module.default
 
   const { routes } = await buildStaticRoutes(CLIENT_DIR)
 
@@ -462,12 +460,18 @@ async function runDatabaseMigrations() {
   console.log('✅ Migrations completed successfully.\n')
 }
 
-await runDatabaseMigrations().catch((error: unknown) => {
-  console.error('Failed to run database migrations:', error)
-  process.exit(1)
-})
+async function main() {
+  const [migrationError] = await tryAsync(runDatabaseMigrations())
+  if (migrationError) {
+    console.error('❌ Failed to run database migrations:', migrationError)
+    process.exit(1)
+  }
 
-await startServer().catch((error: unknown) => {
-  console.error('Failed to start server:', error)
-  process.exit(1)
-})
+  const [serverError] = await tryAsync(startServer())
+  if (serverError) {
+    console.error('❌ Failed to start server:', serverError)
+    process.exit(1)
+  }
+}
+
+await main()

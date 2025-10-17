@@ -26,6 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
         social={{
           providers: socialOAuthProviders,
         }}
+        credentials={socialOAuth.emailAndPassword}
         captcha={captcha}
       >
         {children}

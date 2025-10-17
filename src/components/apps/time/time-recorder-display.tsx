@@ -76,10 +76,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const isToday = time.isToday()
 
   function onDateChange(time: Time) {
-    if (time.isToday()) return router.navigate({ to: '/time' })
     router.navigate({
-      to: '/time/$day',
-      params: { day: time.toISOString() },
+      to: '/time/{-$day}',
+      params: { day: time.isToday() ? undefined : time.formatDayNumber() },
     })
   }
 
@@ -159,9 +158,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         <div className="flex flex-row items-center">
           <Button size="icon" className="h-[36px] rounded-r-none" asChild>
             <Link
-              to="/time/$day"
+              to="/time/{-$day}"
               from="/"
-              params={{ day: dayBefore.toISOString() }}
+              params={{ day: dayBefore.formatDayNumber() }}
             >
               <ChevronLeftIcon />
             </Link>
@@ -180,9 +179,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
               asChild
             >
               <Link
-                to="/time/$day"
+                to="/time/{-$day}"
                 from="/"
-                params={{ day: dayAfter.toISOString() }}
+                params={{ day: dayAfter.formatDayNumber() }}
               >
                 <ChevronRightIcon />
               </Link>
@@ -310,7 +309,7 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
     entries.length > 0 && (
       <div className="flex h-[36px] flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
-        <span>{Time.formatTime(totalTime + currentElapsed)}</span>
+        <span>{Time.formatDuration(totalTime + currentElapsed)}</span>
       </div>
     )
   )

@@ -61,7 +61,7 @@ export const Route = createRootRouteWithContext<{
   },
   loader: async () => {
     return {
-      crumbs: crumbs({ title: 'Home', to: '/' }),
+      crumbs: crumbs({ title: 'Home', link: { to: '/' } }),
     }
   },
   component: RouteComponent,

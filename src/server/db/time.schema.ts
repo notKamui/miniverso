@@ -7,10 +7,9 @@ export const timeEntriesTable = pgTable('time_entry', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  startedAt: timestamp('started_at', {
-    withTimezone: true,
-    mode: 'date',
-  }).notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true, mode: 'date' })
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
   endedAt: timestamp('ended_at', { withTimezone: true, mode: 'date' }),
   description: text('description'),
 })

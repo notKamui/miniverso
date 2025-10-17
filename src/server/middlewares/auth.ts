@@ -6,10 +6,7 @@ import { badRequest } from '@/lib/utils/response'
 export const $$auth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const headers = getRequestHeaders()
-    const session = await auth.api.getSession({
-      headers,
-      query: { disableCookieCache: true },
-    })
+    const session = await auth.api.getSession({ headers })
 
     if (!session) {
       badRequest('Unauthorized', 401)

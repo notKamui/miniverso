@@ -16,7 +16,7 @@ import { badRequest } from '@/lib/utils/response'
 import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOrNull } from '@/server/db'
+import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import { timeEntriesTable } from '@/server/db/time.schema'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
@@ -30,7 +30,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     const dayEnd = new Date(date)
     dayEnd.setHours(23, 59, 59, 999)
 
-    const result = await db
+    return db
       .select()
       .from(timeEntriesTable)
       .where(
@@ -43,8 +43,6 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
           ),
         ),
       )
-
-    return result
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
@@ -66,30 +64,26 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
     const [startDate, endDate] = Time.from(date).getRange(type)
     const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
+    type GroupBy = typeof groupBy
 
     const unitQuery = {
-      day: sql<
-        typeof groupBy
-      >`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
-      month: sql<
-        typeof groupBy
-      >`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
+      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
     }[groupBy]
 
     const dayOrMonthQuery = {
       week: sql`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
       month: sql`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
       year: sql`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
-    }[type].mapWith(Number)
+    }[type]
 
-    const result = await db
+    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`
+
+    return db
       .select({
         unit: unitQuery,
-        total:
-          sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`.mapWith(
-            Number,
-          ),
-        dayOrMonth: dayOrMonthQuery,
+        dayOrMonth: dayOrMonthQuery.mapWith(Number),
+        total: totalQuery.mapWith(Number),
       })
       .from(timeEntriesTable)
       .where(
@@ -101,27 +95,25 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
-
-    return result
   })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])
   .inputValidator(validate(z.object({ startedAt: z.date() })))
-  .handler(async ({ context: { user }, data: { startedAt } }) => {
-    const timeEntry = await db
+  .handler(({ context: { user }, data: { startedAt } }) =>
+    db
       .insert(timeEntriesTable)
       .values({
         userId: user.id,
         startedAt,
       })
       .returning()
-      .then(takeUniqueOrNull)
-
-    if (!timeEntry) throw notFound()
-
-    return timeEntry
-  })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      ),
+  )
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$rateLimit, $$auth])

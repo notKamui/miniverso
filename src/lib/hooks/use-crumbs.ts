@@ -1,13 +1,19 @@
 import { isMatch, useMatches } from '@tanstack/react-router'
-import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export type Crumb = {
   title: string
-  to?: keyof FileRoutesByTo
+  link?: {
+    to: string
+    params?: any
+    search?: any
+    hash?: any
+    state?: any
+    from?: string
+  }
 }
 
-export function crumbs(...crumbs: Crumb[]) {
-  return crumbs
+export function crumbs(...crumbs: (Crumb | null | undefined | boolean)[]) {
+  return crumbs.filter(Boolean)
 }
 
 export function useCrumbs() {

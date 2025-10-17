@@ -17,7 +17,7 @@ export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
 export function takeUniqueOr<
   T extends any[],
   E extends T[number] | null | undefined = never,
->(or: () => E): (values: T) => E extends never ? T[number] : E {
+>(or: () => E): (values: T) => [E] extends [never] ? T[number] : E | T[number] {
   return (values) => {
     if (values.length === 0) return or()
     return values[0]

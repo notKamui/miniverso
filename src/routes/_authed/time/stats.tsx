@@ -69,7 +69,7 @@ const CHARTS = {
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
       return {
-        day: (DAYS as any)[dayOrMonth],
+        day: DAYS[dayOrMonth as keyof typeof DAYS],
         total: entry ? entry.total : 0,
       }
     })
@@ -77,7 +77,7 @@ const CHARTS = {
       data,
       x: 'day',
       y: 'total',
-      format: (total: number) => Time.formatTime(total * 1000),
+      format: (total: number) => Time.formatDuration(total * 1000),
     }
   },
   month: (stats, time) => {
@@ -96,7 +96,7 @@ const CHARTS = {
       data,
       x: 'day',
       y: 'total',
-      format: (total: number) => Time.formatTime(total * 1000),
+      format: (total: number) => Time.formatDuration(total * 1000),
     }
   },
   year: (stats) => {
@@ -104,7 +104,7 @@ const CHARTS = {
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
       return {
-        month: (MONTHS as any)[dayOrMonth],
+        month: MONTHS[dayOrMonth as keyof typeof MONTHS],
         total: entry ? entry.total : 0,
       }
     })
@@ -112,7 +112,7 @@ const CHARTS = {
       data,
       x: 'month',
       y: 'total',
-      format: (total: number) => Time.formatTime(total * 1000),
+      format: (total: number) => Time.formatDuration(total * 1000),
     }
   },
 } satisfies Record<string, Chart>
@@ -138,10 +138,13 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
     return {
       stats,
-      date,
+      time,
       type,
       crumbs: crumbs(
-        { title: 'Time recorder', to: '/time' },
+        {
+          title: 'Time recorder',
+          link: { to: '/time/{-$day}', params: { day: undefined } },
+        },
         { title: 'Statistics' },
       ),
     }
@@ -152,8 +155,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   //const { theme } = useTheme()
-  const { stats, date, type } = Route.useLoaderData()
-  const time = Time.from(date)
+  const { stats, time, type } = Route.useLoaderData()
 
   const chart = CHARTS[type](stats, time)
 

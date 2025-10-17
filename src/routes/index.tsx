@@ -53,12 +53,14 @@ function NotLoggedIn() {
 
 type Application = {
   to: keyof FileRoutesByTo
+  params?: any
   title: string
   description: string
 }
 const applications: Application[] = [
   {
-    to: '/time',
+    to: '/time/{-$day}',
+    params: { day: undefined },
     title: 'Time recorder',
     description: 'Record your time and track your progress',
   },
@@ -73,7 +75,7 @@ function Main() {
           <div key={app.to} className="container rounded-md border p-4">
             <h4 className={title({ h: 4 })}>{app.title}</h4>
             <p>{app.description}</p>
-            <Link to={app.to} from="/" className={link()}>
+            <Link to={app.to} params={app.params} from="/" className={link()}>
               Open
             </Link>
           </div>
