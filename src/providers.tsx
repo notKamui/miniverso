@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const socialOAuthProviders = Object.entries(socialOAuth ?? {})
     .filter(([, enabled]) => enabled)
     .map(([provider]) => provider)
-  const captcha = hcaptchaInfo
+  const captcha = hcaptchaInfo?.siteKey
     ? ({ provider: 'hcaptcha', siteKey: hcaptchaInfo.siteKey } as const)
     : undefined
 

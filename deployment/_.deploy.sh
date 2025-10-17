@@ -7,6 +7,6 @@ if [ -z "$APP_VERSION" ]; then
   exit 1
 fi
 
-./deployment/0.build.sh && \
+./deployment/0.check.sh && \
 ./deployment/1.pack.sh && \
 ./deployment/2.publish.sh
