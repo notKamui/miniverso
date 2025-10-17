@@ -41,7 +41,7 @@ function RouteComponent() {
 
   return (
     <div className="mb-0 flex h-full flex-col items-center justify-center">
-      <AuthView pathname={pathname} />
+      <AuthView pathname={pathname} socialLayout="grid" />
     </div>
   )
 }

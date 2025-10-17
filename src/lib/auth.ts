@@ -18,7 +18,7 @@ export const auth = createServerOnlyFn(() =>
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     baseURL: env.BASE_URL,
     emailAndPassword: {
-      enabled: true,
+      enabled: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
       sendResetPassword: async ({ user, url }) => {
         const response = await sendResetPasswordEmail({
           to: user.email,

@@ -2,7 +2,14 @@ import { EmailTemplate } from '@daveyplate/better-auth-ui/server'
 import { Resend } from 'resend'
 import { env } from '@/lib/env/server'
 
-export const resend = new Resend(env.RESEND_API_KEY)
+export const resend =
+  env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN
+    ? new Resend(env.RESEND_API_KEY)
+    : ({
+        emails: {
+          send: () => Promise.resolve(),
+        },
+      } as unknown as Resend)
 
 export type MailOptions = {
   to: string

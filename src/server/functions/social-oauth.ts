@@ -14,6 +14,7 @@ export function socialOAuthQueryOptions() {
 
 export const $getSocialOAuth = createServerFn({ method: 'GET' }).handler(() => {
   return {
+    emailAndPassword: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
     github: Boolean(
       env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET,
     ),
