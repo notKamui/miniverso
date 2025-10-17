@@ -73,10 +73,14 @@ export const auth = createServerOnlyFn(() =>
       },
     ),
     plugins: [
-      captcha({
-        provider: 'hcaptcha',
-        secretKey: env.HCAPTCHA_SECRET,
-      }),
+      ...(env.HCAPTCHA_SECRET && env.HCAPTCHA_SITEKEY
+        ? [
+            captcha({
+              provider: 'hcaptcha',
+              secretKey: env.HCAPTCHA_SECRET,
+            }),
+          ]
+        : []),
       reactStartCookies(), // INFO: should be the last plugin
     ],
   }),
