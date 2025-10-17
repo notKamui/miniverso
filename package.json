@@ -8,7 +8,7 @@
     "dev": "cross-env NODE_ENV=development bun migrate && cross-env NODE_ENV=development vite dev --port 3000",
     "start": "bun run --env-file=.env serve.ts",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
-    "build:entrypoint": "bun build --minify --target=bun --outfile=dist/serve.js --external postgres --external drizzle-orm --external zod --external t3-env serve.ts",
+    "build:entrypoint": "bun build --minify --target=bun --outfile=dist/serve.js --packages=external serve.ts",
     "postbuild": "bun run build:entrypoint",
     "lint": "bunx biome check",
     "lint:fix": "bunx biome check --write",
