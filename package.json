@@ -7,7 +7,7 @@
     "postinstall": "biome migrate --write",
     "dev": "cross-env NODE_ENV=development bun migrate && cross-env NODE_ENV=development vite dev --port 3000",
     "start": "bun run --env-file=.env serve.ts",
-    "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build",
+    "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "type-check": "bun tsc --noEmit",

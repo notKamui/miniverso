@@ -7,7 +7,11 @@ export const Route = createFileRoute('/auth/$pathname')({
   loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
     if (
       !user &&
-      ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP].includes(pathname)
+      ![
+        authViewPaths.SIGN_IN,
+        authViewPaths.SIGN_UP,
+        authViewPaths.FORGOT_PASSWORD,
+      ].includes(pathname)
     ) {
       throw redirect({
         to: '/auth/$pathname',
