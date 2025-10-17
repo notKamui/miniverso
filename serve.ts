@@ -59,8 +59,8 @@
  *   bun run server.ts
  */
 
-import { env } from '@/lib/env/server'
-import { tryAsync, tryInline } from '@/lib/utils/try'
+import { env } from './src/lib/env/server'
+import { tryAsync, tryInline } from './src/lib/utils/try'
 
 // Configuration
 const PORT = env.PORT
