@@ -98,7 +98,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
-  .middleware([$$rateLimit, $$auth])
+  .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ startedAt: z.date() })))
   .handler(({ context: { user }, data: { startedAt } }) =>
     db
@@ -116,7 +116,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
   )
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
-  .middleware([$$rateLimit, $$auth])
+  .middleware([$$auth, $$rateLimit])
   .inputValidator(
     validate(
       z.object({
@@ -162,7 +162,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
   )
 
 export const $deleteTimeEntries = createServerFn({ method: 'POST' })
-  .middleware([$$rateLimit, $$auth])
+  .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
   .handler(async ({ context: { user }, data: { ids } }) => {
     const timeEntry = await db
