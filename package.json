@@ -79,15 +79,15 @@
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.5",
     "jsdom": "^27.0.1",
+    "rolldown-vite": "npm:rolldown-vite@7.1.19",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.16",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
-    "vite": "npm:rolldown-vite@latest",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@latest"
+    "vite": "npm:rolldown-vite@7.1.19"
   },
   "engines": {
     "node": ">=24",
