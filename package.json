@@ -75,7 +75,7 @@
     "@types/node": "^24.9.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@typescript/native-preview": "^7.0.0-dev.20251029.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251030.1",
     "@vitejs/plugin-react": "^5.1.0",
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.6",
