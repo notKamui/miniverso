@@ -32,7 +32,7 @@ export const env = createEnv({
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
   skipValidation: process.env.BUILD_ENV === 'production',
-  createFinalSchema: (shape, _isServer) =>
+  createFinalSchema: (shape) =>
     z.object(shape).transform((env, ctx) => {
       const socials = {
         emailAndPassword: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
