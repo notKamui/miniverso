@@ -156,7 +156,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     <div className="flex size-full flex-col gap-4">
       <div className="flex flex-row gap-4 max-sm:flex-col">
         <div className="flex flex-row items-center">
-          <Button size="icon" className="h-[36px] rounded-r-none" asChild>
+          <Button size="icon" className="h-9 rounded-r-none" asChild>
             <Link
               to="/time/{-$day}"
               from="/"
@@ -174,7 +174,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           {!isToday && (
             <Button
               size="icon"
-              className={cn('h-[36px] rounded-l-none')}
+              className={cn('h-9 rounded-l-none')}
               disabled={isToday}
               asChild
             >
@@ -307,7 +307,7 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
 
   return (
     entries.length > 0 && (
-      <div className="flex h-[36px] flex-row items-center gap-2 rounded-md border px-4">
+      <div className="flex h-9 flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
         <span>{Time.formatDuration(totalTime + currentElapsed)}</span>
       </div>

@@ -14,7 +14,7 @@ const BreadcrumbList = ({ ref, className, ...props }: ComponentProps<'ol'>) => (
   <ol
     ref={ref}
     className={cn(
-      'flex flex-wrap items-center gap-1.5 break-words text-muted-foreground text-sm sm:gap-2.5',
+      'wrap-break-word flex flex-wrap items-center gap-1.5 text-muted-foreground text-sm sm:gap-2.5',
       className,
     )}
     {...props}

@@ -94,7 +94,7 @@ export function EditEntryDialog({
             form={form}
             name="description"
             label="Description"
-            className="max-h-60 min-h-60 resize-none break-words break-all"
+            className="wrap-break-word max-h-60 min-h-60 resize-none break-all"
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">
