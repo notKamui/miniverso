@@ -48,7 +48,10 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 })
 
 function RouteComponent() {
-  const { entries, time } = Route.useLoaderData({ structuralSharing: true })
+  const { entries, time } = Route.useLoaderData({
+    select: ({ entries, time }) => ({ entries, time }),
+    structuralSharing: false,
+  })
 
   return (
     <div className="space-y-8">
