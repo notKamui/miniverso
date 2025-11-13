@@ -204,7 +204,7 @@ export class Time {
     return new Time(date)
   }
 
-  static adapter = createSerializationAdapter({
+  static serializationAdapter = createSerializationAdapter({
     key: 'Time',
     test: (v) => v instanceof Time,
     toSerializable: (v) => v.getDate(),

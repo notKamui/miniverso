@@ -1,4 +1,5 @@
 import { isMatch, useMatches } from '@tanstack/react-router'
+import { Collection } from '@/lib/utils/collection'
 
 export type Crumb = {
   title: string
@@ -12,14 +13,13 @@ export type Crumb = {
   }
 }
 
-export function crumbs(...crumbs: (Crumb | null | undefined | boolean)[]) {
-  return crumbs.filter(Boolean)
-}
+export const crumbs = Collection.createFactory<Crumb>()
 
-export function useCrumbs() {
+export function useCrumbs(): Crumb[] {
   return useMatches()
     .filter((match) => isMatch(match, 'loaderData.crumbs'))
     .map((match) => match.loaderData?.crumbs)
     .filter((match) => match?.length)
-    .flat() as Crumb[]
+    .filter(Collection.notNullish)
+    .flat()
 }

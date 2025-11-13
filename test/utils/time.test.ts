@@ -153,7 +153,7 @@ describe('Time', () => {
     const t = Time.from('2024-01-01T00:00:00.000Z')
     const iso = t.toISOString()
     expect(iso).toBe('2024-01-01T00:00:00.000Z')
-    const adapter = Time.adapter
+    const adapter = Time.serializationAdapter
     expect(adapter.test(t)).toBe(true)
     const serial = adapter.toSerializable(t)
     expect(serial).toBeInstanceOf(Date)

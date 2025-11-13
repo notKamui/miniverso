@@ -44,4 +44,22 @@ export namespace Collection {
     }
     return Array.from(Array(lastExcluded - first), (_, i) => i + first)
   }
+
+  export function notNullish<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined
+  }
+
+  export function notFalsy<T>(
+    value: T | false | 0 | '' | null | undefined,
+  ): value is T {
+    return Boolean(value)
+  }
+
+  export function createFactory<T>(): (
+    ...items: (T | null | undefined | false)[]
+  ) => T[] {
+    return (...items: (T | null | undefined | false)[]) => {
+      return items.filter(notFalsy)
+    }
+  }
 }
