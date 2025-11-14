@@ -38,14 +38,14 @@ export class Time {
   }
 
   static readonly serializationAdapter = createSerializationAdapter({
-    key: 'Time',
+    key: Time.name,
     test: (v) => v instanceof Time,
     toSerializable: (v) => v.getDate(),
     fromSerializable: (v) => Time.from(v),
   })
 
   static readonly schema = z.custom<Time>((value) => value instanceof Time, {
-    message: 'Invalid Time instance',
+    message: `Invalid ${Time.name} instance`,
   })
 
   shift(type: ShiftType, count: number): Time {
