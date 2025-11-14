@@ -37,6 +37,17 @@ export class Time {
     return new Time(new Date(date))
   }
 
+  static readonly serializationAdapter = createSerializationAdapter({
+    key: 'Time',
+    test: (v) => v instanceof Time,
+    toSerializable: (v) => v.getDate(),
+    fromSerializable: (v) => Time.from(v),
+  })
+
+  static readonly schema = z.custom<Time>((value) => value instanceof Time, {
+    message: 'Invalid Time instance',
+  })
+
   shift(type: ShiftType, count: number): Time {
     const date = new Date(this.date)
     switch (type) {
@@ -206,7 +217,22 @@ export class Time {
     return new Time(date)
   }
 
-  private static startOfExec = createFallthroughExec<ShiftType, Date>([
+  startOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    Time.fallthroughStartOf(date, type)
+    return new Time(date)
+  }
+
+  endOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    Time.fallthroughEndOf(date, type)
+    return new Time(date)
+  }
+
+  private static readonly fallthroughStartOf = createFallthroughExec<
+    ShiftType,
+    Date
+  >([
     ['years', (date) => date.setMonth(0)],
     ['months', (date) => date.setDate(1)],
     ['days', (date) => date.setHours(0)],
@@ -216,13 +242,10 @@ export class Time {
     ['milliseconds', () => {}],
   ])
 
-  startOf(type: ShiftType): Time {
-    const date = new Date(this.date)
-    Time.startOfExec(date, type)
-    return new Time(date)
-  }
-
-  private static endOfExec = createFallthroughExec<ShiftType, Date>([
+  private static readonly fallthroughEndOf = createFallthroughExec<
+    ShiftType,
+    Date
+  >([
     ['years', (date) => date.setMonth(11)],
     [
       'months',
@@ -237,21 +260,4 @@ export class Time {
     ['seconds', (date) => date.setMilliseconds(999)],
     ['milliseconds', () => {}],
   ])
-
-  endOf(type: ShiftType): Time {
-    const date = new Date(this.date)
-    Time.endOfExec(date, type)
-    return new Time(date)
-  }
-
-  static serializationAdapter = createSerializationAdapter({
-    key: 'Time',
-    test: (v) => v instanceof Time,
-    toSerializable: (v) => v.getDate(),
-    fromSerializable: (v) => Time.from(v),
-  })
-
-  static schema = z.custom<Time>((value) => value instanceof Time, {
-    message: 'Invalid Time instance',
-  })
 }
