@@ -13,7 +13,7 @@ export const themeQueryKey = ['theme'] as const
 export function themeQueryOptions() {
   return queryOptions({
     queryKey: themeQueryKey,
-    queryFn: $getTheme,
+    queryFn: ({ signal }) => $getTheme({ signal }),
   })
 }
 
