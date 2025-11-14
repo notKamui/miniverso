@@ -11,13 +11,13 @@ import {
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
   loader: async ({ params: { day } }) => {
-    const time = Time.from(day)
+    const date = Time.from(day)
 
     let entries = await $getTimeEntriesByDay({
-      data: { date: time.getDate() },
+      data: { date },
     })
 
-    if (!time.isToday()) {
+    if (!date.isToday()) {
       const [ended, notEnded] = Collection.partition(
         entries,
         (e) => e.endedAt !== null,
@@ -28,19 +28,19 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 
     entries.sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
 
-    const breadcrumbs = time.isToday()
+    const breadcrumbs = date.isToday()
       ? crumbs({ title: 'Time recorder' })
       : crumbs(
           {
             title: 'Time recorder',
             link: { to: '/time/{-$day}', params: { day: undefined } },
           },
-          { title: time.formatDayNumber() },
+          { title: date.formatDayNumber() },
         )
 
     return {
       entries,
-      time,
+      time: date,
       crumbs: breadcrumbs,
     }
   },

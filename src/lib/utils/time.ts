@@ -1,4 +1,6 @@
 import { createSerializationAdapter } from '@tanstack/react-router'
+import z from 'zod'
+import { createFallthroughExec } from '@/lib/utils/fallthrough'
 
 export type ShiftType =
   | 'years'
@@ -204,10 +206,52 @@ export class Time {
     return new Time(date)
   }
 
+  private static startOfExec = createFallthroughExec<ShiftType, Date>([
+    ['years', (date) => date.setMonth(0)],
+    ['months', (date) => date.setDate(1)],
+    ['days', (date) => date.setHours(0)],
+    ['hours', (date) => date.setMinutes(0)],
+    ['minutes', (date) => date.setSeconds(0)],
+    ['seconds', (date) => date.setMilliseconds(0)],
+    ['milliseconds', () => {}],
+  ])
+
+  startOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    Time.startOfExec(date, type)
+    return new Time(date)
+  }
+
+  private static endOfExec = createFallthroughExec<ShiftType, Date>([
+    ['years', (date) => date.setMonth(11)],
+    [
+      'months',
+      (date) =>
+        date.setDate(
+          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+        ),
+    ],
+    ['days', (date) => date.setHours(23)],
+    ['hours', (date) => date.setMinutes(59)],
+    ['minutes', (date) => date.setSeconds(59)],
+    ['seconds', (date) => date.setMilliseconds(999)],
+    ['milliseconds', () => {}],
+  ])
+
+  endOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    Time.endOfExec(date, type)
+    return new Time(date)
+  }
+
   static serializationAdapter = createSerializationAdapter({
     key: 'Time',
     test: (v) => v instanceof Time,
     toSerializable: (v) => v.getDate(),
     fromSerializable: (v) => Time.from(v),
+  })
+
+  static schema = z.custom<Time>((value) => value instanceof Time, {
+    message: 'Invalid Time instance',
   })
 }
