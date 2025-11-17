@@ -245,45 +245,39 @@ export class Time {
 
   startOf(type: ShiftType): Time {
     const date = new Date(this.date)
-    Time.fallthroughStartOf(date, type)
+    fallthroughStartOf(date, type)
     return new Time(date)
   }
 
   endOf(type: ShiftType): Time {
     const date = new Date(this.date)
-    Time.fallthroughEndOf(date, type)
+    fallthroughEndOf(date, type)
     return new Time(date)
   }
-
-  private static readonly fallthroughStartOf = createFallthroughExec<
-    ShiftType,
-    Date
-  >([
-    ['years', (date) => date.setMonth(0)],
-    ['months', (date) => date.setDate(1)],
-    ['days', (date) => date.setHours(0)],
-    ['hours', (date) => date.setMinutes(0)],
-    ['minutes', (date) => date.setSeconds(0)],
-    ['seconds', (date) => date.setMilliseconds(0)],
-    ['milliseconds', () => {}],
-  ])
-
-  private static readonly fallthroughEndOf = createFallthroughExec<
-    ShiftType,
-    Date
-  >([
-    ['years', (date) => date.setMonth(11)],
-    [
-      'months',
-      (date) =>
-        date.setDate(
-          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
-        ),
-    ],
-    ['days', (date) => date.setHours(23)],
-    ['hours', (date) => date.setMinutes(59)],
-    ['minutes', (date) => date.setSeconds(59)],
-    ['seconds', (date) => date.setMilliseconds(999)],
-    ['milliseconds', () => {}],
-  ])
 }
+
+const fallthroughStartOf = createFallthroughExec<ShiftType, Date>([
+  ['years', (date) => date.setMonth(0)],
+  ['months', (date) => date.setDate(1)],
+  ['days', (date) => date.setHours(0)],
+  ['hours', (date) => date.setMinutes(0)],
+  ['minutes', (date) => date.setSeconds(0)],
+  ['seconds', (date) => date.setMilliseconds(0)],
+  ['milliseconds', () => {}],
+])
+
+const fallthroughEndOf = createFallthroughExec<ShiftType, Date>([
+  ['years', (date) => date.setMonth(11)],
+  [
+    'months',
+    (date) =>
+      date.setDate(
+        new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      ),
+  ],
+  ['days', (date) => date.setHours(23)],
+  ['hours', (date) => date.setMinutes(59)],
+  ['minutes', (date) => date.setSeconds(59)],
+  ['seconds', (date) => date.setMilliseconds(999)],
+  ['milliseconds', () => {}],
+])
