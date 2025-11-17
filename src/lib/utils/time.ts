@@ -30,11 +30,11 @@ export class Time {
     return new Time(new Date())
   }
 
-  static from(date: Date | string | null | undefined): Time {
+  static from(date: Time | Date | string | null | undefined): Time {
     if (date === null || date === undefined) {
       return new Time(new Date())
     }
-    return new Time(new Date(date))
+    return new Time(date instanceof Time ? date.getDate() : new Date(date))
   }
 
   static readonly serializationAdapter = createSerializationAdapter({
@@ -78,9 +78,9 @@ export class Time {
     return new Time(date)
   }
 
-  compare(other: Time, type: ShiftType = 'milliseconds'): number {
+  compare(other: Time | Date, type: ShiftType = 'milliseconds'): number {
     const date = new Date(this.date)
-    const otherDate = new Date(other.date)
+    const otherDate = new Date(other instanceof Time ? other.date : other)
 
     if (type === 'years') {
       date.setMonth(0)
@@ -108,6 +108,18 @@ export class Time {
     }
 
     return date.getTime() - otherDate.getTime()
+  }
+
+  isBefore(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) < 0
+  }
+
+  isAfter(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) > 0
+  }
+
+  isEqual(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) === 0
   }
 
   toISOString(): string {
