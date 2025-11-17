@@ -30,7 +30,7 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
   })
 
   async function start() {
-    const entry = await createTimeEntry({ data: { startedAt: new Date() } })
+    const entry = await createTimeEntry({ data: { startedAt: Time.now() } })
     setCurrentEntry(entry)
     router.invalidate()
   }
@@ -41,7 +41,7 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
     await updateTimeEntry({
       data: {
         id: currentEntry.id,
-        endedAt: new Date(),
+        endedAt: Time.now(),
         description: trimmedDescription.length ? trimmedDescription : undefined,
       },
     })

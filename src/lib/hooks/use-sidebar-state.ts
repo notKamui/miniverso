@@ -16,7 +16,7 @@ export const sidebarStateQueryKey = ['sidebarState'] as const
 export function sidebarStateQueryOptions() {
   return queryOptions({
     queryKey: sidebarStateQueryKey,
-    queryFn: $getSidebarState,
+    queryFn: ({ signal }) => $getSidebarState({ signal }),
   })
 }
 

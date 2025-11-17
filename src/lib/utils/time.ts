@@ -1,4 +1,7 @@
 import { createSerializationAdapter } from '@tanstack/react-router'
+import { customType } from 'drizzle-orm/pg-core'
+import z from 'zod'
+import { createFallthroughExec } from '@/lib/utils/fallthrough'
 
 export type ShiftType =
   | 'years'
@@ -28,12 +31,32 @@ export class Time {
     return new Time(new Date())
   }
 
-  static from(date: Date | string | null | undefined): Time {
+  static from(date: Time | Date | string | null | undefined): Time {
     if (date === null || date === undefined) {
       return new Time(new Date())
     }
-    return new Time(new Date(date))
+    return new Time(date instanceof Time ? date.getDate() : new Date(date))
   }
+
+  static readonly serializationAdapter = createSerializationAdapter({
+    key: Time.name,
+    test: (v) => v instanceof Time,
+    toSerializable: (v) => v.getDate(),
+    fromSerializable: (v) => Time.from(v),
+  })
+
+  static readonly schema = z.custom<Time>((value) => value instanceof Time, {
+    message: `Invalid ${Time.name} instance`,
+  })
+
+  static readonly column = customType<{
+    data: Time
+    driverData: string
+  }>({
+    dataType: () => 'timestamp with time zone',
+    fromDriver: (date) => Time.from(date),
+    toDriver: (time) => time.toISOString(),
+  })
 
   shift(type: ShiftType, count: number): Time {
     const date = new Date(this.date)
@@ -65,9 +88,9 @@ export class Time {
     return new Time(date)
   }
 
-  compare(other: Time, type: ShiftType = 'milliseconds'): number {
+  compare(other: Time | Date, type: ShiftType = 'milliseconds'): number {
     const date = new Date(this.date)
-    const otherDate = new Date(other.date)
+    const otherDate = new Date(other instanceof Time ? other.date : other)
 
     if (type === 'years') {
       date.setMonth(0)
@@ -95,6 +118,18 @@ export class Time {
     }
 
     return date.getTime() - otherDate.getTime()
+  }
+
+  isBefore(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) < 0
+  }
+
+  isAfter(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) > 0
+  }
+
+  isEqual(other: Time | Date, type: ShiftType = 'milliseconds'): boolean {
+    return this.compare(other, type) === 0
   }
 
   toISOString(): string {
@@ -158,6 +193,10 @@ export class Time {
     return this.date.getMonth() + 1
   }
 
+  getMillis(): number {
+    return this.date.getTime()
+  }
+
   getRange(type: RangeType): [start: Time, end: Time] {
     const startDate = new Date(this.date)
     const endDate = new Date(this.date)
@@ -204,10 +243,41 @@ export class Time {
     return new Time(date)
   }
 
-  static serializationAdapter = createSerializationAdapter({
-    key: 'Time',
-    test: (v) => v instanceof Time,
-    toSerializable: (v) => v.getDate(),
-    fromSerializable: (v) => Time.from(v),
-  })
+  startOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    fallthroughStartOf(date, type)
+    return new Time(date)
+  }
+
+  endOf(type: ShiftType): Time {
+    const date = new Date(this.date)
+    fallthroughEndOf(date, type)
+    return new Time(date)
+  }
 }
+
+const fallthroughStartOf = createFallthroughExec<ShiftType, Date>([
+  ['years', (date) => date.setMonth(0)],
+  ['months', (date) => date.setDate(1)],
+  ['days', (date) => date.setHours(0)],
+  ['hours', (date) => date.setMinutes(0)],
+  ['minutes', (date) => date.setSeconds(0)],
+  ['seconds', (date) => date.setMilliseconds(0)],
+  ['milliseconds', () => {}],
+])
+
+const fallthroughEndOf = createFallthroughExec<ShiftType, Date>([
+  ['years', (date) => date.setMonth(11)],
+  [
+    'months',
+    (date) =>
+      date.setDate(
+        new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      ),
+  ],
+  ['days', (date) => date.setHours(23)],
+  ['hours', (date) => date.setMinutes(59)],
+  ['minutes', (date) => date.setSeconds(59)],
+  ['seconds', (date) => date.setMilliseconds(999)],
+  ['milliseconds', () => {}],
+])

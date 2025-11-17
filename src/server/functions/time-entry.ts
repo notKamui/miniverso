@@ -23,12 +23,10 @@ import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ date: z.date() })))
+  .inputValidator(validate(z.object({ date: Time.schema })))
   .handler(async ({ context: { user }, data: { date } }) => {
-    const dayBegin = new Date(date)
-    dayBegin.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(date)
-    dayEnd.setHours(23, 59, 59, 999)
+    const dayBegin = date.startOf('days')
+    const dayEnd = date.endOf('days')
 
     return db
       .select()
@@ -49,7 +47,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(
     validate(
-      z.object({ date: z.date(), type: z.enum(['week', 'month', 'year']) }),
+      z.object({ date: Time.schema, type: z.enum(['week', 'month', 'year']) }),
     ),
   )
   .handler(async ({ context: { user }, data: { date, type } }) => {
@@ -62,7 +60,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     // - month: get the totals per day of the month of the date
     // - year: get the totals per month of the year of the date
 
-    const [startDate, endDate] = Time.from(date).getRange(type)
+    const [startDate, endDate] = date.getRange(type)
     const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
     type GroupBy = typeof groupBy
 
@@ -90,8 +88,8 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         and(
           eq(timeEntriesTable.userId, user.id),
           isNotNull(timeEntriesTable.endedAt),
-          gte(timeEntriesTable.startedAt, startDate.getDate()),
-          lte(timeEntriesTable.endedAt, endDate.getDate()),
+          gte(timeEntriesTable.startedAt, startDate),
+          lte(timeEntriesTable.endedAt, endDate),
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
@@ -99,7 +97,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ startedAt: z.date() })))
+  .inputValidator(validate(z.object({ startedAt: Time.schema })))
   .handler(({ context: { user }, data: { startedAt } }) =>
     db
       .insert(timeEntriesTable)
@@ -121,8 +119,8 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
     validate(
       z.object({
         id: z.string(),
-        startedAt: z.date().optional(),
-        endedAt: z.date().nullable().optional(),
+        startedAt: Time.schema.optional(),
+        endedAt: Time.schema.nullable().optional(),
         description: z.string().nullable().optional(),
       }),
     ),
@@ -136,7 +134,11 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
         db.transaction(async (tx) => {
           const res = await tx
             .update(timeEntriesTable)
-            .set({ startedAt, endedAt, description })
+            .set({
+              startedAt,
+              endedAt,
+              description,
+            })
             .where(
               and(
                 eq(timeEntriesTable.id, id),
@@ -146,7 +148,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
             .returning()
             .then(takeUniqueOrNull)
 
-          if (res && endedAt && endedAt.getTime() < res.startedAt.getTime()) {
+          if (res && endedAt && endedAt.isBefore(res.startedAt)) {
             tx.rollback()
           }
 

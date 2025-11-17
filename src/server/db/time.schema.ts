@@ -1,5 +1,6 @@
 import type { InferSelectModel } from 'drizzle-orm'
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import { Time } from '@/lib/utils/time'
 import { user } from '@/server/db/auth.schema'
 
 export const timeEntriesTable = pgTable('time_entry', {
@@ -7,10 +8,10 @@ export const timeEntriesTable = pgTable('time_entry', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  startedAt: timestamp('started_at', { withTimezone: true, mode: 'date' })
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+  startedAt: Time.column('started_at')
+    .$defaultFn(() => /* @__PURE__ */ Time.now())
     .notNull(),
-  endedAt: timestamp('ended_at', { withTimezone: true, mode: 'date' }),
+  endedAt: Time.column('ended_at'),
   description: text('description'),
 })
 export type TimeEntry = InferSelectModel<typeof timeEntriesTable>
