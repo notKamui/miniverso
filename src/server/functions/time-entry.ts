@@ -34,10 +34,10 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
       .where(
         and(
           eq(timeEntriesTable.userId, user.id),
-          gte(timeEntriesTable.startedAt, dayBegin.getDate()),
+          gte(timeEntriesTable.startedAt, dayBegin),
           or(
             isNull(timeEntriesTable.endedAt),
-            lte(timeEntriesTable.endedAt, dayEnd.getDate()),
+            lte(timeEntriesTable.endedAt, dayEnd),
           ),
         ),
       )
@@ -88,8 +88,8 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         and(
           eq(timeEntriesTable.userId, user.id),
           isNotNull(timeEntriesTable.endedAt),
-          gte(timeEntriesTable.startedAt, startDate.getDate()),
-          lte(timeEntriesTable.endedAt, endDate.getDate()),
+          gte(timeEntriesTable.startedAt, startDate),
+          lte(timeEntriesTable.endedAt, endDate),
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
@@ -103,7 +103,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
       .insert(timeEntriesTable)
       .values({
         userId: user.id,
-        startedAt: startedAt.getDate(),
+        startedAt,
       })
       .returning()
       .then(
@@ -135,8 +135,8 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
           const res = await tx
             .update(timeEntriesTable)
             .set({
-              startedAt: startedAt?.getDate(),
-              endedAt: endedAt?.getDate(),
+              startedAt,
+              endedAt,
               description,
             })
             .where(

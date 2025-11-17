@@ -26,7 +26,7 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
       await $deleteTimeEntries({ data: { ids: notEnded.map((e) => e.id) } })
     }
 
-    entries.sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
+    entries.sort((a, b) => b.startedAt.compare(a.startedAt))
 
     const breadcrumbs = date.isToday()
       ? crumbs({ title: 'Time recorder' })

@@ -55,8 +55,8 @@ export function EditEntryDialog({
 
       await onEdit({
         id: entry.id,
-        startedAt: newStartedAt?.getDate(),
-        endedAt: newEndedAt?.getDate(),
+        startedAt: newStartedAt,
+        endedAt: newEndedAt,
         description: data.description,
       })
       onClose?.()

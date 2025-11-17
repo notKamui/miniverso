@@ -292,17 +292,17 @@ function ActionsMenu({
 }
 
 function TotalTime({ entries }: { entries: TimeEntry[] }) {
-  const now = useNow().getDate().getTime()
+  const now = useNow().getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
     .reduce(
       (acc, entry) =>
-        acc + entry.endedAt!.getTime() - entry.startedAt.getTime(),
+        acc + entry.endedAt!.getMillis() - entry.startedAt.getMillis(),
       0,
     )
   const currentEntry = entries.find((entry) => !entry.endedAt)
   const currentElapsed = currentEntry
-    ? Math.max(now - currentEntry.startedAt.getTime(), 0)
+    ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
     : 0
 
   return (

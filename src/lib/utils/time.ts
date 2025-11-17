@@ -1,4 +1,5 @@
 import { createSerializationAdapter } from '@tanstack/react-router'
+import { customType } from 'drizzle-orm/pg-core'
 import z from 'zod'
 import { createFallthroughExec } from '@/lib/utils/fallthrough'
 
@@ -46,6 +47,15 @@ export class Time {
 
   static readonly schema = z.custom<Time>((value) => value instanceof Time, {
     message: `Invalid ${Time.name} instance`,
+  })
+
+  static readonly column = customType<{
+    data: Time
+    driverData: Date
+  }>({
+    dataType: () => 'timestamp with time zone',
+    fromDriver: (value) => Time.from(value),
+    toDriver: (value) => value.getDate(),
   })
 
   shift(type: ShiftType, count: number): Time {
@@ -181,6 +191,10 @@ export class Time {
 
   getMonth(): number {
     return this.date.getMonth() + 1
+  }
+
+  getMillis(): number {
+    return this.date.getTime()
   }
 
   getRange(type: RangeType): [start: Time, end: Time] {
