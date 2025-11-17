@@ -51,11 +51,11 @@ export class Time {
 
   static readonly column = customType<{
     data: Time
-    driverData: Date
+    driverData: string
   }>({
     dataType: () => 'timestamp with time zone',
-    fromDriver: (value) => Time.from(value),
-    toDriver: (value) => value.getDate(),
+    fromDriver: (date) => Time.from(date),
+    toDriver: (time) => time.toISOString(),
   })
 
   shift(type: ShiftType, count: number): Time {
