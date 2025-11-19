@@ -4,8 +4,8 @@
   "type": "module",
   "version": "1.3.5",
   "scripts": {
-    "postinstall": "if [ \"$NODE_ENV\" != \"production\" ]; then bunx biome migrate --write; fi",
-    "dev": "cross-env NODE_ENV=development bun migrate && cross-env NODE_ENV=development vite dev --port 3000",
+    "postinstall": "bun run --env-file=.env postinstall.ts",
+    "dev": "cross-env-shell NODE_ENV=development \"bun migrate && vite dev --port 3000\"",
     "start": "bun run --env-file=.env serve.ts",
     "b": "bun run build",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
