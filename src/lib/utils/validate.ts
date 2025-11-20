@@ -19,18 +19,14 @@ export function validate<S extends ZodType>(
   type Data = z.infer<S>
   return options?.async
     ? async (data: Data) => {
-        const [error, result] = await tryAsync<Data, ZodError>(
-          schema.parseAsync(data),
-          [ZodError],
-        )
+        const [error, result] = await tryAsync(schema.parseAsync(data), [
+          ZodError,
+        ])
         respondIfError(error)
         return result
       }
     : (data: Data) => {
-        const [error, result] = tryInline<Data, ZodError>(
-          () => schema.parse(data),
-          [ZodError],
-        )
+        const [error, result] = tryInline(() => schema.parse(data), [ZodError])
         respondIfError(error)
         return result
       }
