@@ -13,8 +13,7 @@ export function getRouter() {
         staleTime: 1000 * 60 * 2, // 2 minutes
       },
     },
-  }) as QueryClient &
-    Parameters<typeof setupRouterSsrQueryIntegration>[0]['queryClient']
+  })
 
   const router = createRouter({
     routeTree,
