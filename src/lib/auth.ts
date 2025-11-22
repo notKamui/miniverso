@@ -16,6 +16,9 @@ export const auth = createServerOnlyFn(() =>
   betterAuth({
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
+    experimental: {
+      joins: true,
+    },
     baseURL: env.BASE_URL,
     emailAndPassword: {
       enabled: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
