@@ -1,7 +1,7 @@
 import { type InferSelectModel, relations } from 'drizzle-orm'
 import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { Time } from '@/lib/utils/time'
-import { user } from '@/server/db/auth.schema'
+import { user } from '@/server/db/schema/auth'
 
 export const timeEntry = pgTable(
   'time_entry',
@@ -20,7 +20,7 @@ export const timeEntry = pgTable(
 )
 export type TimeEntry = InferSelectModel<typeof timeEntry>
 
-export const timeUserRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   timeEntries: many(timeEntry),
 }))
 

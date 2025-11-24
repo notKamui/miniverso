@@ -14,7 +14,7 @@ import {
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
 import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/time.schema'
+import type { TimeEntry } from '@/server/db/schema/time'
 
 export function EditEntryDialog({
   entry,

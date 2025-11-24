@@ -10,7 +10,7 @@ import {
   sendVerificationEmail,
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
-import * as authSchema from '@/server/db/auth.schema'
+import * as authSchema from '@/server/db/schema/auth'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({

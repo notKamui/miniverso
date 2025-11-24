@@ -17,7 +17,7 @@ import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
-import { timeEntry } from '@/server/db/time.schema'
+import { timeEntry } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
