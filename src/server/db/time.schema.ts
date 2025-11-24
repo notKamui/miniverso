@@ -3,7 +3,7 @@ import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { Time } from '@/lib/utils/time'
 import { user } from '@/server/db/auth.schema'
 
-export const timeEntriesTable = pgTable(
+export const timeEntry = pgTable(
   'time_entry',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -18,15 +18,15 @@ export const timeEntriesTable = pgTable(
   },
   (table) => [index('time_entry_userId_idx').on(table.userId)],
 )
-export type TimeEntry = InferSelectModel<typeof timeEntriesTable>
+export type TimeEntry = InferSelectModel<typeof timeEntry>
 
-export const userRelations = relations(user, ({ many }) => ({
-  timeEntries: many(timeEntriesTable),
+export const timeUserRelations = relations(user, ({ many }) => ({
+  timeEntries: many(timeEntry),
 }))
 
-export const timeEntryRelations = relations(timeEntriesTable, ({ one }) => ({
+export const timeEntryRelations = relations(timeEntry, ({ one }) => ({
   user: one(user, {
-    fields: [timeEntriesTable.userId],
+    fields: [timeEntry.userId],
     references: [user.id],
   }),
 }))

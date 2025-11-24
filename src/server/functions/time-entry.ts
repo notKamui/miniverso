@@ -17,7 +17,7 @@ import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
-import { timeEntriesTable } from '@/server/db/time.schema'
+import { timeEntry } from '@/server/db/time.schema'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
@@ -30,15 +30,12 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
     return db
       .select()
-      .from(timeEntriesTable)
+      .from(timeEntry)
       .where(
         and(
-          eq(timeEntriesTable.userId, user.id),
-          gte(timeEntriesTable.startedAt, dayBegin),
-          or(
-            isNull(timeEntriesTable.endedAt),
-            lte(timeEntriesTable.endedAt, dayEnd),
-          ),
+          eq(timeEntry.userId, user.id),
+          gte(timeEntry.startedAt, dayBegin),
+          or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
         ),
       )
   })
@@ -65,17 +62,17 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     type GroupBy = typeof groupBy
 
     const unitQuery = {
-      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
-      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntry.startedAt})`,
+      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntry.startedAt})`,
     }[groupBy]
 
     const dayOrMonthQuery = {
-      week: sql`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
-      month: sql`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
-      year: sql`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+      week: sql`EXTRACT(ISODOW FROM ${timeEntry.startedAt})`,
+      month: sql`EXTRACT(DAY FROM ${timeEntry.startedAt})`,
+      year: sql`EXTRACT(MONTH FROM ${timeEntry.startedAt})`,
     }[type]
 
-    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`
+    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
 
     return db
       .select({
@@ -83,13 +80,13 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         dayOrMonth: dayOrMonthQuery.mapWith(Number),
         total: totalQuery.mapWith(Number),
       })
-      .from(timeEntriesTable)
+      .from(timeEntry)
       .where(
         and(
-          eq(timeEntriesTable.userId, user.id),
-          isNotNull(timeEntriesTable.endedAt),
-          gte(timeEntriesTable.startedAt, startDate),
-          lte(timeEntriesTable.endedAt, endDate),
+          eq(timeEntry.userId, user.id),
+          isNotNull(timeEntry.endedAt),
+          gte(timeEntry.startedAt, startDate),
+          lte(timeEntry.endedAt, endDate),
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
@@ -100,7 +97,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
   .inputValidator(validate(z.object({ startedAt: Time.schema })))
   .handler(({ context: { user }, data: { startedAt } }) =>
     db
-      .insert(timeEntriesTable)
+      .insert(timeEntry)
       .values({
         userId: user.id,
         startedAt,
@@ -130,21 +127,16 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
       context: { user },
       data: { id, startedAt, endedAt, description },
     }) => {
-      const [error, timeEntry] = await tryAsync(
+      const [error, entry] = await tryAsync(
         db.transaction(async (tx) => {
           const res = await tx
-            .update(timeEntriesTable)
+            .update(timeEntry)
             .set({
               startedAt,
               endedAt,
               description,
             })
-            .where(
-              and(
-                eq(timeEntriesTable.id, id),
-                eq(timeEntriesTable.userId, user.id),
-              ),
-            )
+            .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
             .returning()
             .then(takeUniqueOrNull)
 
@@ -157,9 +149,9 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
       )
 
       if (error) throw badRequest('End date must be after start date', 400)
-      if (!timeEntry) throw notFound()
+      if (!entry) throw notFound()
 
-      return timeEntry
+      return entry
     },
   )
 
@@ -167,17 +159,12 @@ export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
   .handler(async ({ context: { user }, data: { ids } }) => {
-    const timeEntry = await db
-      .delete(timeEntriesTable)
-      .where(
-        and(
-          inArray(timeEntriesTable.id, ids),
-          eq(timeEntriesTable.userId, user.id),
-        ),
-      )
-      .returning({ id: timeEntriesTable.id })
+    const entry = await db
+      .delete(timeEntry)
+      .where(and(inArray(timeEntry.id, ids), eq(timeEntry.userId, user.id)))
+      .returning({ id: timeEntry.id })
 
-    if (!timeEntry) throw notFound()
+    if (!entry) throw notFound()
 
-    return timeEntry.map((e) => e.id)
+    return entry.map((e) => e.id)
   })
