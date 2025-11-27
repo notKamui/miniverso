@@ -20,7 +20,7 @@ export const timeEntry = pgTable(
 )
 export type TimeEntry = InferSelectModel<typeof timeEntry>
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations_timeEntry = relations(user, ({ many }) => ({
   timeEntries: many(timeEntry),
 }))
 
