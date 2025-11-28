@@ -2,9 +2,9 @@ import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { captcha } from 'better-auth/plugins'
-import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
+import { tanstackStartCookie } from '@/lib/utils/cookies-plugin'
 import {
   sendResetPasswordEmail,
   sendVerificationEmail,
@@ -84,7 +84,7 @@ export const auth = createServerOnlyFn(() =>
             }),
           ]
         : []),
-      tanstackStartCookies(), // INFO: should be the last plugin
+      tanstackStartCookie(), // INFO: should be the last plugin
     ],
   }),
 )()
