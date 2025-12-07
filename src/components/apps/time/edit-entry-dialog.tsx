@@ -14,7 +14,7 @@ import {
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
 import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/time.schema'
+import type { TimeEntry } from '@/server/db/schema/time'
 
 export function EditEntryDialog({
   entry,
@@ -55,8 +55,8 @@ export function EditEntryDialog({
 
       await onEdit({
         id: entry.id,
-        startedAt: newStartedAt?.getDate(),
-        endedAt: newEndedAt?.getDate(),
+        startedAt: newStartedAt,
+        endedAt: newEndedAt,
         description: data.description,
       })
       onClose?.()
@@ -94,7 +94,7 @@ export function EditEntryDialog({
             form={form}
             name="description"
             label="Description"
-            className="max-h-60 min-h-60 resize-none break-words break-all"
+            className="wrap-break-word max-h-60 min-h-60 resize-none break-all"
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">

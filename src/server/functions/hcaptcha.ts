@@ -7,7 +7,7 @@ export const hcaptchaInfoQueryKey = ['hcaptchaInfo'] as const
 export function hcaptchaInfoQueryOptions() {
   return queryOptions({
     queryKey: hcaptchaInfoQueryKey,
-    queryFn: $getHcaptchaInfo,
+    queryFn: ({ signal }) => $getHcaptchaInfo({ signal }),
     staleTime: Number.POSITIVE_INFINITY,
   })
 }

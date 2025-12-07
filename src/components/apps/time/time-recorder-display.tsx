@@ -27,7 +27,7 @@ import { useNow } from '@/lib/hooks/use-now'
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
-import type { TimeEntry } from '@/server/db/time.schema'
+import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $deleteTimeEntries,
   $updateTimeEntry,
@@ -156,7 +156,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     <div className="flex size-full flex-col gap-4">
       <div className="flex flex-row gap-4 max-sm:flex-col">
         <div className="flex flex-row items-center">
-          <Button size="icon" className="h-[36px] rounded-r-none" asChild>
+          <Button size="icon" className="h-9 rounded-r-none" asChild>
             <Link
               to="/time/{-$day}"
               from="/"
@@ -174,7 +174,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           {!isToday && (
             <Button
               size="icon"
-              className={cn('h-[36px] rounded-l-none')}
+              className={cn('h-9 rounded-l-none')}
               disabled={isToday}
               asChild
             >
@@ -292,22 +292,22 @@ function ActionsMenu({
 }
 
 function TotalTime({ entries }: { entries: TimeEntry[] }) {
-  const now = useNow().getDate().getTime()
+  const now = useNow().getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
     .reduce(
       (acc, entry) =>
-        acc + entry.endedAt!.getTime() - entry.startedAt.getTime(),
+        acc + entry.endedAt!.getMillis() - entry.startedAt.getMillis(),
       0,
     )
   const currentEntry = entries.find((entry) => !entry.endedAt)
   const currentElapsed = currentEntry
-    ? Math.max(now - currentEntry.startedAt.getTime(), 0)
+    ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
     : 0
 
   return (
     entries.length > 0 && (
-      <div className="flex h-[36px] flex-row items-center gap-2 rounded-md border px-4">
+      <div className="flex h-9 flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
         <span>{Time.formatDuration(totalTime + currentElapsed)}</span>
       </div>

@@ -133,7 +133,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
     const time = date ? Time.from(date) : Time.now()
 
     const stats = await $getTimeStatsBy({
-      data: { date: time.getDate(), type },
+      data: { date: time, type },
     })
 
     return {

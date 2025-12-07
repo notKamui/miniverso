@@ -1,2 +1,2 @@
-export * from '@/server/db/auth.schema'
-export * from '@/server/db/time.schema'
+export * from './schema/auth'
+export * from './schema/time'

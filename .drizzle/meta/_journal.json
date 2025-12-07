@@ -8,6 +8,20 @@
       "when": 1750415727086,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763832181931,
+      "tag": "0001_add_auth_relations",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763832832642,
+      "tag": "0002_add_time_entry_relations",
+      "breakpoints": true
     }
   ]
 }

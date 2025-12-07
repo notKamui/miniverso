@@ -10,7 +10,7 @@ export const requestInfoQueryKey = ['requestInfo'] as const
 export function requestInfoQueryOptions() {
   return queryOptions({
     queryKey: requestInfoQueryKey,
-    queryFn: $getRequestInfo,
+    queryFn: ({ signal }) => $getRequestInfo({ signal }),
   })
 }
 

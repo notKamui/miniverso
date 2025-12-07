@@ -1,0 +1,1 @@
+CREATE INDEX "time_entry_userId_idx" ON "time_entry" USING btree ("user_id");

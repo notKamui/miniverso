@@ -2,7 +2,7 @@ import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { captcha } from 'better-auth/plugins'
-import { reactStartCookies } from 'better-auth/react-start'
+import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
 import {
@@ -10,12 +10,15 @@ import {
   sendVerificationEmail,
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
-import * as authSchema from '@/server/db/auth.schema'
+import * as authSchema from '@/server/db/schema/auth'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
+    experimental: {
+      joins: true,
+    },
     baseURL: env.BASE_URL,
     emailAndPassword: {
       enabled: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
@@ -81,7 +84,7 @@ export const auth = createServerOnlyFn(() =>
             }),
           ]
         : []),
-      reactStartCookies(), // INFO: should be the last plugin
+      tanstackStartCookies(), // INFO: should be the last plugin
     ],
   }),
 )()

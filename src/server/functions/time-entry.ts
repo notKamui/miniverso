@@ -17,30 +17,25 @@ import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
-import { timeEntriesTable } from '@/server/db/time.schema'
+import { timeEntry } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ date: z.date() })))
+  .inputValidator(validate(z.object({ date: Time.schema })))
   .handler(async ({ context: { user }, data: { date } }) => {
-    const dayBegin = new Date(date)
-    dayBegin.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(date)
-    dayEnd.setHours(23, 59, 59, 999)
+    const dayBegin = date.startOf('days')
+    const dayEnd = date.endOf('days')
 
     return db
       .select()
-      .from(timeEntriesTable)
+      .from(timeEntry)
       .where(
         and(
-          eq(timeEntriesTable.userId, user.id),
-          gte(timeEntriesTable.startedAt, dayBegin),
-          or(
-            isNull(timeEntriesTable.endedAt),
-            lte(timeEntriesTable.endedAt, dayEnd),
-          ),
+          eq(timeEntry.userId, user.id),
+          gte(timeEntry.startedAt, dayBegin),
+          or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
         ),
       )
   })
@@ -49,7 +44,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(
     validate(
-      z.object({ date: z.date(), type: z.enum(['week', 'month', 'year']) }),
+      z.object({ date: Time.schema, type: z.enum(['week', 'month', 'year']) }),
     ),
   )
   .handler(async ({ context: { user }, data: { date, type } }) => {
@@ -62,22 +57,22 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
     // - month: get the totals per day of the month of the date
     // - year: get the totals per month of the year of the date
 
-    const [startDate, endDate] = Time.from(date).getRange(type)
+    const [startDate, endDate] = date.getRange(type)
     const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
     type GroupBy = typeof groupBy
 
     const unitQuery = {
-      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntriesTable.startedAt})`,
-      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntriesTable.startedAt})`,
+      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntry.startedAt})`,
+      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntry.startedAt})`,
     }[groupBy]
 
     const dayOrMonthQuery = {
-      week: sql`EXTRACT(ISODOW FROM ${timeEntriesTable.startedAt})`,
-      month: sql`EXTRACT(DAY FROM ${timeEntriesTable.startedAt})`,
-      year: sql`EXTRACT(MONTH FROM ${timeEntriesTable.startedAt})`,
+      week: sql`EXTRACT(ISODOW FROM ${timeEntry.startedAt})`,
+      month: sql`EXTRACT(DAY FROM ${timeEntry.startedAt})`,
+      year: sql`EXTRACT(MONTH FROM ${timeEntry.startedAt})`,
     }[type]
 
-    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntriesTable.endedAt} - ${timeEntriesTable.startedAt})))`
+    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
 
     return db
       .select({
@@ -85,13 +80,13 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
         dayOrMonth: dayOrMonthQuery.mapWith(Number),
         total: totalQuery.mapWith(Number),
       })
-      .from(timeEntriesTable)
+      .from(timeEntry)
       .where(
         and(
-          eq(timeEntriesTable.userId, user.id),
-          isNotNull(timeEntriesTable.endedAt),
-          gte(timeEntriesTable.startedAt, startDate.getDate()),
-          lte(timeEntriesTable.endedAt, endDate.getDate()),
+          eq(timeEntry.userId, user.id),
+          isNotNull(timeEntry.endedAt),
+          gte(timeEntry.startedAt, startDate),
+          lte(timeEntry.endedAt, endDate),
         ),
       )
       .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
@@ -99,10 +94,10 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ startedAt: z.date() })))
+  .inputValidator(validate(z.object({ startedAt: Time.schema })))
   .handler(({ context: { user }, data: { startedAt } }) =>
     db
-      .insert(timeEntriesTable)
+      .insert(timeEntry)
       .values({
         userId: user.id,
         startedAt,
@@ -121,8 +116,8 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
     validate(
       z.object({
         id: z.string(),
-        startedAt: z.date().optional(),
-        endedAt: z.date().nullable().optional(),
+        startedAt: Time.schema.optional(),
+        endedAt: Time.schema.nullable().optional(),
         description: z.string().nullable().optional(),
       }),
     ),
@@ -132,21 +127,20 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
       context: { user },
       data: { id, startedAt, endedAt, description },
     }) => {
-      const [error, timeEntry] = await tryAsync(
+      const [error, entry] = await tryAsync(
         db.transaction(async (tx) => {
           const res = await tx
-            .update(timeEntriesTable)
-            .set({ startedAt, endedAt, description })
-            .where(
-              and(
-                eq(timeEntriesTable.id, id),
-                eq(timeEntriesTable.userId, user.id),
-              ),
-            )
+            .update(timeEntry)
+            .set({
+              startedAt,
+              endedAt,
+              description,
+            })
+            .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
             .returning()
             .then(takeUniqueOrNull)
 
-          if (res && endedAt && endedAt.getTime() < res.startedAt.getTime()) {
+          if (res && endedAt && endedAt.isBefore(res.startedAt)) {
             tx.rollback()
           }
 
@@ -155,9 +149,9 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
       )
 
       if (error) throw badRequest('End date must be after start date', 400)
-      if (!timeEntry) throw notFound()
+      if (!entry) throw notFound()
 
-      return timeEntry
+      return entry
     },
   )
 
@@ -165,17 +159,12 @@ export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
   .handler(async ({ context: { user }, data: { ids } }) => {
-    const timeEntry = await db
-      .delete(timeEntriesTable)
-      .where(
-        and(
-          inArray(timeEntriesTable.id, ids),
-          eq(timeEntriesTable.userId, user.id),
-        ),
-      )
-      .returning({ id: timeEntriesTable.id })
+    const entry = await db
+      .delete(timeEntry)
+      .where(and(inArray(timeEntry.id, ids), eq(timeEntry.userId, user.id)))
+      .returning({ id: timeEntry.id })
 
-    if (!timeEntry) throw notFound()
+    if (!entry) throw notFound()
 
-    return timeEntry.map((e) => e.id)
+    return entry.map((e) => e.id)
   })

@@ -7,7 +7,7 @@ export const socialOAuthQueryKey = ['socialOAuth'] as const
 export function socialOAuthQueryOptions() {
   return queryOptions({
     queryKey: socialOAuthQueryKey,
-    queryFn: $getSocialOAuth,
+    queryFn: ({ signal }) => $getSocialOAuth({ signal }),
     staleTime: Number.POSITIVE_INFINITY,
   })
 }
