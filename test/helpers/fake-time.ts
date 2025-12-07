@@ -1,23 +1,21 @@
-import { setSystemTime } from 'bun:test'
+import { jest } from 'bun:test'
 
-export function installFakeNow(seedMs: number) {
-  setSystemTime(seedMs)
+export function installFakeNow() {
+  jest.useFakeTimers()
   function advance(ms: number) {
-    const next = Date.now() + ms
-    setSystemTime(next)
-    return next
+    const next = jest.advanceTimersByTime(ms)
+    return next.now()
   }
   function restore() {
-    setSystemTime()
+    jest.useRealTimers()
   }
   return { advance, restore }
 }
 
 export function withFakeNow<T>(
-  seedMs: number,
   fn: (ctrl: { advance: (ms: number) => number }) => T,
 ): T {
-  const { advance, restore } = installFakeNow(seedMs)
+  const { advance, restore } = installFakeNow()
   try {
     return fn({ advance })
   } finally {
