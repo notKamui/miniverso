@@ -1,6 +1,6 @@
 import { jest } from 'bun:test'
 
-export function installFakeNow() {
+export function installFakeTime() {
   jest.useFakeTimers()
   function advance(ms: number) {
     // @ts-expect-error TODO: Remove when Bun's jest types include advanceTimersByTime in types
@@ -13,10 +13,10 @@ export function installFakeNow() {
   return { advance, restore }
 }
 
-export function withFakeNow<T>(
+export function withFakeTime<T>(
   fn: (ctrl: { advance: (ms: number) => number }) => T,
 ): T {
-  const { advance, restore } = installFakeNow()
+  const { advance, restore } = installFakeTime()
   try {
     return fn({ advance })
   } finally {
