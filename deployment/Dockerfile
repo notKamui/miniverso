@@ -16,7 +16,7 @@ FROM base AS production
 
 COPY bun.lock ./
 COPY package.json ./
-RUN bun install --frozen-lockfile --production
+RUN NODE_ENV=production bun install --frozen-lockfile --production
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/dist ./dist
