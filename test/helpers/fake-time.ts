@@ -3,6 +3,7 @@ import { jest } from 'bun:test'
 export function installFakeNow() {
   jest.useFakeTimers()
   function advance(ms: number) {
+    // @ts-expect-error TODO: Remove when Bun's jest types include advanceTimersByTime in types
     const next = jest.advanceTimersByTime(ms)
     return next.now()
   }
