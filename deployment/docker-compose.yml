@@ -17,6 +17,8 @@ services:
       - RESEND_API_KEY=
       - RESEND_MAIL_DOMAIN=
     restart: unless-stopped
+    depends_on:
+      - db
     networks:
       - miniverso
 
