@@ -17,6 +17,8 @@ services:
       - RESEND_API_KEY=
       - RESEND_MAIL_DOMAIN=
     restart: unless-stopped
+    depends_on:
+      - db
     networks:
       - miniverso
 
@@ -27,8 +29,6 @@ services:
       - POSTGRES_USER=miniverso
       - POSTGRES_PASSWORD=miniverso
       - POSTGRES_DB=miniverso
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: unless-stopped
