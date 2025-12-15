@@ -14,6 +14,7 @@ export type ShiftType =
 
 export type RangeType = 'day' | 'week' | 'month' | 'year'
 
+const CLASS_NAME = 'Time'
 export class Time {
   private constructor(private readonly date: Date) {}
 
@@ -39,14 +40,14 @@ export class Time {
   }
 
   static readonly serializationAdapter = createSerializationAdapter({
-    key: Time.name,
+    key: CLASS_NAME,
     test: (v) => v instanceof Time,
     toSerializable: (v) => v.getDate(),
     fromSerializable: (v) => Time.from(v),
   })
 
   static readonly schema = z.custom<Time>((value) => value instanceof Time, {
-    message: `Invalid ${Time.name} instance`,
+    message: `Invalid ${CLASS_NAME} instance`,
   })
 
   static readonly column = customType<{
