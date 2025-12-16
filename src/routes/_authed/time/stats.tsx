@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import { $getTimeStatsBy } from '@/server/functions/time-entry'
@@ -140,13 +139,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
       stats,
       time,
       type,
-      crumbs: crumbs(
-        {
-          title: 'Time recorder',
-          link: { to: '/time/{-$day}', params: { day: undefined } },
-        },
-        { title: 'Statistics' },
-      ),
+      crumb: 'Statistics',
     }
   },
   component: RouteComponent,

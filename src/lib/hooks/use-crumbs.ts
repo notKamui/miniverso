@@ -1,25 +1,25 @@
-import { isMatch, useMatches } from '@tanstack/react-router'
-import { Collection } from '@/lib/utils/collection'
+import { useMatches } from '@tanstack/react-router'
 
 export type Crumb = {
-  title: string
-  link?: {
-    to: string
-    params?: any
-    search?: any
-    hash?: any
-    state?: any
-    from?: string
-  }
+  to: string
+  params: Record<string, string | number>
+  search: Record<string, string | number>
+  name: string
 }
 
-export const crumbs = Collection.createFactory<Crumb>()
-
 export function useCrumbs(): Crumb[] {
-  return useMatches()
-    .filter((match) => isMatch(match, 'loaderData.crumbs'))
-    .map((match) => match.loaderData?.crumbs)
-    .filter((match) => match?.length)
-    .filter(Collection.notNullish)
-    .flat()
+  return useMatches({
+    select: (matches) =>
+      matches
+        .filter(
+          (match): match is typeof match & { loaderData: { crumb: string } } =>
+            !!(match.loaderData as any)?.crumb,
+        )
+        .map((match) => ({
+          to: match.pathname,
+          params: (match.params as never) || {},
+          search: (match.search as never) || {},
+          name: match.loaderData.crumb,
+        })),
+  })
 }

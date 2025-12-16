@@ -48,9 +48,9 @@ export function MainLayout({ children }: { children: ReactNode }) {
               <BreadcrumbList>
                 {breadcrumbs.map((crumb, index) => (
                   <CrumbLink
-                    key={crumb.title}
+                    key={crumb.to}
                     crumb={crumb}
-                    last={index === breadcrumbs.length - 1}
+                    isLast={index === breadcrumbs.length - 1}
                   />
                 ))}
               </BreadcrumbList>
@@ -69,21 +69,21 @@ export function MainLayout({ children }: { children: ReactNode }) {
   )
 }
 
-function CrumbLink({ crumb, last }: { crumb: Crumb; last: boolean }) {
+function CrumbLink({ crumb, isLast }: { crumb: Crumb; isLast: boolean }) {
   return (
     <>
       <BreadcrumbItem>
-        {crumb.link && !last ? (
+        {!isLast ? (
           <BreadcrumbLink asChild>
-            <Link to={crumb.link.to} params={crumb.link.params} from="/">
-              {crumb.title}
+            <Link to={crumb.to} params={crumb.params} from="/">
+              {crumb.name}
             </Link>
           </BreadcrumbLink>
         ) : (
-          <BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+          <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
         )}
       </BreadcrumbItem>
-      {!last && <BreadcrumbSeparator className="hidden md:block" />}
+      {!isLast && <BreadcrumbSeparator className="hidden md:block" />}
     </>
   )
 }

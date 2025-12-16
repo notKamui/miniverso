@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import {
@@ -28,20 +27,10 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 
     entries.sort((a, b) => b.startedAt.compare(a.startedAt))
 
-    const breadcrumbs = date.isToday()
-      ? crumbs({ title: 'Time recorder' })
-      : crumbs(
-          {
-            title: 'Time recorder',
-            link: { to: '/time/{-$day}', params: { day: undefined } },
-          },
-          { title: date.formatDayNumber() },
-        )
-
     return {
       entries,
       time: date,
-      crumbs: breadcrumbs,
+      crumb: date.isToday() ? undefined : date.formatDayNumber(),
     }
   },
   component: RouteComponent,
