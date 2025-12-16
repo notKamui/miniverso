@@ -1,4 +1,4 @@
-import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
+import { ClockIcon, HomeIcon, ShieldIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import {
@@ -36,6 +36,24 @@ const sections: AppNavGroupProps[] = [
         condition: ({ user }) => !!user,
       },
     ],
+  },
+  {
+    title: 'Administration',
+    items: [
+      {
+        title: 'Admin Dashboard',
+        to: '/admin',
+        icon: ShieldIcon,
+        items: [
+          {
+            title: 'Users',
+            to: '/admin',
+          },
+        ],
+        condition: ({ user }) => user?.role === 'admin',
+      },
+    ],
+    condition: ({ user }) => user?.role === 'admin',
   },
 ]
 
