@@ -97,7 +97,7 @@ function Footer() {
         className={`whitespace-nowrap px-2 text-muted-foreground text-xs transition-all duration-300 ease-out ${
           open
             ? 'w-auto translate-x-0 opacity-100'
-            : '-translate-x-full w-0 opacity-0'
+            : 'w-0 -translate-x-full opacity-0'
         }`}
       >
         v{APP_VERSION} - {currentYear} ©{' '}

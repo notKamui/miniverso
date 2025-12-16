@@ -63,7 +63,7 @@ const MONTHS = {
   12: 'Dec',
 } as const
 
-const CHARTS = {
+const CHARTS: Record<string, Chart> = {
   week: (stats) => {
     const fullRange = Object.keys(DAYS).map(Number)
     const data = fullRange.map((dayOrMonth) => {
@@ -115,7 +115,7 @@ const CHARTS = {
       format: (total: number) => Time.formatDuration(total * 1000),
     }
   },
-} satisfies Record<string, Chart>
+}
 
 export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
@@ -173,7 +173,7 @@ function RouteComponent() {
             navigate({ to: '.', search: { date: time.getDate(), type } })
           }
         >
-          <SelectTrigger className="w-[180px] max-lg:w-full">
+          <SelectTrigger className="w-45 max-lg:w-full">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
