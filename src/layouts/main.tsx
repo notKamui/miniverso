@@ -1,5 +1,6 @@
 import { UserButton } from '@daveyplate/better-auth-ui'
-import { Link } from '@tanstack/react-router'
+import { Link, linkOptions, useRouteContext } from '@tanstack/react-router'
+import { ShieldIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import { ThemeSwitcher } from '@/components/theme-switcher'
@@ -29,6 +30,10 @@ export function MainLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile(true)
   const sidebarOpen = useSidebarState() === 'open'
   const { mutate: updateSidebarState } = useUpdateSidebarState()
+  const isAdmin = useRouteContext({
+    from: '__root__',
+    select: ({ user }) => user?.role === 'admin',
+  })
 
   return (
     <SidebarProvider
@@ -58,7 +63,22 @@ export function MainLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <ThemeSwitcher />
-            <UserButton size={isMobile ? 'icon' : 'default'} variant="ghost" />
+            <UserButton
+              size={isMobile ? 'icon' : 'default'}
+              variant="ghost"
+              additionalLinks={
+                isAdmin
+                  ? [
+                      {
+                        href: linkOptions({ to: '/admin' }).to,
+                        label: 'Admin',
+                        icon: <ShieldIcon />,
+                        signedIn: true,
+                      },
+                    ]
+                  : []
+              }
+            />
           </div>
         </header>
         <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
