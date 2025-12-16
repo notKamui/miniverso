@@ -11,14 +11,13 @@ export const zodErrorSerializationAdapter = createSerializationAdapter({
 export const responseSerializationAdapter = createSerializationAdapter({
   key: 'response',
   test: (v) => v instanceof Response,
-  toSerializable: async (response: Response) => {
-    const body = await response.text();
+  toSerializable: (response: Response) => {
     return {
-      body,
+      body: JSON.stringify(response.body),
       status: response.status,
       statusText: response.statusText,
       headers: Array.from(response.headers.entries()),
-    };
+    }
   },
   fromSerializable: (obj) =>
     new Response(obj.body, {
