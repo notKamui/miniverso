@@ -31,6 +31,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     return db
       .select({
         id: timeEntry.id,
+        userId: timeEntry.userId,
         startedAt: timeEntry.startedAt,
         endedAt: timeEntry.endedAt,
         description: timeEntry.description,
@@ -109,6 +110,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
       })
       .returning({
         id: timeEntry.id,
+        userId: timeEntry.userId,
         startedAt: timeEntry.startedAt,
         endedAt: timeEntry.endedAt,
         description: timeEntry.description,
@@ -149,6 +151,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
             .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
             .returning({
               id: timeEntry.id,
+              userId: timeEntry.userId,
               startedAt: timeEntry.startedAt,
               endedAt: timeEntry.endedAt,
               description: timeEntry.description,
