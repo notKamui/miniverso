@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { env } from '@/lib/env/server'
-import { validate } from '@/lib/utils/validate'
 
 const key = 'theme'
 
@@ -19,7 +18,7 @@ export const $getTheme = createServerFn({ method: 'GET' }).handler(() => {
 })
 
 export const $setTheme = createServerFn({ method: 'POST' })
-  .inputValidator(validate(ThemeSchema))
+  .inputValidator(ThemeSchema)
   .handler(async ({ data }) => {
     if (data === 'system') {
       deleteCookie(key)

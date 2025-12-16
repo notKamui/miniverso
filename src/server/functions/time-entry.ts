@@ -15,7 +15,6 @@ import { z } from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { Time } from '@/lib/utils/time'
 import { tryAsync } from '@/lib/utils/try'
-import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
@@ -23,7 +22,7 @@ import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ date: Time.schema })))
+  .inputValidator(z.object({ date: Time.schema }))
   .handler(async ({ context: { user }, data: { date } }) => {
     const dayBegin = date.startOf('days')
     const dayEnd = date.endOf('days')
@@ -43,9 +42,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(
-    validate(
-      z.object({ date: Time.schema, type: z.enum(['week', 'month', 'year']) }),
-    ),
+    z.object({ date: Time.schema, type: z.enum(['week', 'month', 'year']) }),
   )
   .handler(async ({ context: { user }, data: { date, type } }) => {
     // for the given user
@@ -94,7 +91,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ startedAt: Time.schema })))
+  .inputValidator(z.object({ startedAt: Time.schema }))
   .handler(({ context: { user }, data: { startedAt } }) =>
     db
       .insert(timeEntry)
@@ -113,14 +110,12 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(
-    validate(
-      z.object({
-        id: z.string(),
-        startedAt: Time.schema.optional(),
-        endedAt: Time.schema.nullable().optional(),
-        description: z.string().nullable().optional(),
-      }),
-    ),
+    z.object({
+      id: z.string(),
+      startedAt: Time.schema.optional(),
+      endedAt: Time.schema.nullable().optional(),
+      description: z.string().nullable().optional(),
+    }),
   )
   .handler(
     async ({
@@ -157,7 +152,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
 
 export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
+  .inputValidator(z.object({ ids: z.array(z.string()) }))
   .handler(async ({ context: { user }, data: { ids } }) => {
     const entry = await db
       .delete(timeEntry)
