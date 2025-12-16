@@ -16,6 +16,29 @@ export const auth = createServerOnlyFn(() =>
   betterAuth({
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
+    user: {
+      additionalFields: {
+        role: {
+          fieldName: 'role',
+          type: 'string',
+          defaultValue: 'user',
+          required: true,
+          input: false,
+        },
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user) => {
+            if (env.ADMIN_EMAILS.includes(user.email)) {
+              return { data: { ...user, role: 'admin' } }
+            }
+            return { data: user }
+          },
+        },
+      },
+    },
     experimental: {
       joins: true,
     },

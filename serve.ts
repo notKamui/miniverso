@@ -450,6 +450,7 @@ async function startServer() {
 
 async function runDatabaseMigrations() {
   const { default: postgres } = await import('postgres')
+  const { sql } = await import('drizzle-orm')
   const { drizzle } = await import('drizzle-orm/postgres-js')
   const { migrate } = await import('drizzle-orm/postgres-js/migrator')
 
@@ -458,6 +459,12 @@ async function runDatabaseMigrations() {
   console.log('ℹ️ Running migrations...')
   await migrate(db, { migrationsFolder: './.drizzle' })
   console.log('✅ Migrations completed successfully.\n')
+
+  console.log('ℹ️  Updating admin user roles...')
+  await db.execute(
+    sql`UPDATE "user" SET role = 'admin' WHERE email = ANY(ARRAY[${env.ADMIN_EMAILS}])`,
+  )
+  console.log('✅ Admin user roles updated successfully.\n')
 }
 
 async function main() {
