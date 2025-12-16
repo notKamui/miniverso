@@ -64,6 +64,11 @@ const applications: Application[] = [
     title: 'Time recorder',
     description: 'Record your time and track your progress',
   },
+  {
+    to: '/admin',
+    title: 'Admin Dashboard',
+    description: 'Manage users and system settings',
+  },
 ]
 
 function Main() {

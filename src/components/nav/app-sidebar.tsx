@@ -35,11 +35,6 @@ const sections: AppNavGroupProps[] = [
         ],
         condition: ({ user }) => !!user,
       },
-    ],
-  },
-  {
-    title: 'Administration',
-    items: [
       {
         title: 'Admin Dashboard',
         to: '/admin',
@@ -53,7 +48,6 @@ const sections: AppNavGroupProps[] = [
         condition: ({ user }) => user?.role === 'admin',
       },
     ],
-    condition: ({ user }) => user?.role === 'admin',
   },
 ]
 
