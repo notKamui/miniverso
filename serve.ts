@@ -59,6 +59,7 @@
  *   bun run server.ts
  */
 
+import { runDatabaseMigrations } from './scripts/migrate'
 import { env } from './src/lib/env/server'
 import { tryAsync, tryInline } from './src/lib/utils/try'
 
@@ -446,25 +447,6 @@ async function startServer() {
   console.log(
     `\n🚀 Server running at http://localhost:${String(server.port)}\n`,
   )
-}
-
-async function runDatabaseMigrations() {
-  const { default: postgres } = await import('postgres')
-  const { sql } = await import('drizzle-orm')
-  const { drizzle } = await import('drizzle-orm/postgres-js')
-  const { migrate } = await import('drizzle-orm/postgres-js/migrator')
-
-  const postgresClient = postgres(env.DATABASE_URL)
-  const db = drizzle({ client: postgresClient })
-  console.log('ℹ️ Running migrations...')
-  await migrate(db, { migrationsFolder: './.drizzle' })
-  console.log('✅ Migrations completed successfully.\n')
-
-  console.log('ℹ️  Updating admin user roles...')
-  await db.execute(
-    sql`UPDATE "user" SET role = 'admin' WHERE email = ANY(ARRAY[${env.ADMIN_EMAILS}])`,
-  )
-  console.log('✅ Admin user roles updated successfully.\n')
 }
 
 async function main() {

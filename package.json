@@ -5,7 +5,7 @@
   "version": "1.3.9",
   "scripts": {
     "postinstall": "bun run --env-file=.env postinstall.ts",
-    "dev": "cross-env-shell NODE_ENV=development \"bun migrate && vite dev --port 3000\"",
+    "dev": "cross-env-shell NODE_ENV=development \"bun scripts/migrate.ts && vite dev --port 3000\"",
     "start": "bun run --env-file=.env serve.ts",
     "b": "bun run build",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
