@@ -17,10 +17,15 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
       ) {
         try {
           const actualError = JSON.parse(error.message)
-          window?.dispatchEvent(new ServerErrorEvent(actualError))
+          window?.dispatchEvent(
+            new ServerErrorEvent(actualError, { sendToast: true }),
+          )
         } catch {
           window?.dispatchEvent(
-            new ServerErrorEvent({ body: { error: error.message } }),
+            new ServerErrorEvent(
+              { body: { error: error.message } },
+              { sendToast: true },
+            ),
           )
         }
       }
