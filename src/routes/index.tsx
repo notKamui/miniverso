@@ -80,10 +80,6 @@ function Main() {
             </Link>
           </div>
         ))}
-
-        <Link to="/test" from="/" className={link()}>
-          Go to test route
-        </Link>
       </div>
     </div>
   )

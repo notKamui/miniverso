@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getCookie, setCookie } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { env } from '@/lib/env/server'
+import { validate } from '@/lib/utils/validate'
 
 const key = 'sidebar'
 
@@ -23,7 +24,7 @@ export const $getSidebarState = createServerFn({ method: 'GET' }).handler(
 )
 
 export const $setSidebarState = createServerFn({ method: 'POST' })
-  .inputValidator(SidebarStateSchema)
+  .inputValidator(validate(SidebarStateSchema))
   .handler(async ({ data }) => {
     setCookie(key, data, {
       path: '/',
