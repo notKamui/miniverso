@@ -9,6 +9,14 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
     } catch (error) {
       if (error instanceof ZodError) {
         window?.dispatchEvent(new ServerErrorEvent(error))
+      } else if (error instanceof Response) {
+        const body = await error.json().catch(() => 'Error on the server')
+        window?.dispatchEvent(
+          new ServerErrorEvent(
+            { body: typeof body === 'object' ? body : { error: body } },
+            { sendToast: true },
+          ),
+        )
       } else if (
         !!error &&
         typeof error === 'object' &&
@@ -18,7 +26,7 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
         try {
           const actualError = JSON.parse(error.message)
           window?.dispatchEvent(
-            new ServerErrorEvent(actualError, { sendToast: true }),
+            new ServerErrorEvent({ body: actualError }, { sendToast: true }),
           )
         } catch {
           window?.dispatchEvent(
