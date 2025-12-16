@@ -59,9 +59,9 @@
  *   bun run server.ts
  */
 
-import { runDatabaseMigrations } from './scripts/migrate'
-import { env } from './src/lib/env/server'
-import { tryAsync, tryInline } from './src/lib/utils/try'
+import { env } from '../src/lib/env/server'
+import { tryAsync, tryInline } from '../src/lib/utils/try'
+import { runDatabaseMigrations } from './migrate'
 
 // Configuration
 const PORT = env.PORT
