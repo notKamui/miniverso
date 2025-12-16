@@ -1,38 +1,22 @@
-import { ZodError, type ZodType, type z } from 'zod'
-import { badRequest } from '@/lib/utils/response'
-import { tryAsync, tryInline } from '@/lib/utils/try'
+import { setResponseStatus } from '@tanstack/react-start/server'
+import { z } from 'zod'
 
-export function validate<S extends ZodType>(
-  schema: S,
-  options?: { async?: false },
-): (data: z.infer<S>) => z.infer<S>
-
-export function validate<S extends ZodType>(
-  schema: S,
-  options?: { async: true },
-): (data: z.infer<S>) => Promise<z.infer<S>>
-
-export function validate<S extends ZodType>(
-  schema: S,
-  options?: { async?: boolean },
+export function validate<T>(
+  schema: z.ZodType<T>,
+  options?: { pretty?: boolean },
 ) {
-  type Data = z.infer<S>
-  return options?.async
-    ? async (data: Data) => {
-        const [error, result] = await tryAsync(schema.parseAsync(data), [
-          ZodError,
-        ])
-        respondIfError(error)
-        return result
-      }
-    : (data: Data) => {
-        const [error, result] = tryInline(() => schema.parse(data), [ZodError])
-        respondIfError(error)
-        return result
-      }
-}
+  return (data: T): T => {
+    const {
+      success,
+      error: zodError,
+      data: parsedData,
+    } = schema.safeParse(data)
 
-function respondIfError(error: ZodError | null) {
-  if (!error) return
-  badRequest('Validation error', 400, { errors: error.issues })
+    if (!success) {
+      setResponseStatus(400)
+      throw options?.pretty ? new Error(z.prettifyError(zodError)) : zodError
+    }
+
+    return parsedData
+  }
 }
