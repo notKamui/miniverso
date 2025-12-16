@@ -1,5 +1,5 @@
 import { toast } from 'sonner'
-import z from 'zod'
+import { z } from 'zod'
 import { useEvent } from '@/lib/hooks/use-event'
 
 export class ServerErrorEvent extends CustomEvent<{ body: { error: string } }> {
