@@ -47,7 +47,7 @@ export class Time {
   })
 
   static readonly schema = z.custom<Time>((value) => value instanceof Time, {
-    message: `Invalid ${CLASS_NAME} instance`,
+    error: `Invalid ${CLASS_NAME} instance`,
   })
 
   static readonly column = customType<{
