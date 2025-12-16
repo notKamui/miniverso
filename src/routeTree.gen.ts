@@ -13,6 +13,7 @@ import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
+import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedTimeChar123DayChar125RouteImport } from './routes/_authed/time/{-$day}'
@@ -37,10 +38,15 @@ const AccountPathnameRoute = AccountPathnameRouteImport.update({
   path: '/account/$pathname',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
+const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthedRouteRoute,
+} as any)
+const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -61,12 +67,13 @@ const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
   '/time/stats': typeof AuthedTimeStatsRoute
   '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin': typeof AuthedAdminIndexRoute
+  '/admin/': typeof AuthedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,6 +88,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
+  '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
@@ -92,12 +100,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/account/$pathname'
     | '/auth/$pathname'
     | '/time/stats'
     | '/time/{-$day}'
     | '/api/auth/$'
-    | '/admin'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authed'
+    | '/_authed/admin'
     | '/account/$pathname'
     | '/auth/$pathname'
     | '/_authed/time/stats'
@@ -157,12 +167,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountPathnameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/admin/': {
-      id: '/_authed/admin/'
+    '/_authed/admin': {
+      id: '/_authed/admin'
       path: '/admin'
       fullPath: '/admin'
-      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      preLoaderRoute: typeof AuthedAdminRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/admin/': {
+      id: '/_authed/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -188,16 +205,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthedRouteRouteChildren {
-  AuthedTimeStatsRoute: typeof AuthedTimeStatsRoute
-  AuthedTimeChar123DayChar125Route: typeof AuthedTimeChar123DayChar125Route
+interface AuthedAdminRouteRouteChildren {
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
 }
 
+const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
+  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+}
+
+const AuthedAdminRouteRouteWithChildren =
+  AuthedAdminRouteRoute._addFileChildren(AuthedAdminRouteRouteChildren)
+
+interface AuthedRouteRouteChildren {
+  AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
+  AuthedTimeStatsRoute: typeof AuthedTimeStatsRoute
+  AuthedTimeChar123DayChar125Route: typeof AuthedTimeChar123DayChar125Route
+}
+
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
+  AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
   AuthedTimeStatsRoute: AuthedTimeStatsRoute,
   AuthedTimeChar123DayChar125Route: AuthedTimeChar123DayChar125Route,
-  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
 }
 
 const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
