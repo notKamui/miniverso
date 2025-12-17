@@ -5,6 +5,7 @@ export const Route = createFileRoute('/_authed/admin')({
     if (user?.role !== 'admin') {
       throw notFound()
     }
+    return { crumb: 'Admin' }
   },
   component: RouteComponent,
 })

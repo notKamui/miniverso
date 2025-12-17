@@ -4,7 +4,6 @@ import { link, title } from '@/components/ui/typography'
 import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export const Route = createFileRoute('/_authed/admin/')({
-  loader: async () => ({ crumb: 'Admin Dashboard' }),
   component: RouteComponent,
 })
 
