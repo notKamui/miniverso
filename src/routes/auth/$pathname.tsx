@@ -1,6 +1,5 @@
 import { AuthView, authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
@@ -24,13 +23,7 @@ export const Route = createFileRoute('/auth/$pathname')({
     }
 
     return {
-      crumbs: crumbs({
-        title: 'Auth',
-        link: {
-          to: '/auth/$pathname',
-          params: { pathname },
-        },
-      }),
+      crumb: 'Auth',
     }
   },
   component: RouteComponent,

@@ -1,15 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { AdminGuard } from '@/components/admin/admin-guard'
 import { link, title } from '@/components/ui/typography'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export const Route = createFileRoute('/_authed/admin/')({
-  loader: async () => {
-    return {
-      crumbs: crumbs({ title: 'Admin Dashboard' }),
-    }
-  },
+  loader: async () => ({ crumb: 'Admin Dashboard' }),
   component: RouteComponent,
 })
 
