@@ -1,6 +1,6 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
-import type { SQL } from 'drizzle-orm'
-import type { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
+import { count, eq, type InferSelectModel, type SQL } from 'drizzle-orm'
+import type { AnyPgTable, PgColumn } from 'drizzle-orm/pg-core'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { env } from '@/lib/env/server'
@@ -27,16 +27,48 @@ export function takeUniqueOr<
   }
 }
 
-export function withPagination<T extends PgSelect>(
-  query: T,
-  meta: {
-    orderBy: PgColumn | SQL | SQL.Aliased
-    page: number
-    size: number
-  },
-) {
-  return query
-    .orderBy(meta.orderBy)
-    .limit(meta.size)
-    .offset((meta.page - 1) * meta.size)
+export async function paginated<
+  TTable extends AnyPgTable<{ columns: { id: PgColumn } }>,
+>(options: {
+  table: TTable
+  where: SQL | undefined
+  orderBy: PgColumn | SQL | SQL.Aliased
+  page: number
+  size: number
+}): Promise<{
+  items: Array<InferSelectModel<TTable>>
+  total: number
+  size: number
+  page: number
+  totalPages: number
+}> {
+  const idColumn = (options.table as any).id as PgColumn
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(options.table as AnyPgTable)
+    .where(options.where)
+
+  const subquery = db
+    .select({ id: idColumn })
+    .from(options.table as AnyPgTable)
+    .where(options.where)
+    .orderBy(options.orderBy)
+    .limit(options.size)
+    .offset((options.page - 1) * options.size)
+    .as('subquery')
+
+  const rows = await db
+    .select({ row: options.table as TTable })
+    .from(options.table as AnyPgTable)
+    .innerJoin(subquery, eq(idColumn, subquery.id))
+    .orderBy(options.orderBy)
+
+  return {
+    items: rows.map((r) => r.row),
+    total,
+    size: options.size,
+    page: options.page,
+    totalPages: Math.max(1, Math.ceil(total / options.size)),
+  }
 }
