@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, count, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { validate } from '@/lib/utils/validate'
 import { db, withPagination } from '@/server/db'
@@ -64,7 +64,7 @@ export const $getUsers = createServerFn({ method: 'GET' })
         .where(where)
         .$dynamic(),
       {
-        orderBy: desc(user.createdAt),
+        orderBy: asc(user.createdAt),
         page,
         size,
       },
@@ -74,7 +74,7 @@ export const $getUsers = createServerFn({ method: 'GET' })
       .select()
       .from(user)
       .innerJoin(subquery, eq(user.id, subquery.id))
-      .orderBy(desc(user.createdAt))
+      .orderBy(asc(user.createdAt))
 
     return {
       items: items.map((item) => item.user),
