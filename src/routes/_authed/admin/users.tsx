@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_authed/admin/users')({
   loader: async ({ deps: { search }, context: { queryClient } }) => {
     const { page, size, q, role } = search
 
-    const users = await queryClient.fetchQuery(
+    const usersPage = await queryClient.fetchQuery(
       getUsersQueryOptions({
         page,
         size,
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/_authed/admin/users')({
       }),
     )
 
-    return { users, crumb: 'Users' }
+    return { usersPage, crumb: 'Users' }
   },
   component: AdminDashboard,
 })
@@ -40,8 +40,8 @@ export const Route = createFileRoute('/_authed/admin/users')({
 function AdminDashboard() {
   const navigate = useNavigate()
   const {
-    users: { items, page, size, total, totalPages },
-  } = Route.useLoaderData({ select: ({ users }) => ({ users }) })
+    usersPage: { items: users, page, size, total, totalPages },
+  } = Route.useLoaderData({ select: ({ usersPage }) => ({ usersPage }) })
   const { q, role } = Route.useSearch()
 
   function setSearch(next: {
@@ -130,7 +130,7 @@ function AdminDashboard() {
         </div>
       </div>
 
-      <UsersList users={items} />
+      <UsersList users={users} />
 
       <div className="flex items-center justify-end gap-2">
         <Button
