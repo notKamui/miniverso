@@ -1,4 +1,6 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
+import type { SQL } from 'drizzle-orm'
+import type { PgColumn, PgSelect } from 'drizzle-orm/pg-core'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { env } from '@/lib/env/server'
@@ -23,4 +25,18 @@ export function takeUniqueOr<
     if (values.length === 0) return or()
     return values[0]
   }
+}
+
+export function withPagination<T extends PgSelect>(
+  query: T,
+  meta: {
+    orderBy: PgColumn | SQL | SQL.Aliased
+    page: number
+    size: number
+  },
+) {
+  return query
+    .orderBy(meta.orderBy)
+    .limit(meta.size)
+    .offset((meta.page - 1) * meta.size)
 }

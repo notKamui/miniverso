@@ -1,8 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, ilike, or } from 'drizzle-orm'
+import { and, asc, count, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { validate } from '@/lib/utils/validate'
-import { db } from '@/server/db'
+import { db, withPagination } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
 import { $$admin } from '@/server/middlewares/admin'
 
@@ -19,40 +19,51 @@ export const $getUsers = createServerFn({ method: 'GET' })
     ),
   )
   .handler(async ({ data: { page, size, search, role } }) => {
-    const conditions = [] as any[]
+    const conditions = [] as (SQL | undefined)[]
     if (search) {
-      const pattern = `%${search}%`
+      const pattern = sql`%${search}%`
       conditions.push(or(ilike(user.name, pattern), ilike(user.email, pattern)))
     }
     if (role) {
       conditions.push(eq(user.role, role))
     }
-    const where = conditions.length ? and(...conditions) : undefined
+    const where = and(...conditions)
 
     const [{ total }] = await db
       .select({ total: count() })
       .from(user)
-      .where(where as any)
+      .where(where)
+
+    const subquery = withPagination(
+      db
+        .select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          emailVerified: user.emailVerified,
+          image: user.image,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        })
+        .from(user)
+        .where(where)
+        .$dynamic(),
+      {
+        orderBy: asc(user.id),
+        page,
+        size,
+      },
+    ).as('subquery')
 
     const items = await db
-      .select({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        emailVerified: user.emailVerified,
-        image: user.image,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      })
+      .select()
       .from(user)
-      .where(where as any)
-      .orderBy(desc(user.createdAt))
-      .limit(size)
-      .offset((page - 1) * size)
+      .innerJoin(subquery, eq(user.id, subquery.id))
+      .orderBy(asc(user.id))
 
     return {
-      items,
+      items: items.map((item) => item.user),
       page,
       size,
       total,

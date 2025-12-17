@@ -15,7 +15,7 @@ import { $getUsers } from '@/server/functions/admin'
 export const Route = createFileRoute('/_authed/admin/users')({
   validateSearch: z.object({
     page: z.coerce.number().int().min(1).default(1),
-    size: z.coerce.number().int().min(1).max(100).default(20),
+    size: z.coerce.number().int().min(1).max(100).default(5),
     q: z.string().trim().optional(),
     role: z.enum(['all', 'admin', 'user']).optional(),
   }),
