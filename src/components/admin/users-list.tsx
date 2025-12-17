@@ -1,6 +1,7 @@
 'use client'
 
 import type { InferSelectModel } from 'drizzle-orm'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -23,9 +24,10 @@ function formatDate(date: string | Date) {
 
 interface UsersListProps {
   users: InferSelectModel<typeof user>[]
+  onDelete?: (id: string) => void
 }
 
-export function UsersList({ users }: UsersListProps) {
+export function UsersList({ users, onDelete }: UsersListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -41,6 +43,7 @@ export function UsersList({ users }: UsersListProps) {
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Joined</TableHead>
+              {onDelete && <TableHead className="w-0">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -94,6 +97,17 @@ export function UsersList({ users }: UsersListProps) {
                 <TableCell className="text-muted-foreground text-sm">
                   {formatDate(user.createdAt)}
                 </TableCell>
+                {onDelete && (
+                  <TableCell className="text-right">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDelete(user.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

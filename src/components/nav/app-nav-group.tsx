@@ -30,7 +30,7 @@ export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
   icon: LucideIcon
   to: To
   items?: NavGroupSubItem[]
-  condition?: (user: GlobalContext) => boolean
+  condition?: (context: GlobalContext) => boolean
 } & (FileRoutesByTo[To] extends { params: infer P }
   ? { params: P }
   : { params?: never })
@@ -38,7 +38,7 @@ export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
 export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
   title: string
   to: To
-  condition?: (user: GlobalContext) => boolean
+  condition?: (context: GlobalContext) => boolean
 } & (FileRoutesByTo[To] extends { params: infer P }
   ? { params: P }
   : { params?: never })
@@ -46,7 +46,7 @@ export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
 export type AppNavGroupProps = {
   title: string
   items: NavGroupItem[]
-  condition?: (user: GlobalContext) => boolean
+  condition?: (context: GlobalContext) => boolean
 }
 
 export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
@@ -60,12 +60,11 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map(
-          (item) =>
-            item.condition?.(context) !== false && (
-              <MenuItem key={item.title + item.to} item={item} />
-            ),
-        )}
+        {items
+          .filter((item) => item.condition?.(context) !== false)
+          .map((item) => (
+            <MenuItem key={item.title + item.to} item={item} />
+          ))}
       </SidebarMenu>
     </SidebarGroup>
   )

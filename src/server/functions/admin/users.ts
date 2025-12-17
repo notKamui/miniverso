@@ -1,9 +1,10 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
+import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { paginated } from '@/server/db'
+import { db, paginated } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
 import { $$admin } from '@/server/middlewares/admin'
 
@@ -14,6 +15,8 @@ const GetUsersSchema = z.object({
   role: z.enum(['admin', 'user']).optional(),
 })
 
+export const adminUsersQueryKey = ['admin', 'users'] as const
+
 export function getUsersQueryOptions({
   page,
   size,
@@ -21,7 +24,7 @@ export function getUsersQueryOptions({
   role,
 }: z.infer<typeof GetUsersSchema>) {
   return queryOptions({
-    queryKey: ['admin', 'users', { page, size, search, role }] as const,
+    queryKey: [...adminUsersQueryKey, { page, size, search, role }] as const,
     queryFn: ({ signal }) =>
       $getUsers({ signal, data: { page, size, search, role } }),
     placeholderData: keepPreviousData,
@@ -49,4 +52,24 @@ export const $getUsers = createServerFn({ method: 'GET' })
       page,
       size,
     })
+  })
+
+export const $deleteUsers = createServerFn({ method: 'POST' })
+  .middleware([$$admin])
+  .inputValidator(validate(z.object({ ids: z.array(z.string()).min(1) })))
+  .handler(async ({ context: { user: self }, data: { ids } }) => {
+    const toDelete = ids.filter((id) => id !== self.id) // Prevent self-deletion
+    if (toDelete.length === 0) {
+      badRequest('Cannot delete the current user', 400)
+    }
+
+    const deleted = await db
+      .delete(user)
+      .where(inArray(user.id, toDelete))
+      .returning({ id: user.id })
+
+    return {
+      deletedIds: deleted.map((d) => d.id),
+      skippedIds: ids.filter((id) => id === self.id),
+    }
   })

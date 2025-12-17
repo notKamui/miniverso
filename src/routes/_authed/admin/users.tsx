@@ -1,4 +1,6 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { UsersList } from '@/components/admin/users-list'
 import { Button } from '@/components/ui/button'
@@ -10,7 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getUsersQueryOptions } from '@/server/functions/admin/users'
+import {
+  $deleteUsers,
+  adminUsersQueryKey,
+  getUsersQueryOptions,
+} from '@/server/functions/admin/users'
 
 export const Route = createFileRoute('/_authed/admin/users')({
   validateSearch: z.object({
@@ -39,6 +45,9 @@ export const Route = createFileRoute('/_authed/admin/users')({
 
 function AdminDashboard() {
   const navigate = useNavigate()
+  const deleteUsers = useServerFn($deleteUsers)
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const {
     usersPage: { items: users, page, size, total, totalPages },
   } = Route.useLoaderData({ select: ({ usersPage }) => ({ usersPage }) })
@@ -130,7 +139,17 @@ function AdminDashboard() {
         </div>
       </div>
 
-      <UsersList users={users} />
+      <UsersList
+        users={users}
+        onDelete={async (id) => {
+          if (!confirm('Are you sure you want to delete this user?')) return
+          await deleteUsers({ data: { ids: [id] } })
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: adminUsersQueryKey }),
+            router.invalidate(),
+          ])
+        }}
+      />
 
       <div className="flex items-center justify-end gap-2">
         <Button
