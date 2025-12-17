@@ -1,19 +1,40 @@
 import { createServerFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
-import { auth } from '@/lib/auth'
+import { and, count, desc, eq, ilike, or } from 'drizzle-orm'
+import { z } from 'zod'
+import { validate } from '@/lib/utils/validate'
 import { db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
+import { $$admin } from '@/server/middlewares/admin'
 
-export const $getAllUsers = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const headers = getRequestHeaders()
-    const session = await auth.api.getSession({ headers })
-
-    if (!session?.user || session.user.role !== 'admin') {
-      throw new Error('Admin access required')
+export const $getUsers = createServerFn({ method: 'GET' })
+  .middleware([$$admin])
+  .inputValidator(
+    validate(
+      z.object({
+        page: z.number().int().min(1).default(1),
+        size: z.number().int().min(1).max(100).default(20),
+        search: z.string().trim().min(1).max(200).optional(),
+        role: z.enum(['admin', 'user']).optional(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { page, size, search, role } }) => {
+    const conditions = [] as any[]
+    if (search) {
+      const pattern = `%${search}%`
+      conditions.push(or(ilike(user.name, pattern), ilike(user.email, pattern)))
     }
+    if (role) {
+      conditions.push(eq(user.role, role))
+    }
+    const where = conditions.length ? and(...conditions) : undefined
 
-    const users = await db
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(user)
+      .where(where as any)
+
+    const items = await db
       .select({
         id: user.id,
         name: user.name,
@@ -25,7 +46,16 @@ export const $getAllUsers = createServerFn({ method: 'GET' }).handler(
         updatedAt: user.updatedAt,
       })
       .from(user)
+      .where(where as any)
+      .orderBy(desc(user.createdAt))
+      .limit(size)
+      .offset((page - 1) * size)
 
-    return users
-  },
-)
+    return {
+      items,
+      page,
+      size,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / size)),
+    }
+  })
