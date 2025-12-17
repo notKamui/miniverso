@@ -4,11 +4,7 @@ import { link, title } from '@/components/ui/typography'
 import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export const Route = createFileRoute('/')({
-  loader: async ({ context: { user } }) => {
-    return {
-      user,
-    }
-  },
+  loader: ({ context: { user } }) => ({ user }),
   component: RouteComponent,
 })
 

@@ -148,7 +148,9 @@ export const Route = createFileRoute('/_authed/time/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   //const { theme } = useTheme()
-  const { stats, time, type } = Route.useLoaderData()
+  const { stats, time, type } = Route.useLoaderData({
+    select: ({ stats, time, type }) => ({ stats, time, type }),
+  })
 
   const chart = CHARTS[type](stats, time)
 

@@ -39,7 +39,7 @@ function AdminDashboard() {
   const navigate = useNavigate()
   const {
     result: { items, page, size, total, totalPages },
-  } = Route.useLoaderData()
+  } = Route.useLoaderData({ select: ({ result }) => ({ result }) })
   const { q, role } = Route.useSearch()
 
   function setSearch(next: {
