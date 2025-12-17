@@ -42,7 +42,7 @@ const sections: AppNavGroupProps[] = [
         items: [
           {
             title: 'Users',
-            to: '/admin',
+            to: '/admin/users',
           },
         ],
         condition: ({ user }) => user?.role === 'admin',

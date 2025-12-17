@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import type { InferSelectModel } from 'drizzle-orm'
 import {
   Table,
   TableBody,
@@ -14,49 +14,22 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Time } from '@/lib/utils/time'
+import type { user } from '@/server/db/schema'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  emailVerified: boolean
-  image: string | null
-  createdAt: string | Date
-  updatedAt: string | Date
+function formatDate(date: string | Date) {
+  return Time.from(date).formatDay({ short: true })
 }
 
 interface UsersListProps {
-  users: User[]
+  users: InferSelectModel<typeof user>[]
 }
 
 export function UsersList({ users }: UsersListProps) {
-  const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => {
-      // Sort admins first, then by creation date
-      if (a.role === 'admin' && b.role !== 'admin') return -1
-      if (b.role === 'admin' && a.role !== 'admin') return 1
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-  }, [users])
-
-  const formatDate = (date: string | Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-2xl">Users</h2>
-        <div className="text-muted-foreground text-sm">
-          Total: {users.length} users
-        </div>
       </div>
 
       <div className="rounded-md border">
@@ -71,7 +44,7 @@ export function UsersList({ users }: UsersListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedUsers.map((user) => (
+            {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { $getUsers } from '@/server/functions/admin'
+import { getUsersQueryOptions } from '@/server/functions/admin/users'
 
 export const Route = createFileRoute('/_authed/admin/users')({
   validateSearch: z.object({
@@ -20,17 +20,19 @@ export const Route = createFileRoute('/_authed/admin/users')({
     role: z.enum(['all', 'admin', 'user']).optional(),
   }),
   loaderDeps: ({ search }) => ({ search }),
-  loader: async ({ deps: { search } }) => {
+  loader: async ({ deps: { search }, context: { queryClient } }) => {
     const { page, size, q, role } = search
-    const result = await $getUsers({
-      data: {
+
+    const users = await queryClient.fetchQuery(
+      getUsersQueryOptions({
         page,
         size,
         search: (q?.length ?? 0) < 1 ? undefined : q,
         role: role === 'all' ? undefined : role,
-      },
-    })
-    return { result, crumb: 'Users' }
+      }),
+    )
+
+    return { users, crumb: 'Users' }
   },
   component: AdminDashboard,
 })
@@ -38,8 +40,8 @@ export const Route = createFileRoute('/_authed/admin/users')({
 function AdminDashboard() {
   const navigate = useNavigate()
   const {
-    result: { items, page, size, total, totalPages },
-  } = Route.useLoaderData({ select: ({ result }) => ({ result }) })
+    users: { items, page, size, total, totalPages },
+  } = Route.useLoaderData({ select: ({ users }) => ({ users }) })
   const { q, role } = Route.useSearch()
 
   function setSearch(next: {
