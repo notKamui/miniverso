@@ -3,11 +3,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
 
-FROM base AS builder
-
 COPY bun.lock ./
 COPY package.json ./
 COPY scripts ./scripts
+
+FROM base AS builder
+
 RUN bun install --frozen-lockfile
 
 COPY . .
@@ -15,9 +16,6 @@ RUN bun run build
 
 FROM base AS production
 
-COPY bun.lock ./
-COPY package.json ./
-COPY scripts ./scripts
 RUN bun install --frozen-lockfile --production
 
 COPY --from=builder /app/public ./public
