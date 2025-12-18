@@ -1,4 +1,4 @@
-import { Link, useLinkProps } from '@tanstack/react-router'
+import { Link, type ToOptions, useLinkProps } from '@tanstack/react-router'
 import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -23,25 +23,20 @@ import {
 } from '@/lib/hooks/use-global-context'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
 import { useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
-import type { FileRoutesByTo } from '@/routeTree.gen'
 
-export type NavGroupItem<To extends keyof FileRoutesByTo = any> = {
+export type NavGroupItem = {
   title: string
   icon: LucideIcon
-  to: To
   items?: NavGroupSubItem[]
   condition?: (context: GlobalContext) => boolean
-} & (FileRoutesByTo[To] extends { params: infer P }
-  ? { params: P }
-  : { params?: never })
+  link: ToOptions
+}
 
-export type NavGroupSubItem<To extends keyof FileRoutesByTo = any> = {
+export type NavGroupSubItem = {
   title: string
-  to: To
   condition?: (context: GlobalContext) => boolean
-} & (FileRoutesByTo[To] extends { params: infer P }
-  ? { params: P }
-  : { params?: never })
+  link: ToOptions
+}
 
 export type AppNavGroupProps = {
   title: string
@@ -63,7 +58,7 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
         {items
           .filter((item) => item.condition?.(context) !== false)
           .map((item) => (
-            <MenuItem key={item.title + item.to} item={item} />
+            <MenuItem key={item.title + item.link.to} item={item} />
           ))}
       </SidebarMenu>
     </SidebarGroup>
@@ -73,7 +68,7 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
 function MenuItem({ item }: { item: NavGroupItem }) {
   const isMobile = useIsMobile()
   const { mutate: updateSidebarState } = useUpdateSidebarState()
-  const linkProps = (useLinkProps({ to: item.to }) as any)[
+  const linkProps = (useLinkProps({ to: item.link.to }) as any)[
     'data-status'
   ] as string
   const defaultIsActive = linkProps === 'active' || linkProps === 'exact-active'
@@ -97,9 +92,9 @@ function MenuItem({ item }: { item: NavGroupItem }) {
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip={item.title}>
           <Link
-            to={item.to}
+            to={item.link.to}
             from="/"
-            params={(item as any).params}
+            params={item.link.params}
             onClick={handleLinkClick}
           >
             <item.icon />
@@ -120,9 +115,9 @@ function MenuItem({ item }: { item: NavGroupItem }) {
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton asChild>
                       <Link
-                        to={subItem.to}
+                        to={subItem.link.to}
                         from="/"
-                        params={(subItem as any).params}
+                        params={subItem.link.params}
                         onClick={handleLinkClick}
                       >
                         <span>{subItem.title}</span>

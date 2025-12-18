@@ -20,29 +20,29 @@ const sections: AppNavGroupProps[] = [
     items: [
       {
         title: 'Home',
-        to: '/',
         icon: HomeIcon,
+        link: { to: '/' },
       },
       {
         title: 'Time recorder',
-        to: '/time',
+        link: { to: '/time' },
         icon: ClockIcon,
         items: [
           {
             title: 'Statistics',
-            to: '/time/stats',
+            link: { to: '/time/stats' },
           },
         ],
         condition: ({ user }) => !!user,
       },
       {
         title: 'Admin Dashboard',
-        to: '/admin',
+        link: { to: '/admin' },
         icon: ShieldIcon,
         items: [
           {
             title: 'Users',
-            to: '/admin/users',
+            link: { to: '/admin/users' },
           },
         ],
         condition: ({ user }) => user?.role === 'admin',

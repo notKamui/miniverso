@@ -1,11 +1,10 @@
 import { authViewPaths } from '@daveyplate/better-auth-ui'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, type ToOptions } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
 import {
   type GlobalContext,
   useGlobalContext,
 } from '@/lib/hooks/use-global-context'
-import type { FileRoutesByTo } from '@/routeTree.gen'
 
 export const Route = createFileRoute('/')({
   loader: ({ context: { user } }) => ({ user }),
@@ -52,25 +51,28 @@ function NotLoggedIn() {
 }
 
 type Application = {
-  to: keyof FileRoutesByTo
-  params?: any
   title: string
   description: string
   condition?: (context: GlobalContext) => boolean
+  link: ToOptions
 }
 
 const applications: Application[] = [
   {
-    to: '/time/{-$day}',
-    params: { day: undefined },
     title: 'Time recorder',
     description: 'Record your time and track your progress',
+    link: {
+      to: '/time/{-$day}',
+      params: { day: undefined },
+    },
   },
   {
-    to: '/admin',
     title: 'Admin Dashboard',
     description: 'Manage users and system settings',
     condition: ({ user }) => user?.role === 'admin',
+    link: {
+      to: '/admin',
+    },
   },
 ]
 
@@ -84,10 +86,15 @@ function Main() {
         {applications
           .filter((app) => app.condition?.(context) !== false)
           .map((app) => (
-            <div key={app.to} className="container rounded-md border p-4">
+            <div key={app.link.to} className="container rounded-md border p-4">
               <h4 className={title({ h: 4 })}>{app.title}</h4>
               <p>{app.description}</p>
-              <Link to={app.to} params={app.params} from="/" className={link()}>
+              <Link
+                to={app.link.to}
+                params={app.link.params}
+                from="/"
+                className={link()}
+              >
                 Open
               </Link>
             </div>
