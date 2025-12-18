@@ -44,28 +44,34 @@ export async function paginated<
 }> {
   const idColumn = (options.table as any).id as PgColumn
 
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(options.table as AnyPgTable)
-    .where(options.where)
+  const [total, items] = await db.transaction(async (tx) => {
+    const totalQuery = tx
+      .select({ total: count() })
+      .from(options.table as AnyPgTable)
+      .where(options.where)
 
-  const subquery = db
-    .select({ id: idColumn })
-    .from(options.table as AnyPgTable)
-    .where(options.where)
-    .orderBy(options.orderBy)
-    .limit(options.size)
-    .offset((options.page - 1) * options.size)
-    .as('subquery')
+    const subquery = db
+      .select({ id: idColumn })
+      .from(options.table as AnyPgTable)
+      .where(options.where)
+      .orderBy(options.orderBy)
+      .limit(options.size)
+      .offset((options.page - 1) * options.size)
+      .as('subquery')
 
-  const rows = await db
-    .select({ row: options.table as TTable })
-    .from(options.table as AnyPgTable)
-    .innerJoin(subquery, eq(idColumn, subquery.id))
-    .orderBy(options.orderBy)
+    const rowsQuery = await db
+      .select({ row: options.table as TTable })
+      .from(options.table as AnyPgTable)
+      .innerJoin(subquery, eq(idColumn, subquery.id))
+      .orderBy(options.orderBy)
+
+    const [[{ total }], rows] = await Promise.all([totalQuery, rowsQuery])
+
+    return [total, rows.map((r) => r.row)]
+  })
 
   return {
-    items: rows.map((r) => r.row),
+    items,
     total,
     size: options.size,
     page: options.page,
