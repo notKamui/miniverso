@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@daveyplate/better-auth-tanstack": "^1.3.6",
-    "@daveyplate/better-auth-ui": "^3.3.6",
+    "@daveyplate/better-auth-ui": "^3.3.7",
     "@epic-web/client-hints": "^1.3.8",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -40,7 +40,7 @@
     "@t3-oss/env-core": "^0.13.10",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/query-core": "^5.90.12",
-    "@tanstack/react-form": "^1.27.4",
+    "@tanstack/react-form": "^1.27.5",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.141.6",
     "@tanstack/react-router-ssr-query": "^1.141.6",
@@ -51,7 +51,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
-    "lucide-react": "^0.561.0",
+    "lucide-react": "^0.562.0",
     "motion": "^12.23.26",
     "next-themes": "^0.4.6",
     "postgres": "^3.4.7",
@@ -68,7 +68,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/devtools-vite": "^0.3.12",
     "@tanstack/react-devtools": "^0.8.4",
-    "@tanstack/react-form-devtools": "^0.2.7",
+    "@tanstack/react-form-devtools": "^0.2.8",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@tanstack/react-router-devtools": "^1.141.6",
     "@tanstack/router-plugin": "^1.141.7",
@@ -87,13 +87,13 @@
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",
     "vite": "npm:rolldown-vite@7.3.0",
-    "vite-tsconfig-paths": "^6.0.2"
+    "vite-tsconfig-paths": "^6.0.3"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.3.0"
   },
   "engines": {
     "node": ">=25",
-    "bun": ">=1.3.4"
+    "bun": ">=1.3.5"
   }
 }
