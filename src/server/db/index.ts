@@ -50,7 +50,7 @@ export async function paginated<
       .from(options.table as AnyPgTable)
       .where(options.where)
 
-    const subquery = db
+    const subquery = tx
       .select({ id: idColumn })
       .from(options.table as AnyPgTable)
       .where(options.where)
@@ -59,15 +59,16 @@ export async function paginated<
       .offset((options.page - 1) * options.size)
       .as('subquery')
 
-    const rowsQuery = await db
+    const rowsQuery = tx
       .select({ row: options.table as TTable })
       .from(options.table as AnyPgTable)
       .innerJoin(subquery, eq(idColumn, subquery.id))
       .orderBy(options.orderBy)
 
-    const [[{ total }], rows] = await Promise.all([totalQuery, rowsQuery])
-
-    return [total, rows.map((r) => r.row)]
+    return await Promise.all([
+      totalQuery.execute().then(([{ total }]) => total),
+      rowsQuery.execute().then((result) => result.map((entry) => entry.row)),
+    ])
   })
 
   return {
