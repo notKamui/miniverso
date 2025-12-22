@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -17,6 +17,7 @@ function RouteComponent() {
   const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [importFile, setImportFile] = useState<File | null>(null)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const trimmedUserEmail = useMemo(() => userEmail.trim(), [userEmail])
   const effectiveUserEmail =
@@ -95,11 +96,43 @@ function RouteComponent() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="import-file">Export file (.ndjson)</Label>
             <Input
+              ref={importInputRef}
               id="import-file"
               type="file"
               accept=".ndjson,application/x-ndjson"
+              className="hidden"
               onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
             />
+            <div className="flex items-center gap-3 rounded-md border bg-background p-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => importInputRef.current?.click()}
+                disabled={isImporting}
+              >
+                Choose file
+              </Button>
+              <div className="min-w-0 flex-1">
+                <p className={text({ variant: 'muted' })}>
+                  {importFile ? importFile.name : 'No file selected'}
+                </p>
+              </div>
+              {importFile ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setImportFile(null)
+                    if (importInputRef.current) {
+                      importInputRef.current.value = ''
+                    }
+                  }}
+                  disabled={isImporting}
+                >
+                  Clear
+                </Button>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
