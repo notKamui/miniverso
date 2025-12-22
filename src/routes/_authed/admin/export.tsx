@@ -14,8 +14,6 @@ export const Route = createFileRoute('/_authed/admin/export')({
 })
 
 function RouteComponent() {
-  const [isExporting, setIsExporting] = useState(false)
-  const [isImporting, setIsImporting] = useState(false)
   const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [importFile, setImportFile] = useState<File | null>(null)
@@ -24,82 +22,15 @@ function RouteComponent() {
   const effectiveUserEmail =
     trimmedUserEmail.length > 0 ? trimmedUserEmail : undefined
 
-  async function downloadExport() {
-    if (!includeTimeRecorder) {
-      toast.error('Select at least one application to export')
-      return
-    }
+  const { isExporting, downloadExport } = useExportDownload({
+    includeTimeRecorder,
+    userEmail: effectiveUserEmail,
+  })
 
-    setIsExporting(true)
-    try {
-      const url = new URL('/api/admin/export', window.location.origin)
-      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
-      if (effectiveUserEmail)
-        url.searchParams.set('userEmail', effectiveUserEmail)
-
-      const a = document.createElement('a')
-      a.href = url.toString()
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-
-      toast.success('Download started')
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
-  async function importData() {
-    if (!includeTimeRecorder) {
-      toast.error('Select at least one application to import')
-      return
-    }
-    if (!importFile) {
-      toast.error('Select a file to import')
-      return
-    }
-
-    setIsImporting(true)
-    try {
-      const url = new URL('/api/admin/import', window.location.origin)
-      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
-
-      const res = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-ndjson',
-        },
-        body: importFile,
-      })
-
-      if (!res.ok) {
-        const text = await res.text()
-        try {
-          const parsed = JSON.parse(text) as { error?: string }
-          toast.error(parsed.error || 'Import failed')
-        } catch {
-          toast.error(text || 'Import failed')
-        }
-        return
-      }
-
-      const summary = (await res.json()) as {
-        processedLines?: number
-        importedTimeEntries?: number
-        skippedUnknownUser?: number
-      }
-
-      const processed = summary.processedLines ?? 0
-      const imported = summary.importedTimeEntries ?? 0
-      const skipped = summary.skippedUnknownUser ?? 0
-
-      toast.success(
-        `Import done: ${imported} imported, ${skipped} skipped, ${processed} lines processed`,
-      )
-    } finally {
-      setIsImporting(false)
-    }
-  }
+  const { isImporting, importData } = useImportNdjson({
+    includeTimeRecorder,
+    importFile,
+  })
 
   return (
     <div className="flex flex-col gap-4">
@@ -180,4 +111,104 @@ function RouteComponent() {
       </div>
     </div>
   )
+}
+
+function parseErrorMessage(text: string) {
+  try {
+    const parsed = JSON.parse(text) as { error?: string }
+    return parsed.error || text
+  } catch {
+    return text
+  }
+}
+
+function useExportDownload(args: {
+  includeTimeRecorder: boolean
+  userEmail?: string
+}) {
+  const { includeTimeRecorder, userEmail } = args
+  const [isExporting, setIsExporting] = useState(false)
+
+  async function downloadExport() {
+    if (!includeTimeRecorder) {
+      toast.error('Select at least one application to export')
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      const url = new URL('/api/admin/export', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+      if (userEmail) url.searchParams.set('userEmail', userEmail)
+
+      const a = document.createElement('a')
+      a.href = url.toString()
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+
+      toast.success('Download started')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  return { isExporting, downloadExport }
+}
+
+function useImportNdjson(args: {
+  includeTimeRecorder: boolean
+  importFile: File | null
+}) {
+  const { includeTimeRecorder, importFile } = args
+  const [isImporting, setIsImporting] = useState(false)
+
+  async function importData() {
+    if (!includeTimeRecorder) {
+      toast.error('Select at least one application to import')
+      return
+    }
+    if (!importFile) {
+      toast.error('Select a file to import')
+      return
+    }
+
+    setIsImporting(true)
+    try {
+      const url = new URL('/api/admin/import', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+        },
+        body: importFile,
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        toast.error(parseErrorMessage(text) || 'Import failed')
+        return
+      }
+
+      const summary = (await res.json()) as {
+        processedLines?: number
+        importedTimeEntries?: number
+        skippedUnknownUser?: number
+      }
+
+      const processed = summary.processedLines ?? 0
+      const imported = summary.importedTimeEntries ?? 0
+      const skipped = summary.skippedUnknownUser ?? 0
+
+      toast.success(
+        `Import done: ${imported} imported, ${skipped} skipped, ${processed} lines processed`,
+      )
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  return { isImporting, importData }
 }
