@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -8,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { text, title } from '@/components/ui/typography'
-import { $adminExportV1 } from '@/server/functions/admin/export'
 
 export const Route = createFileRoute('/_authed/admin/export')({
   loader: () => ({ crumb: 'Export' }),
@@ -19,7 +17,6 @@ function RouteComponent() {
   const [isExporting, setIsExporting] = useState(false)
   const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
   const [userEmail, setUserEmail] = useState('')
-  const adminExportV1 = useServerFn($adminExportV1)
 
   const trimmedUserEmail = useMemo(() => userEmail.trim(), [userEmail])
   const effectiveUserEmail =
@@ -33,34 +30,17 @@ function RouteComponent() {
 
     setIsExporting(true)
     try {
-      const exportDoc = await adminExportV1({
-        data: {
-          apps: { timeRecorder: includeTimeRecorder },
-          userEmail: effectiveUserEmail,
-        },
-      })
+      const url = new URL('/api/admin/export', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+      if (effectiveUserEmail) url.searchParams.set('userEmail', effectiveUserEmail)
 
-      const date = exportDoc.exportedAt.slice(0, 10)
-      const scope = exportDoc.filters.userEmail
-        ? `-${exportDoc.filters.userEmail}`
-        : ''
-      const filename = `miniverso-export-v${exportDoc.version}-${date}${scope}.json`
-
-      const blob = new Blob([JSON.stringify(exportDoc, null, 2)], {
-        type: 'application/json',
-      })
-      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
-      a.download = filename
+      a.href = url.toString()
       document.body.appendChild(a)
       a.click()
       a.remove()
-      URL.revokeObjectURL(url)
 
-      toast.success('Export downloaded')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Export failed')
+      toast.success('Download started')
     } finally {
       setIsExporting(false)
     }
