@@ -113,7 +113,7 @@ function DataRow<TData>({
       {row.getVisibleCells().map((cell) => (
         <TableCell
           key={cell.id}
-          className="max-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
+          className="max-w-0 overflow-hidden whitespace-nowrap"
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
