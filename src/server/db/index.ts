@@ -6,12 +6,10 @@ import postgres from 'postgres'
 import { env } from '@/lib/env/server'
 import * as schema from '@/server/db/schema'
 
-const initDB = createServerOnlyFn(() => {
+export const db = createServerOnlyFn(() => {
   const postgresClient = postgres(env.DATABASE_URL)
   return drizzle({ client: postgresClient, schema })
-})
-
-export const db = initDB()
+})()
 
 export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
   values: T,
