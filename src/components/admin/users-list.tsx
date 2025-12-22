@@ -11,8 +11,14 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table'
 import type { InferSelectModel } from 'drizzle-orm'
-import { ChevronDown, MoreVerticalIcon, Trash2Icon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MoreVerticalIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -43,6 +49,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useDebouncedFn } from '@/lib/hooks/use-debounce'
 import { Time } from '@/lib/utils/time'
 import type { user } from '@/server/db/schema'
 
@@ -229,6 +236,20 @@ export function UsersList({
   setSearch,
   onDelete,
 }: UsersListProps) {
+  const [searchInput, setSearchInput] = useState(q ?? '')
+  useDebouncedFn(
+    searchInput,
+    350,
+    useCallback(
+      (nextRaw: string) => {
+        const next = nextRaw.trim().length ? nextRaw.trim() : undefined
+        if ((next ?? '') === (q ?? '')) return
+        setSearch({ q: next, page: 1 })
+      },
+      [q, setSearch],
+    ),
+  )
+
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const columns = useMemo(() => createUserColumns(onDelete), [onDelete])
@@ -271,7 +292,7 @@ export function UsersList({
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="sm:w-72">
+        <div>
           <label
             htmlFor="users-search"
             className="mb-1 block font-medium text-sm"
@@ -281,16 +302,13 @@ export function UsersList({
           <Input
             id="users-search"
             name="users-search"
-            value={q ?? ''}
+            value={searchInput}
             placeholder="Name or email"
-            onChange={(e) => {
-              const next = e.target.value
-              setSearch({ q: next.length ? next : undefined, page: 1 })
-            }}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
 
-        <div className="sm:w-48">
+        <div>
           <label
             htmlFor="users-role"
             className="mb-1 block font-medium text-sm"
@@ -317,11 +335,12 @@ export function UsersList({
 
         {(q || (role && role !== 'all')) && (
           <Button
-            variant="ghost"
+            variant="destructive"
             className="sm:self-auto"
-            onClick={() =>
+            onClick={() => {
+              setSearchInput('')
               setSearch({ q: undefined, role: undefined, page: 1 })
-            }
+            }}
           >
             Clear
           </Button>
@@ -403,25 +422,26 @@ export function UsersList({
         </Table>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-muted-foreground text-sm">
-          Page {page} / {Math.max(totalPages, 1)} • {total} users
-        </div>
-
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex items-center gap-4">
           <Button
-            variant="outline"
+            variant={!table.getCanPreviousPage() ? 'ghost' : 'outline'}
+            size="icon"
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
           >
-            Previous
+            <ChevronLeft />
           </Button>
+          <div className="text-muted-foreground text-sm">
+            Page {page} / {Math.max(totalPages, 1)} • {total} users
+          </div>
           <Button
-            variant="outline"
+            variant={!table.getCanNextPage() ? 'ghost' : 'outline'}
+            size="icon"
             disabled={!table.getCanNextPage()}
             onClick={() => table.nextPage()}
           >
-            Next
+            <ChevronRight />
           </Button>
         </div>
       </div>
