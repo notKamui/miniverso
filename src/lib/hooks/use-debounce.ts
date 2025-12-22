@@ -1,4 +1,9 @@
-import { useEffect, useState } from 'react'
+import {
+  type DependencyList,
+  type EffectCallback,
+  useEffect,
+  useState,
+} from 'react'
 
 export function useDebounce<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -36,4 +41,23 @@ export function useDebouncedFn<T>(
 
     return () => clearTimeout(handle)
   }, [delayMs, fn, value])
+}
+
+export function useDebouncedEffect(
+  effect: EffectCallback,
+  deps: DependencyList,
+  delayMs: number,
+) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Deps are passed in explicitly
+  useEffect(() => {
+    let closer: ReturnType<EffectCallback> | undefined
+    const handler = setTimeout(() => {
+      closer = effect()
+    }, delayMs)
+
+    return () => {
+      clearTimeout(handler)
+      closer?.()
+    }
+  }, [...(deps || []), delayMs])
 }

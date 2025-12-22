@@ -57,7 +57,19 @@
         "noSvgWithoutTitle": "off"
       },
       "correctness": {
-        "noUnusedImports": "warn"
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            "hooks": [
+              {
+                "name": "useDebouncedEffect",
+                "closureIndex": 0,
+                "dependenciesIndex": 1
+              }
+            ]
+          }
+        }
       },
       "nursery": {
         "useSortedClasses": {

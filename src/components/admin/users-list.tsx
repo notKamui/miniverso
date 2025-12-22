@@ -16,7 +16,7 @@ import {
   MoreVerticalIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -47,7 +47,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useDebouncedFn } from '@/lib/hooks/use-debounce'
+import { useDebouncedEffect } from '@/lib/hooks/use-debounce'
 import { Time } from '@/lib/utils/time'
 import type { user } from '@/server/db/schema'
 
@@ -233,17 +233,14 @@ export function UsersList({
   onDelete,
 }: UsersListProps) {
   const [searchInput, setSearchInput] = useState(q ?? '')
-  useDebouncedFn(
-    searchInput,
+  useDebouncedEffect(
+    () => {
+      const next = searchInput.trim().length ? searchInput.trim() : undefined
+      if ((next ?? '') === (q ?? '')) return
+      setSearch({ q: next, page: 1 })
+    },
+    [searchInput, q, setSearch],
     350,
-    useCallback(
-      (nextRaw: string) => {
-        const next = nextRaw.trim().length ? nextRaw.trim() : undefined
-        if ((next ?? '') === (q ?? '')) return
-        setSearch({ q: next, page: 1 })
-      },
-      [q, setSearch],
-    ),
   )
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
