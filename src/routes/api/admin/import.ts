@@ -98,7 +98,7 @@ async function importTimeRecorderBatchV1(args: {
     }
   }
 
-  const values: Array<typeof timeEntry.$inferInsert> = []
+  const values: (typeof timeEntry.$inferInsert)[] = []
   let skippedUnknownUser = 0
 
   for (const row of rows) {

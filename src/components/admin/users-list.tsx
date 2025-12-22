@@ -1,5 +1,3 @@
-'use client'
-
 import {
   type ColumnDef,
   flexRender,
@@ -82,10 +80,8 @@ type ColumnMeta = {
   label: string
 }
 
-function createUserColumns(
-  onDelete?: (id: string) => void,
-): ColumnDef<User, unknown>[] {
-  const columns: ColumnDef<User, unknown>[] = [
+function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
+  const columns: ColumnDef<User>[] = [
     {
       id: 'user',
       accessorKey: 'name',

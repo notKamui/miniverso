@@ -58,7 +58,7 @@ describe('Collection.groupBy', () => {
   })
 
   it('handles sparse arrays and explicit undefined values', () => {
-    const arr = [] as Array<number | undefined>
+    const arr = [] as (number | undefined)[]
     // create a hole at index 0
     arr[1] = 1
     arr[2] = undefined

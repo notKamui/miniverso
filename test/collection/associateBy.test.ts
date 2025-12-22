@@ -28,7 +28,7 @@ describe('Collection.associateBy', () => {
 
   it('supports string, number, and symbol keys', () => {
     const sym = Symbol('s')
-    const items: Array<{ key: string | number | symbol; val: number }> = [
+    const items: { key: string | number | symbol; val: number }[] = [
       { key: 'a', val: 1 },
       { key: 2, val: 2 },
       { key: sym, val: 3 },
@@ -41,7 +41,7 @@ describe('Collection.associateBy', () => {
   })
 
   it('returns empty record for empty array', () => {
-    const res = Collection.associateBy([] as Array<{ id: number }>, (x) => x.id)
+    const res = Collection.associateBy([] as { id: number }[], (x) => x.id)
     expect(res).toEqual({})
   })
 

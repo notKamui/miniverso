@@ -34,7 +34,7 @@ export async function paginated<
   page: number
   size: number
 }): Promise<{
-  items: Array<InferSelectModel<TTable>>
+  items: InferSelectModel<TTable>[]
   total: number
   size: number
   page: number

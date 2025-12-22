@@ -128,8 +128,8 @@ interface AssetMetadata {
  */
 interface PreloadResult {
   routes: Record<string, (req: Request) => Response | Promise<Response>>
-  loaded: Array<AssetMetadata>
-  skipped: Array<AssetMetadata>
+  loaded: AssetMetadata[]
+  skipped: AssetMetadata[]
 }
 
 /**
@@ -256,8 +256,8 @@ function buildCompositeGlob(): Bun.Glob {
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   const routes: Record<string, (req: Request) => Response | Promise<Response>> =
     {}
-  const loaded: Array<AssetMetadata> = []
-  const skipped: Array<AssetMetadata> = []
+  const loaded: AssetMetadata[] = []
+  const skipped: AssetMetadata[] = []
 
   console.log(`📦 Loading static assets from ${clientDir}...`)
   console.log(
