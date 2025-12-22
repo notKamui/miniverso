@@ -44,7 +44,7 @@ async function exportTimeRecorderNdjsonV1(args: {
   let lastStartedAt: Time | null = null
   let lastId: string | null = null
 
-  for (;;) {
+  while (true) {
     const whereParts = [] as any[]
     if (userEmail) {
       whereParts.push(eq(user.email, userEmail))

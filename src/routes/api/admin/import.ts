@@ -49,12 +49,12 @@ async function* readNdjsonLines(body: ReadableStream<Uint8Array>) {
   const reader = body.getReader()
   let buffer = ''
 
-  for (;;) {
+  while (true) {
     const { value, done } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
 
-    for (;;) {
+    while (true) {
       const newlineIndex = buffer.indexOf('\n')
       if (newlineIndex === -1) break
       const line = buffer.slice(0, newlineIndex)
