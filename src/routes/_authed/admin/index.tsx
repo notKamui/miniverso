@@ -18,6 +18,11 @@ const panels: AdminPanel[] = [
     description: 'View and manage all users',
     link: { to: '/admin/users' },
   },
+  {
+    title: 'Export / Import',
+    description: 'Export application data for backup or migration',
+    link: { to: '/admin/export' },
+  },
 ]
 
 function RouteComponent() {

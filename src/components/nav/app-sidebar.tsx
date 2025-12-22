@@ -44,6 +44,10 @@ const sections: AppNavGroupProps[] = [
             title: 'Users',
             link: { to: '/admin/users' },
           },
+          {
+            title: 'Export / Import',
+            link: { to: '/admin/export' },
+          },
         ],
         condition: ({ user }) => user?.role === 'admin',
       },
