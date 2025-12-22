@@ -15,8 +15,10 @@ export const Route = createFileRoute('/_authed/admin/export')({
 
 function RouteComponent() {
   const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
   const [userEmail, setUserEmail] = useState('')
+  const [importFile, setImportFile] = useState<File | null>(null)
 
   const trimmedUserEmail = useMemo(() => userEmail.trim(), [userEmail])
   const effectiveUserEmail =
@@ -32,7 +34,8 @@ function RouteComponent() {
     try {
       const url = new URL('/api/admin/export', window.location.origin)
       if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
-      if (effectiveUserEmail) url.searchParams.set('userEmail', effectiveUserEmail)
+      if (effectiveUserEmail)
+        url.searchParams.set('userEmail', effectiveUserEmail)
 
       const a = document.createElement('a')
       a.href = url.toString()
@@ -43,6 +46,58 @@ function RouteComponent() {
       toast.success('Download started')
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  async function importData() {
+    if (!includeTimeRecorder) {
+      toast.error('Select at least one application to import')
+      return
+    }
+    if (!importFile) {
+      toast.error('Select a file to import')
+      return
+    }
+
+    setIsImporting(true)
+    try {
+      const url = new URL('/api/admin/import', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+        },
+        body: importFile,
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        try {
+          const parsed = JSON.parse(text) as { error?: string }
+          toast.error(parsed.error || 'Import failed')
+        } catch {
+          toast.error(text || 'Import failed')
+        }
+        return
+      }
+
+      const summary = (await res.json()) as {
+        processedLines?: number
+        importedTimeEntries?: number
+        skippedUnknownUser?: number
+      }
+
+      const processed = summary.processedLines ?? 0
+      const imported = summary.importedTimeEntries ?? 0
+      const skipped = summary.skippedUnknownUser ?? 0
+
+      toast.success(
+        `Import done: ${imported} imported, ${skipped} skipped, ${processed} lines processed`,
+      )
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -95,6 +150,32 @@ function RouteComponent() {
           <Button onClick={downloadExport} disabled={isExporting}>
             {isExporting ? 'Exporting…' : 'Download export'}
           </Button>
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <h4 className={title({ h: 4 })}>Import</h4>
+          <p className={text({ variant: 'muted' })}>
+            Upload a previous export file. Entries with unknown users are
+            ignored.
+          </p>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="import-file">Export file (.ndjson)</Label>
+            <Input
+              id="import-file"
+              type="file"
+              accept=".ndjson,application/x-ndjson"
+              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button onClick={importData} disabled={isImporting}>
+              {isImporting ? 'Importing…' : 'Import'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
