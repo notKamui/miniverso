@@ -114,12 +114,10 @@ export const Route = createFileRoute('/api/admin/export')({
           .flatMap((v) => v.split(','))
           .map((v) => v.trim())
           .filter(Boolean)
-
         const parsed = ExportQuerySchema.safeParse({
           userEmail: url.searchParams.get('userEmail') ?? undefined,
           apps: rawApps,
         })
-
         if (!parsed.success) {
           return new Response(
             JSON.stringify({
@@ -131,7 +129,6 @@ export const Route = createFileRoute('/api/admin/export')({
             },
           )
         }
-
         const apps = parsed.data.apps
         if (!apps.length) {
           return new Response(
@@ -144,14 +141,11 @@ export const Route = createFileRoute('/api/admin/export')({
             },
           )
         }
-
         const exportedAt = new Date().toISOString()
         const date = exportedAt.slice(0, 10)
         const scope = parsed.data.userEmail ? `-${parsed.data.userEmail}` : ''
         const filename = `miniverso-export-v1-${date}${scope}.ndjson`
-
         const encoder = new TextEncoder()
-
         const stream = new ReadableStream<Uint8Array>({
           async start(controller) {
             try {
@@ -166,7 +160,6 @@ export const Route = createFileRoute('/api/admin/export')({
                 apps,
               }
               controller.enqueue(encoder.encode(`${JSON.stringify(meta)}\n`))
-
               if (apps.includes('timeRecorder')) {
                 await exportTimeRecorderNdjsonV1({
                   controller,
@@ -174,14 +167,12 @@ export const Route = createFileRoute('/api/admin/export')({
                   userEmail: parsed.data.userEmail,
                 })
               }
-
               controller.close()
             } catch (error) {
               controller.error(error)
             }
           },
         })
-
         return new Response(stream, {
           headers: {
             'Content-Type': 'application/x-ndjson; charset=utf-8',

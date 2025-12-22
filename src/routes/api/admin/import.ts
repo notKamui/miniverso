@@ -146,7 +146,6 @@ export const Route = createFileRoute('/api/admin/import')({
           .flatMap((v) => v.split(','))
           .map((v) => v.trim())
           .filter(Boolean)
-
         const parsedQuery = ImportQuerySchema.safeParse({ apps: rawApps })
         if (!parsedQuery.success) {
           return new Response(
@@ -159,11 +158,9 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
-
         const apps = parsedQuery.data.apps.length
           ? parsedQuery.data.apps
           : ['timeRecorder']
-
         const includeTimeRecorder = apps.includes('timeRecorder')
         if (!includeTimeRecorder) {
           return new Response(
@@ -176,7 +173,6 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
-
         if (!request.body) {
           return new Response(
             JSON.stringify({ error: 'Missing request body' }),
@@ -186,17 +182,13 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
-
         const BATCH_SIZE = 1000
         const userIdByEmail = new Map<string, string | null>()
-
         let processedLines = 0
         let importedTimeEntries = 0
         let skippedUnknownUser = 0
-
         let sawMeta = false
         const bufferTimeEntries: TimeRecorderTimeEntryLineV1[] = []
-
         async function flushTimeRecorder() {
           if (bufferTimeEntries.length === 0) return
           const result = await importTimeRecorderBatchV1({
@@ -207,13 +199,11 @@ export const Route = createFileRoute('/api/admin/import')({
           skippedUnknownUser += result.skippedUnknownUser
           bufferTimeEntries.length = 0
         }
-
         try {
           for await (const rawLine of readNdjsonLines(request.body)) {
             const line = rawLine.trim()
             if (!line) continue
             processedLines++
-
             let value: unknown
             try {
               value = JSON.parse(line)
@@ -229,7 +219,6 @@ export const Route = createFileRoute('/api/admin/import')({
                 },
               )
             }
-
             if (
               typeof value === 'object' &&
               value !== null &&
@@ -249,11 +238,9 @@ export const Route = createFileRoute('/api/admin/import')({
                   },
                 )
               }
-
               sawMeta = true
               continue
             }
-
             if (
               typeof value === 'object' &&
               value !== null &&
@@ -261,7 +248,6 @@ export const Route = createFileRoute('/api/admin/import')({
               (value as any).type === 'timeRecorder.timeEntry'
             ) {
               if (!includeTimeRecorder) continue
-
               const parsedLine =
                 TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
               if (!parsedLine.success) {
@@ -278,18 +264,14 @@ export const Route = createFileRoute('/api/admin/import')({
                   },
                 )
               }
-
               bufferTimeEntries.push(parsedLine.data)
               if (bufferTimeEntries.length >= BATCH_SIZE) {
                 await flushTimeRecorder()
               }
             }
-
             // Unknown line type: ignore (forward-compatible)
           }
-
           await flushTimeRecorder()
-
           const summary: ImportSummaryV1 = {
             ok: true,
             version: 1,
@@ -298,7 +280,6 @@ export const Route = createFileRoute('/api/admin/import')({
             importedTimeEntries,
             skippedUnknownUser,
           }
-
           // If the file had no meta and no known records, return a helpful error.
           if (!sawMeta && processedLines === 0) {
             return new Response(
@@ -309,7 +290,6 @@ export const Route = createFileRoute('/api/admin/import')({
               },
             )
           }
-
           return new Response(JSON.stringify(summary), {
             headers: { 'Content-Type': 'application/json' },
           })
