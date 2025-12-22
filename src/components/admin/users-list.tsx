@@ -1,17 +1,43 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import {
+  type ColumnDef,
+  flexRender,
+  functionalUpdate,
+  getCoreRowModel,
+  type PaginationState,
+  type Updater,
+  useReactTable,
+  type VisibilityState,
+} from '@tanstack/react-table'
 import type { InferSelectModel } from 'drizzle-orm'
-import { MoreVerticalIcon, Trash2Icon } from 'lucide-react'
-import { DataTable } from '@/components/data/data-table'
+import { ChevronDown, MoreVerticalIcon, Trash2Icon } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Tooltip,
   TooltipContent,
@@ -26,149 +52,379 @@ function formatDate(date: string | Date) {
 
 type User = InferSelectModel<typeof user>
 
-interface UsersListProps {
+type UsersRoleFilter = 'all' | 'admin' | 'user'
+
+export type UsersListProps = {
   users: User[]
+  page: number // 1-based
+  size: number
+  total: number
+  totalPages: number
+  q?: string
+  role?: UsersRoleFilter
+  setSearch: (next: {
+    q?: string | undefined
+    role?: UsersRoleFilter | undefined
+    page?: number | undefined
+    size?: number | undefined
+  }) => void
   onDelete?: (id: string) => void
 }
 
-function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
-  const columns: ColumnDef<User>[] = [
+type ColumnMeta = {
+  label: string
+}
+
+function createUserColumns(
+  onDelete?: (id: string) => void,
+): ColumnDef<User, unknown>[] {
+  const columns: ColumnDef<User, unknown>[] = [
     {
+      id: 'user',
       accessorKey: 'name',
+      meta: { label: 'User' } satisfies ColumnMeta,
       header: 'User',
       cell: ({ row }) => {
-        const user = row.original
+        const u = row.original
         return (
-          <div className="flex items-center gap-3">
-            {user.image && (
+          <div className="flex min-w-0 items-center gap-3">
+            {u.image && (
               <img
-                src={user.image}
-                alt={user.name}
-                className="h-8 w-8 rounded-full"
+                src={u.image}
+                alt={u.name}
+                className="h-8 w-8 shrink-0 rounded-full"
               />
             )}
             <div className="min-w-0">
-              <div className="font-medium">{user.name}</div>
+              <div className="truncate font-medium">{u.name}</div>
               <Tooltip delayDuration={700}>
                 <TooltipTrigger asChild>
-                  <div className="text-muted-foreground text-sm">
-                    ID: {user.id.slice(0, 8)}...
+                  <div className="truncate text-muted-foreground text-sm">
+                    ID: {u.id.slice(0, 8)}...
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>{user.id}</TooltipContent>
+                <TooltipContent>{u.id}</TooltipContent>
               </Tooltip>
             </div>
           </div>
         )
       },
-      size: 250,
     },
     {
+      id: 'email',
       accessorKey: 'email',
+      meta: { label: 'Email' } satisfies ColumnMeta,
       header: 'Email',
-      size: 250,
+      cell: ({ row }) => (
+        <div className="truncate">{row.getValue('email')}</div>
+      ),
     },
     {
+      id: 'role',
       accessorKey: 'role',
+      meta: { label: 'Role' } satisfies ColumnMeta,
       header: 'Role',
       cell: ({ row }) => {
-        const user = row.original
+        const u = row.original
         return (
           <span
             className={`inline-flex items-center rounded-full px-2 py-1 font-medium text-xs ${
-              user.role === 'admin'
+              u.role === 'admin'
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             }`}
           >
-            {user.role}
+            {u.role}
           </span>
         )
       },
-      size: 100,
     },
     {
+      id: 'status',
       accessorKey: 'emailVerified',
+      meta: { label: 'Status' } satisfies ColumnMeta,
       header: 'Status',
       cell: ({ row }) => {
-        const user = row.original
+        const u = row.original
         return (
           <span
             className={`inline-flex items-center rounded-full px-2 py-1 font-medium text-xs ${
-              user.emailVerified
+              u.emailVerified
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                 : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
             }`}
           >
-            {user.emailVerified ? 'Verified' : 'Unverified'}
+            {u.emailVerified ? 'Verified' : 'Unverified'}
           </span>
         )
       },
-      size: 120,
     },
     {
+      id: 'joined',
       accessorKey: 'createdAt',
+      meta: { label: 'Joined' } satisfies ColumnMeta,
       header: 'Joined',
       cell: ({ row }) => {
-        const user = row.original
+        const u = row.original
         return (
           <span className="text-muted-foreground text-sm">
-            {formatDate(user.createdAt)}
+            {formatDate(u.createdAt)}
           </span>
         )
       },
-      size: 120,
     },
   ]
 
   if (onDelete) {
     columns.push({
       id: 'actions',
+      meta: { label: 'Actions' } satisfies ColumnMeta,
+      enableHiding: false,
+      header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
-        const user = row.original
+        const u = row.original
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                aria-label="Open action menu for row"
-                variant="ghost"
-                size="icon"
-              >
-                <MoreVerticalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <button
-                  type="button"
-                  className="w-full text-destructive"
-                  onClick={() => onDelete(user.id)}
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="Open action menu"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
                 >
-                  <Trash2Icon /> Delete
-                </button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <span className="sr-only">Open menu</span>
+                  <MoreVerticalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <button
+                    type="button"
+                    className="w-full text-destructive"
+                    onClick={() => onDelete(u.id)}
+                  >
+                    <Trash2Icon className="mr-2 h-4 w-4" /> Delete
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )
       },
-      size: 60,
     })
   }
 
   return columns
 }
 
-export function UsersList({ users, onDelete }: UsersListProps) {
-  const columns = createUserColumns(onDelete)
+export function UsersList({
+  users,
+  page,
+  size,
+  total,
+  totalPages,
+  q,
+  role,
+  setSearch,
+  onDelete,
+}: UsersListProps) {
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+
+  const columns = useMemo(() => createUserColumns(onDelete), [onDelete])
+  const pagination = useMemo<PaginationState>(
+    () => ({ pageIndex: Math.max(page - 1, 0), pageSize: size }),
+    [page, size],
+  )
+
+  const table = useReactTable({
+    data: users,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+
+    manualPagination: true,
+    rowCount: total,
+    pageCount: totalPages,
+
+    manualFiltering: true,
+
+    onPaginationChange: (updater: Updater<PaginationState>) => {
+      const next = functionalUpdate(updater, pagination)
+      const nextPage = next.pageIndex + 1
+      const nextSize = next.pageSize
+
+      setSearch({
+        page: nextSize !== size ? 1 : nextPage,
+        size: nextSize,
+      })
+    },
+    onColumnVisibilityChange: setColumnVisibility,
+
+    state: {
+      pagination,
+      columnVisibility,
+    },
+  })
+
+  const roleValue: UsersRoleFilter = role ?? 'all'
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-2xl">Users</h2>
+    <div className="w-full space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="sm:w-72">
+          <label
+            htmlFor="users-search"
+            className="mb-1 block font-medium text-sm"
+          >
+            Search
+          </label>
+          <Input
+            id="users-search"
+            name="users-search"
+            value={q ?? ''}
+            placeholder="Name or email"
+            onChange={(e) => {
+              const next = e.target.value
+              setSearch({ q: next.length ? next : undefined, page: 1 })
+            }}
+          />
+        </div>
+
+        <div className="sm:w-48">
+          <label
+            htmlFor="users-role"
+            className="mb-1 block font-medium text-sm"
+          >
+            Role
+          </label>
+          <Select
+            name="users-role"
+            value={roleValue}
+            onValueChange={(v: UsersRoleFilter) =>
+              setSearch({ role: v, page: 1 })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="user">User</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(q || (role && role !== 'all')) && (
+          <Button
+            variant="ghost"
+            className="sm:self-auto"
+            onClick={() =>
+              setSearch({ q: undefined, role: undefined, page: 1 })
+            }
+          >
+            Clear
+          </Button>
+        )}
+
+        <div className="grow" />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                const meta = column.columnDef.meta as ColumnMeta | undefined
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {meta?.label ?? column.id}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <DataTable columns={columns} data={users} emptyMessage="No users found" />
+      <div className="overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="whitespace-nowrap">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="align-middle">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-muted-foreground text-sm">
+          Page {page} / {Math.max(totalPages, 1)} • {total} users
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -3,15 +3,6 @@ import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { UsersList } from '@/components/admin/users-list'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   $deleteUsers,
   adminUsersQueryKey,
@@ -73,74 +64,15 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="sm:w-72">
-          <label htmlFor="search" className="mb-1 block font-medium text-sm">
-            Search
-          </label>
-          <Input
-            name="search"
-            value={q ?? ''}
-            placeholder="Name or email"
-            onChange={(e) => setSearch({ q: e.target.value, page: 1 })}
-          />
-        </div>
-        <div className="sm:w-48">
-          <label htmlFor="role" className="mb-1 block font-medium text-sm">
-            Role
-          </label>
-          <Select
-            name="role"
-            value={role}
-            onValueChange={(v: 'all' | 'admin' | 'user') =>
-              setSearch({ role: v, page: 1 })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All" defaultValue="all" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="user">User</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {(q || role) && (
-          <Button
-            variant="ghost"
-            className="sm:self-auto"
-            onClick={() =>
-              setSearch({ q: undefined, role: undefined, page: 1 })
-            }
-          >
-            Clear
-          </Button>
-        )}
-        <div className="grow" />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            disabled={page <= 1}
-            onClick={() => setSearch({ page: page - 1 })}
-          >
-            Previous
-          </Button>
-          <div className="text-muted-foreground text-sm">
-            Page {page} / {totalPages} • {total} users
-          </div>
-          <Button
-            variant="outline"
-            disabled={page >= totalPages}
-            onClick={() => setSearch({ page: page + 1 })}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
       <UsersList
         users={users}
+        page={page}
+        size={size}
+        total={total}
+        totalPages={totalPages}
+        q={q}
+        role={role}
+        setSearch={setSearch}
         onDelete={async (id) => {
           if (!confirm('Are you sure you want to delete this user?')) return
           await deleteUsers({ data: { ids: [id] } })
@@ -150,26 +82,6 @@ function AdminDashboard() {
           ])
         }}
       />
-
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="outline"
-          disabled={page <= 1}
-          onClick={() => setSearch({ page: page - 1 })}
-        >
-          Previous
-        </Button>
-        <div className="text-muted-foreground text-sm">
-          Page {page} / {totalPages}
-        </div>
-        <Button
-          variant="outline"
-          disabled={page >= totalPages}
-          onClick={() => setSearch({ page: page + 1 })}
-        >
-          Next
-        </Button>
-      </div>
     </div>
   )
 }

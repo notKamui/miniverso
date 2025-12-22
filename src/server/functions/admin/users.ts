@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
@@ -38,8 +38,10 @@ export const $getUsers = createServerFn({ method: 'GET' })
   .handler(async ({ data: { page, size, search, role } }) => {
     const conditions = [] as (SQL | undefined)[]
     if (search) {
-      const pattern = sql`%${search}%`
-      conditions.push(or(ilike(user.name, pattern), ilike(user.email, pattern)))
+      const pattern = search.replace(/[%_]/g, '\\$&')
+      conditions.push(
+        or(ilike(user.name, `%${pattern}%`), ilike(user.email, `%${pattern}%`)),
+      )
     }
     if (role) {
       conditions.push(eq(user.role, role))
