@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { inArray, sql } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 import { z } from 'zod'
+import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
-import { db } from '@/server/db'
+import { buildConflictUpdateColumns, db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
@@ -11,25 +12,21 @@ const ImportQuerySchema = z.object({
   apps: z.array(z.string()).default([]),
 })
 
-const MetaLineSchemaV1 = z
-  .object({
-    type: z.literal('meta'),
-    format: z.literal('miniverso.export.ndjson'),
-    version: z.literal(1),
-  })
-  .passthrough()
+const MetaLineSchemaV1 = z.looseObject({
+  type: z.literal('meta'),
+  format: z.literal('miniverso.export.ndjson'),
+  version: z.literal(1),
+})
 
-const TimeRecorderTimeEntryLineSchemaV1 = z
-  .object({
-    type: z.literal('timeRecorder.timeEntry'),
-    version: z.literal(1),
-    sourceId: z.string().min(1),
-    userEmail: z.string().trim().email(),
-    startedAt: z.string().min(1),
-    endedAt: z.string().min(1).nullable(),
-    description: z.string().nullable(),
-  })
-  .strict()
+const TimeRecorderTimeEntryLineSchemaV1 = z.strictObject({
+  type: z.literal('timeRecorder.timeEntry'),
+  version: z.literal(1),
+  sourceId: z.string().min(1),
+  userEmail: z.string().trim().email(),
+  startedAt: z.string().min(1),
+  endedAt: z.string().min(1).nullable(),
+  description: z.string().nullable(),
+})
 
 type TimeRecorderTimeEntryLineV1 = z.infer<
   typeof TimeRecorderTimeEntryLineSchemaV1
@@ -75,10 +72,8 @@ async function importTimeRecorderBatchV1(args: {
 }) {
   const { rows, userIdByEmail } = args
 
-  const emailsToResolve = Array.from(
-    new Set(
-      rows.map((r) => r.userEmail).filter((email) => !userIdByEmail.has(email)),
-    ),
+  const emailsToResolve = Collection.unique(
+    rows.map((r) => r.userEmail).filter((email) => !userIdByEmail.has(email)),
   )
 
   if (emailsToResolve.length) {
@@ -123,12 +118,12 @@ async function importTimeRecorderBatchV1(args: {
       .values(values)
       .onConflictDoUpdate({
         target: timeEntry.id,
-        set: {
-          userId: sql`excluded.user_id`,
-          startedAt: sql`excluded.started_at`,
-          endedAt: sql`excluded.ended_at`,
-          description: sql`excluded.description`,
-        },
+        set: buildConflictUpdateColumns(timeEntry, [
+          'userId',
+          'startedAt',
+          'endedAt',
+          'description',
+        ]),
       })
   }
 
@@ -147,6 +142,7 @@ export const Route = createFileRoute('/api/admin/import')({
           .map((v) => v.trim())
           .filter(Boolean)
         const parsedQuery = ImportQuerySchema.safeParse({ apps: rawApps })
+
         if (!parsedQuery.success) {
           return new Response(
             JSON.stringify({
@@ -158,10 +154,13 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
+
         const apps = parsedQuery.data.apps.length
           ? parsedQuery.data.apps
           : ['timeRecorder']
+
         const includeTimeRecorder = apps.includes('timeRecorder')
+
         if (!includeTimeRecorder) {
           return new Response(
             JSON.stringify({
@@ -173,6 +172,7 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
+
         if (!request.body) {
           return new Response(
             JSON.stringify({ error: 'Missing request body' }),
@@ -182,15 +182,19 @@ export const Route = createFileRoute('/api/admin/import')({
             },
           )
         }
+
         const BATCH_SIZE = 1000
         const userIdByEmail = new Map<string, string | null>()
         let processedLines = 0
         let importedTimeEntries = 0
         let skippedUnknownUser = 0
         let sawMeta = false
+
         const bufferTimeEntries: TimeRecorderTimeEntryLineV1[] = []
+
         async function flushTimeRecorder() {
           if (bufferTimeEntries.length === 0) return
+
           const result = await importTimeRecorderBatchV1({
             rows: bufferTimeEntries,
             userIdByEmail,
@@ -199,11 +203,14 @@ export const Route = createFileRoute('/api/admin/import')({
           skippedUnknownUser += result.skippedUnknownUser
           bufferTimeEntries.length = 0
         }
+
         try {
           for await (const rawLine of readNdjsonLines(request.body)) {
             const line = rawLine.trim()
             if (!line) continue
+
             processedLines++
+
             let value: unknown
             try {
               value = JSON.parse(line)
@@ -219,6 +226,7 @@ export const Route = createFileRoute('/api/admin/import')({
                 },
               )
             }
+
             if (
               typeof value === 'object' &&
               value !== null &&
@@ -241,6 +249,7 @@ export const Route = createFileRoute('/api/admin/import')({
               sawMeta = true
               continue
             }
+
             if (
               typeof value === 'object' &&
               value !== null &&
@@ -248,8 +257,10 @@ export const Route = createFileRoute('/api/admin/import')({
               (value as any).type === 'timeRecorder.timeEntry'
             ) {
               if (!includeTimeRecorder) continue
+
               const parsedLine =
                 TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
+
               if (!parsedLine.success) {
                 return new Response(
                   JSON.stringify({
@@ -264,14 +275,18 @@ export const Route = createFileRoute('/api/admin/import')({
                   },
                 )
               }
+
               bufferTimeEntries.push(parsedLine.data)
+
               if (bufferTimeEntries.length >= BATCH_SIZE) {
                 await flushTimeRecorder()
               }
             }
             // Unknown line type: ignore (forward-compatible)
           }
+
           await flushTimeRecorder()
+
           const summary: ImportSummaryV1 = {
             ok: true,
             version: 1,
@@ -280,6 +295,7 @@ export const Route = createFileRoute('/api/admin/import')({
             importedTimeEntries,
             skippedUnknownUser,
           }
+
           // If the file had no meta and no known records, return a helpful error.
           if (!sawMeta && processedLines === 0) {
             return new Response(
@@ -290,6 +306,7 @@ export const Route = createFileRoute('/api/admin/import')({
               },
             )
           }
+
           return new Response(JSON.stringify(summary), {
             headers: { 'Content-Type': 'application/json' },
           })

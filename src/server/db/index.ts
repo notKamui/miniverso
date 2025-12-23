@@ -1,7 +1,15 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
-import { count, eq, type InferSelectModel, type SQL } from 'drizzle-orm'
-import type { AnyPgTable, PgColumn } from 'drizzle-orm/pg-core'
+import {
+  count,
+  eq,
+  getTableColumns,
+  type InferSelectModel,
+  type SQL,
+  sql,
+} from 'drizzle-orm'
+import type { AnyPgTable, PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { drizzle } from 'drizzle-orm/postgres-js'
+import type { SQLiteTable } from 'drizzle-orm/sqlite-core'
 import postgres from 'postgres'
 import { env } from '@/lib/env/server'
 import * as schema from '@/server/db/schema'
@@ -76,4 +84,19 @@ export async function paginated<
     page: options.page,
     totalPages: Math.max(1, Math.ceil(total / options.size)),
   }
+}
+
+export function buildConflictUpdateColumns<
+  T extends PgTable | SQLiteTable,
+  Q extends keyof T['_']['columns'],
+>(table: T, columns: Q[]) {
+  const cls = getTableColumns(table)
+  return columns.reduce(
+    (acc, column) => {
+      const colName = cls[column].name
+      acc[column] = sql.raw(`excluded.${colName}`)
+      return acc
+    },
+    {} as Record<Q, SQL>,
+  )
 }

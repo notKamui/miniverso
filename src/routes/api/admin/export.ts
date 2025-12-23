@@ -8,7 +8,7 @@ import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
 const ExportQuerySchema = z.object({
-  userEmail: z.string().trim().email().optional(),
+  userEmail: z.email().trim().optional(),
   apps: z.array(z.string()).default([]),
 })
 
@@ -118,6 +118,7 @@ export const Route = createFileRoute('/api/admin/export')({
           userEmail: url.searchParams.get('userEmail') ?? undefined,
           apps: rawApps,
         })
+
         if (!parsed.success) {
           return new Response(
             JSON.stringify({
@@ -129,6 +130,7 @@ export const Route = createFileRoute('/api/admin/export')({
             },
           )
         }
+
         const apps = parsed.data.apps
         if (!apps.length) {
           return new Response(
@@ -141,6 +143,7 @@ export const Route = createFileRoute('/api/admin/export')({
             },
           )
         }
+
         const exportedAt = new Date().toISOString()
         const date = exportedAt.slice(0, 10)
         const scope = parsed.data.userEmail ? `-${parsed.data.userEmail}` : ''
