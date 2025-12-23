@@ -90,10 +90,10 @@ export function buildConflictUpdateColumns<
   T extends PgTable | SQLiteTable,
   Q extends keyof T['_']['columns'],
 >(table: T, columns: Q[]) {
-  const cls = getTableColumns(table)
+  const tableColumns = getTableColumns(table)
   return columns.reduce(
     (acc, column) => {
-      const colName = cls[column].name
+      const colName = tableColumns[column].name
       acc[column] = sql.raw(`excluded.${colName}`)
       return acc
     },
