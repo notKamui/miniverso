@@ -1,12 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { inArray } from 'drizzle-orm'
 import { z } from 'zod'
-import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import { buildConflictUpdateColumns, db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
+
+const BATCH_SIZE = 1000
+const EMAIL_RESOLVE_BATCH_SIZE = 1000
 
 const ImportQuerySchema = z.object({
   apps: z.array(z.string()).default([]),
@@ -71,27 +73,6 @@ async function importTimeRecorderBatchV1(args: {
   userIdByEmail: Map<string, string | null>
 }) {
   const { rows, userIdByEmail } = args
-
-  const emailsToResolve = Collection.unique(
-    rows.map((r) => r.userEmail).filter((email) => !userIdByEmail.has(email)),
-  )
-
-  if (emailsToResolve.length) {
-    const users = await db
-      .select({ id: user.id, email: user.email })
-      .from(user)
-      .where(inArray(user.email, emailsToResolve))
-
-    for (const row of users) {
-      userIdByEmail.set(row.email, row.id)
-    }
-
-    for (const email of emailsToResolve) {
-      if (!userIdByEmail.has(email)) {
-        userIdByEmail.set(email, null)
-      }
-    }
-  }
 
   const values: (typeof timeEntry.$inferInsert)[] = []
   let skippedUnknownUser = 0
@@ -183,8 +164,8 @@ export const Route = createFileRoute('/api/admin/import')({
           )
         }
 
-        const BATCH_SIZE = 1000
         const userIdByEmail = new Map<string, string | null>()
+        const pendingEmails = new Set<string>()
         let processedLines = 0
         let importedTimeEntries = 0
         let skippedUnknownUser = 0
@@ -192,8 +173,34 @@ export const Route = createFileRoute('/api/admin/import')({
 
         const bufferTimeEntries: TimeRecorderTimeEntryLineV1[] = []
 
+        async function resolvePendingEmails() {
+          if (pendingEmails.size === 0) return
+
+          const emailsToResolve = Array.from(pendingEmails)
+          pendingEmails.clear()
+
+          const users = await db
+            .select({ id: user.id, email: user.email })
+            .from(user)
+            .where(inArray(user.email, emailsToResolve))
+
+          for (const row of users) {
+            userIdByEmail.set(row.email, row.id)
+          }
+
+          for (const email of emailsToResolve) {
+            if (!userIdByEmail.has(email)) {
+              userIdByEmail.set(email, null)
+            }
+          }
+        }
+
         async function flushTimeRecorder() {
           if (bufferTimeEntries.length === 0) return
+
+          // Ensure every email seen in this batch is resolved (or marked unknown)
+          // before attempting to upsert.
+          await resolvePendingEmails()
 
           const result = await importTimeRecorderBatchV1({
             rows: bufferTimeEntries,
@@ -278,6 +285,13 @@ export const Route = createFileRoute('/api/admin/import')({
 
               bufferTimeEntries.push(parsedLine.data)
 
+              if (!userIdByEmail.has(parsedLine.data.userEmail)) {
+                pendingEmails.add(parsedLine.data.userEmail)
+                if (pendingEmails.size >= EMAIL_RESOLVE_BATCH_SIZE) {
+                  await resolvePendingEmails()
+                }
+              }
+
               if (bufferTimeEntries.length >= BATCH_SIZE) {
                 await flushTimeRecorder()
               }
@@ -285,6 +299,7 @@ export const Route = createFileRoute('/api/admin/import')({
             // Unknown line type: ignore (forward-compatible)
           }
 
+          await resolvePendingEmails()
           await flushTimeRecorder()
 
           const summary: ImportSummaryV1 = {
