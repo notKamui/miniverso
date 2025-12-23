@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import { $getTimeStatsBy } from '@/server/functions/time-entry'
@@ -63,7 +62,7 @@ const MONTHS = {
   12: 'Dec',
 } as const
 
-const CHARTS = {
+const CHARTS: Record<string, Chart> = {
   week: (stats) => {
     const fullRange = Object.keys(DAYS).map(Number)
     const data = fullRange.map((dayOrMonth) => {
@@ -115,7 +114,7 @@ const CHARTS = {
       format: (total: number) => Time.formatDuration(total * 1000),
     }
   },
-} satisfies Record<string, Chart>
+}
 
 export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
@@ -140,13 +139,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
       stats,
       time,
       type,
-      crumbs: crumbs(
-        {
-          title: 'Time recorder',
-          link: { to: '/time/{-$day}', params: { day: undefined } },
-        },
-        { title: 'Statistics' },
-      ),
+      crumb: 'Statistics',
     }
   },
   component: RouteComponent,
@@ -155,7 +148,9 @@ export const Route = createFileRoute('/_authed/time/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   //const { theme } = useTheme()
-  const { stats, time, type } = Route.useLoaderData()
+  const { stats, time, type } = Route.useLoaderData({
+    select: ({ stats, time, type }) => ({ stats, time, type }),
+  })
 
   const chart = CHARTS[type](stats, time)
 
@@ -173,7 +168,7 @@ function RouteComponent() {
             navigate({ to: '.', search: { date: time.getDate(), type } })
           }
         >
-          <SelectTrigger className="w-[180px] max-lg:w-full">
+          <SelectTrigger className="w-44 max-lg:w-full">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>

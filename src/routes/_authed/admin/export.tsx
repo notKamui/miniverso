@@ -1,0 +1,247 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { text, title } from '@/components/ui/typography'
+
+export const Route = createFileRoute('/_authed/admin/export')({
+  loader: () => ({ crumb: 'Export' }),
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+  const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
+  const [userEmail, setUserEmail] = useState('')
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
+
+  const trimmedUserEmail = useMemo(() => userEmail.trim(), [userEmail])
+  const effectiveUserEmail =
+    trimmedUserEmail.length > 0 ? trimmedUserEmail : undefined
+
+  const { isExporting, downloadExport } = useExportDownload({
+    includeTimeRecorder,
+    userEmail: effectiveUserEmail,
+  })
+
+  const { isImporting, importData } = useImportNdjson({
+    includeTimeRecorder,
+    importFile,
+  })
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h3 className={title({ h: 3 })}>Export / Import</h3>
+        <p className={text({ variant: 'muted' })}>
+          Export application data for backup or migration.
+        </p>
+      </div>
+
+      <div className="container flex flex-col gap-4 rounded-md border p-4">
+        <div className="flex flex-col gap-2">
+          <h4 className={title({ h: 4 })}>Applications</h4>
+          <Label className="flex items-center gap-2">
+            <Checkbox
+              checked={includeTimeRecorder}
+              onCheckedChange={(checked) =>
+                setIncludeTimeRecorder(checked === true)
+              }
+            />
+            <span>Time recorder</span>
+          </Label>
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <h4 className={title({ h: 4 })}>User scope</h4>
+          <p className={text({ variant: 'muted' })}>
+            Leave empty to export data for all users.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="export-user-email">User email (optional)</Label>
+            <Input
+              id="export-user-email"
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="user@example.com"
+              autoComplete="email"
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center gap-2">
+          <Button onClick={downloadExport} disabled={isExporting}>
+            {isExporting ? 'Exporting…' : 'Download export'}
+          </Button>
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <h4 className={title({ h: 4 })}>Import</h4>
+          <p className={text({ variant: 'muted' })}>
+            Upload a previous export file. Entries with unknown users are
+            ignored.
+          </p>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="import-file">Export file (.ndjson)</Label>
+            <Input
+              ref={importInputRef}
+              id="import-file"
+              type="file"
+              accept=".ndjson,application/x-ndjson"
+              className="hidden"
+              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+            />
+            <div className="flex items-center gap-3 rounded-md border bg-background p-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => importInputRef.current?.click()}
+                disabled={isImporting}
+              >
+                Choose file
+              </Button>
+              <div className="min-w-0 flex-1">
+                <p className={text({ variant: 'muted' })}>
+                  {importFile ? importFile.name : 'No file selected'}
+                </p>
+              </div>
+              {importFile ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setImportFile(null)
+                    if (importInputRef.current) {
+                      importInputRef.current.value = ''
+                    }
+                  }}
+                  disabled={isImporting}
+                >
+                  Clear
+                </Button>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button onClick={importData} disabled={isImporting}>
+              {isImporting ? 'Importing…' : 'Import'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function parseErrorMessage(text: string) {
+  try {
+    const parsed = JSON.parse(text) as { error?: string }
+    return parsed.error || text
+  } catch {
+    return text
+  }
+}
+
+function useExportDownload(args: {
+  includeTimeRecorder: boolean
+  userEmail?: string
+}) {
+  const { includeTimeRecorder, userEmail } = args
+  const [isExporting, setIsExporting] = useState(false)
+
+  async function downloadExport() {
+    if (!includeTimeRecorder) {
+      toast.error('Select at least one application to export')
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      const url = new URL('/api/admin/export', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+      if (userEmail) url.searchParams.set('userEmail', userEmail)
+
+      const a = document.createElement('a')
+      a.href = url.toString()
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+
+      toast.success('Download started')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  return { isExporting, downloadExport }
+}
+
+function useImportNdjson(args: {
+  includeTimeRecorder: boolean
+  importFile: File | null
+}) {
+  const { includeTimeRecorder, importFile } = args
+  const [isImporting, setIsImporting] = useState(false)
+
+  async function importData() {
+    if (!includeTimeRecorder) {
+      toast.error('Select at least one application to import')
+      return
+    }
+    if (!importFile) {
+      toast.error('Select a file to import')
+      return
+    }
+
+    setIsImporting(true)
+    try {
+      const url = new URL('/api/admin/import', window.location.origin)
+      if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+        },
+        body: importFile,
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        toast.error(parseErrorMessage(text) || 'Import failed')
+        return
+      }
+
+      const summary = (await res.json()) as {
+        processedLines?: number
+        importedTimeEntries?: number
+        skippedUnknownUser?: number
+      }
+
+      const processed = summary.processedLines ?? 0
+      const imported = summary.importedTimeEntries ?? 0
+      const skipped = summary.skippedUnknownUser ?? 0
+
+      toast.success(
+        `Import done: ${imported} imported, ${skipped} skipped, ${processed} lines processed`,
+      )
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  return { isImporting, importData }
+}

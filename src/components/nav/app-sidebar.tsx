@@ -1,4 +1,4 @@
-import { ClockIcon, HomeIcon, StarIcon } from 'lucide-react'
+import { ClockIcon, HomeIcon, ShieldIcon, StarIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import {
@@ -20,20 +20,36 @@ const sections: AppNavGroupProps[] = [
     items: [
       {
         title: 'Home',
-        to: '/',
         icon: HomeIcon,
+        link: { to: '/' },
       },
       {
         title: 'Time recorder',
-        to: '/time',
+        link: { to: '/time' },
         icon: ClockIcon,
         items: [
           {
             title: 'Statistics',
-            to: '/time/stats',
+            link: { to: '/time/stats' },
           },
         ],
         condition: ({ user }) => !!user,
+      },
+      {
+        title: 'Admin Dashboard',
+        link: { to: '/admin' },
+        icon: ShieldIcon,
+        items: [
+          {
+            title: 'Users',
+            link: { to: '/admin/users' },
+          },
+          {
+            title: 'Export / Import',
+            link: { to: '/admin/export' },
+          },
+        ],
+        condition: ({ user }) => user?.role === 'admin',
       },
     ],
   },
@@ -97,7 +113,7 @@ function Footer() {
         className={`whitespace-nowrap px-2 text-muted-foreground text-xs transition-all duration-300 ease-out ${
           open
             ? 'w-auto translate-x-0 opacity-100'
-            : '-translate-x-full w-0 opacity-0'
+            : 'w-0 -translate-x-full opacity-0'
         }`}
       >
         v{APP_VERSION} - {currentYear} ©{' '}

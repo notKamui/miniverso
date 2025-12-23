@@ -22,6 +22,13 @@
       "when": 1763832832642,
       "tag": "0002_add_time_entry_relations",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765902040427,
+      "tag": "0003_add_user_roles",
+      "breakpoints": true
     }
   ]
 }

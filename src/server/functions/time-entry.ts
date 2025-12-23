@@ -29,7 +29,13 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     const dayEnd = date.endOf('days')
 
     return db
-      .select()
+      .select({
+        id: timeEntry.id,
+        userId: timeEntry.userId,
+        startedAt: timeEntry.startedAt,
+        endedAt: timeEntry.endedAt,
+        description: timeEntry.description,
+      })
       .from(timeEntry)
       .where(
         and(
@@ -102,7 +108,13 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
         userId: user.id,
         startedAt,
       })
-      .returning()
+      .returning({
+        id: timeEntry.id,
+        userId: timeEntry.userId,
+        startedAt: timeEntry.startedAt,
+        endedAt: timeEntry.endedAt,
+        description: timeEntry.description,
+      })
       .then(
         takeUniqueOr(() => {
           throw notFound()
@@ -137,7 +149,13 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
               description,
             })
             .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
-            .returning()
+            .returning({
+              id: timeEntry.id,
+              userId: timeEntry.userId,
+              startedAt: timeEntry.startedAt,
+              endedAt: timeEntry.endedAt,
+              description: timeEntry.description,
+            })
             .then(takeUniqueOrNull)
 
           if (res && endedAt && endedAt.isBefore(res.startedAt)) {

@@ -10,7 +10,6 @@ import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { DevTools } from '@/components/devtools'
 import { MainLayout } from '@/layouts/main'
-import { crumbs } from '@/lib/hooks/use-crumbs'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
 import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
@@ -59,11 +58,7 @@ export const Route = createRootRouteWithContext<{
 
     return { user, requestInfo, socialOAuth, hcaptchaInfo }
   },
-  loader: async () => {
-    return {
-      crumbs: crumbs({ title: 'Home', link: { to: '/' } }),
-    }
-  },
+  loader: async () => ({ crumb: 'Home' }),
   component: RouteComponent,
 })
 
