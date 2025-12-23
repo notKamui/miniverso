@@ -67,53 +67,112 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(
     validate(
-      z.object({ date: Time.schema, type: z.enum(['week', 'month', 'year']) }),
+      z.object({
+        dayKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        type: z.enum(['week', 'month', 'year']),
+        tzOffsetMinutes: z.number().int().min(-840).max(840).default(0),
+      }),
     ),
   )
-  .handler(async ({ context: { user }, data: { date, type } }) => {
-    // for the given user
-    // depending on the type given
-    // get totals of time differences per units of time
-    // for the given date.
-    // ignore entries that are not ended
-    // - week: get the totals per day of the week of the date
-    // - month: get the totals per day of the month of the date
-    // - year: get the totals per month of the year of the date
+  .handler(
+    async ({ context: { user }, data: { dayKey, type, tzOffsetMinutes } }) => {
+      // for the given user
+      // depending on the type given
+      // get totals of time differences per units of time
+      // for the given date.
+      // ignore entries that are not ended
+      // - week: get the totals per day of the week of the date
+      // - month: get the totals per day of the month of the date
+      // - year: get the totals per month of the year of the date
 
-    const [startDate, endDate] = date.getRange(type)
-    const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
-    type GroupBy = typeof groupBy
+      const [y, m, d] = dayKey.split('-').map(Number)
+      if (!y || !m || !d) {
+        badRequest('Invalid dayKey', 400)
+      }
 
-    const unitQuery = {
-      day: sql<GroupBy>`DATE_TRUNC('day', ${timeEntry.startedAt})`,
-      month: sql<GroupBy>`DATE_TRUNC('month', ${timeEntry.startedAt})`,
-    }[groupBy]
+      const offsetMs = tzOffsetMinutes * 60 * 1000
+      const DAY_MS = 24 * 60 * 60 * 1000
 
-    const dayOrMonthQuery = {
-      week: sql`EXTRACT(ISODOW FROM ${timeEntry.startedAt})`,
-      month: sql`EXTRACT(DAY FROM ${timeEntry.startedAt})`,
-      year: sql`EXTRACT(MONTH FROM ${timeEntry.startedAt})`,
-    }[type]
+      function toYmd(utcMs: number) {
+        const dt = new Date(utcMs)
+        return {
+          y: dt.getUTCFullYear(),
+          m: dt.getUTCMonth() + 1,
+          d: dt.getUTCDate(),
+        }
+      }
 
-    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
+      function localDayBeginUtcMs(ymd: { y: number; m: number; d: number }) {
+        return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 0, 0, 0, 0) + offsetMs
+      }
 
-    return db
-      .select({
-        unit: unitQuery,
-        dayOrMonth: dayOrMonthQuery.mapWith(Number),
-        total: totalQuery.mapWith(Number),
-      })
-      .from(timeEntry)
-      .where(
-        and(
-          eq(timeEntry.userId, user.id),
-          isNotNull(timeEntry.endedAt),
-          gte(timeEntry.startedAt, startDate),
-          lte(timeEntry.endedAt, endDate),
-        ),
-      )
-      .groupBy(({ unit, dayOrMonth }) => [unit, dayOrMonth])
-  })
+      function localDayEndUtcMs(ymd: { y: number; m: number; d: number }) {
+        return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 23, 59, 59, 999) + offsetMs
+      }
+
+      let startYmd: { y: number; m: number; d: number }
+      let endYmd: { y: number; m: number; d: number }
+
+      if (type === 'week') {
+        const baseUtc = Date.UTC(y, m - 1, d)
+        const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
+        const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+        const mondayUtc = baseUtc + diffToMonday * DAY_MS
+        const sundayUtc = mondayUtc + 6 * DAY_MS
+        startYmd = toYmd(mondayUtc)
+        endYmd = toYmd(sundayUtc)
+      } else if (type === 'month') {
+        startYmd = { y, m, d: 1 }
+        const lastDayUtc = Date.UTC(y, m, 0)
+        endYmd = toYmd(lastDayUtc)
+      } else {
+        // year
+        startYmd = { y, m: 1, d: 1 }
+        const lastDayUtc = Date.UTC(y, 12, 0)
+        endYmd = toYmd(lastDayUtc)
+      }
+
+      const startDate = Time.from(new Date(localDayBeginUtcMs(startYmd)))
+      const endDate = Time.from(new Date(localDayEndUtcMs(endYmd)))
+
+      const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
+      type GroupBy = typeof groupBy
+
+      const startedLocal = sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
+
+      const unitQuery = {
+        day: sql<GroupBy>`DATE_TRUNC('day', ${startedLocal})`,
+        month: sql<GroupBy>`DATE_TRUNC('month', ${startedLocal})`,
+      }[groupBy]
+
+      const dayOrMonthExpr = {
+        week: sql`EXTRACT(ISODOW FROM ${startedLocal})`,
+        month: sql`EXTRACT(DAY FROM ${startedLocal})`,
+        year: sql`EXTRACT(MONTH FROM ${startedLocal})`,
+      }[type]
+
+      const dayOrMonthQuery = dayOrMonthExpr.mapWith(Number)
+
+      const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
+
+      return db
+        .select({
+          unit: unitQuery,
+          dayOrMonth: dayOrMonthQuery,
+          total: totalQuery.mapWith(Number),
+        })
+        .from(timeEntry)
+        .where(
+          and(
+            eq(timeEntry.userId, user.id),
+            isNotNull(timeEntry.endedAt),
+            gte(timeEntry.startedAt, startDate),
+            lte(timeEntry.endedAt, endDate),
+          ),
+        )
+        .groupBy(sql`1`, sql`2`)
+    },
+  )
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])

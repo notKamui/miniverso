@@ -118,7 +118,10 @@ const CHARTS: Record<string, Chart> = {
 
 export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
-    date: z.coerce.date().optional(),
+    day: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
     type: z.enum(['week', 'month', 'year']).optional().default('week'),
     tz: z.coerce.number().int().min(-840).max(840).optional(),
   }),
@@ -127,18 +130,24 @@ export const Route = createFileRoute('/_authed/time/stats')({
   },
   loader: async ({
     deps: {
-      search: { date, type },
+      search: { day, type, tz },
     },
   }) => {
-    const time = date ? Time.from(date) : Time.now()
+    const tzOffsetMinutes = tz ?? Time.getOffset()
+
+    const dayKey = day ?? Time.now().formatDayKey()
 
     const stats = await $getTimeStatsBy({
-      data: { date: time, type },
+      data: {
+        dayKey,
+        type,
+        tzOffsetMinutes,
+      },
     })
 
     return {
       stats,
-      time,
+      dayKey,
       type,
       crumb: 'Statistics',
     }
@@ -149,10 +158,13 @@ export const Route = createFileRoute('/_authed/time/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   //const { theme } = useTheme()
-  const { stats, time, type } = Route.useLoaderData({
-    select: ({ stats, time, type }) => ({ stats, time, type }),
+  const { stats, dayKey, type } = Route.useLoaderData({
+    select: ({ stats, dayKey, type }) => ({ stats, dayKey, type }),
   })
   const { tz = Time.getOffset() } = Route.useSearch()
+
+  const [y, m, d] = dayKey.split('-').map(Number)
+  const time = Time.from(new Date(y ?? 0, (m ?? 1) - 1, d ?? 1))
 
   const chart = CHARTS[type](stats, time)
 
@@ -161,7 +173,12 @@ function RouteComponent() {
       <div className="flex flex-row gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
-          onChange={(date) => navigate({ to: '.', search: { date, type, tz } })}
+          onChange={(date) =>
+            navigate({
+              to: '.',
+              search: { day: Time.from(date).formatDayKey(), type, tz },
+            })
+          }
           className="max-lg:w-full"
         />
         <Select
@@ -169,7 +186,7 @@ function RouteComponent() {
           onValueChange={(type: 'week' | 'month' | 'year') =>
             navigate({
               to: '.',
-              search: { date: time.getDate(), type, tz },
+              search: { day: time.formatDayKey(), type, tz },
             })
           }
         >
