@@ -11,6 +11,15 @@ export const env = createEnv({
       .transform((s) => Number.parseInt(s, 10)),
     DATABASE_URL: z.url(),
     BETTER_AUTH_SECRET: z.string().min(1),
+    ADMIN_EMAILS: z
+      .string()
+      .default('')
+      .transform((s) =>
+        s
+          .split(',')
+          .map((e) => e.trim())
+          .filter((e) => e.length > 0),
+      ),
     GITHUB_OAUTH_CLIENT_ID: z.string().min(1).optional(),
     GITHUB_OAUTH_CLIENT_SECRET: z.string().min(1).optional(),
     GOOGLE_OAUTH_CLIENT_ID: z.string().min(1).optional(),

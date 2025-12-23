@@ -1,4 +1,8 @@
 export namespace Collection {
+  export function unique<T>(array: T[]): T[] {
+    return Array.from(new Set(array))
+  }
+
   export function partition<T>(
     array: T[],
     predicate: (value: T) => boolean,

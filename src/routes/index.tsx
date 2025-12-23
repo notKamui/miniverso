@@ -1,14 +1,13 @@
 import { authViewPaths } from '@daveyplate/better-auth-ui'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, type ToOptions } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
-import type { FileRoutesByTo } from '@/routeTree.gen'
+import {
+  type GlobalContext,
+  useGlobalContext,
+} from '@/lib/hooks/use-global-context'
 
 export const Route = createFileRoute('/')({
-  loader: async ({ context: { user } }) => {
-    return {
-      user,
-    }
-  },
+  loader: ({ context: { user } }) => ({ user }),
   component: RouteComponent,
 })
 
@@ -52,34 +51,54 @@ function NotLoggedIn() {
 }
 
 type Application = {
-  to: keyof FileRoutesByTo
-  params?: any
   title: string
   description: string
+  condition?: (context: GlobalContext) => boolean
+  link: ToOptions
 }
+
 const applications: Application[] = [
   {
-    to: '/time/{-$day}',
-    params: { day: undefined },
     title: 'Time recorder',
     description: 'Record your time and track your progress',
+    link: {
+      to: '/time/{-$day}',
+      params: { day: undefined },
+    },
+  },
+  {
+    title: 'Admin Dashboard',
+    description: 'Manage users and system settings',
+    condition: ({ user }) => user?.role === 'admin',
+    link: {
+      to: '/admin',
+    },
   },
 ]
 
 function Main() {
+  const context = useGlobalContext()
+
   return (
     <div className="flex flex-col gap-4">
       <h3 className={title({ h: 3 })}>Applications</h3>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {applications.map((app) => (
-          <div key={app.to} className="container rounded-md border p-4">
-            <h4 className={title({ h: 4 })}>{app.title}</h4>
-            <p>{app.description}</p>
-            <Link to={app.to} params={app.params} from="/" className={link()}>
-              Open
-            </Link>
-          </div>
-        ))}
+        {applications
+          .filter((app) => app.condition?.(context) !== false)
+          .map((app) => (
+            <div key={app.link.to} className="container rounded-md border p-4">
+              <h4 className={title({ h: 4 })}>{app.title}</h4>
+              <p>{app.description}</p>
+              <Link
+                to={app.link.to}
+                params={app.link.params}
+                from="/"
+                className={link()}
+              >
+                Open
+              </Link>
+            </div>
+          ))}
       </div>
     </div>
   )

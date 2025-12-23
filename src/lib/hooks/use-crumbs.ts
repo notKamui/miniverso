@@ -2,24 +2,30 @@ import { useMatches } from '@tanstack/react-router'
 
 export type Crumb = {
   to: string
-  params: Record<string, string | number>
-  search: Record<string, string | number>
+  params?: Record<string, unknown>
+  search?: Record<string, unknown>
   name: string
+}
+
+function hasCrumb<T extends { loaderData?: unknown }>(
+  obj: T,
+): obj is T & { loaderData: { crumb: string } } {
+  return (
+    !!obj.loaderData &&
+    typeof obj.loaderData === 'object' &&
+    'crumb' in obj.loaderData &&
+    !!obj.loaderData.crumb
+  )
 }
 
 export function useCrumbs(): Crumb[] {
   return useMatches({
     select: (matches) =>
-      matches
-        .filter(
-          (match): match is typeof match & { loaderData: { crumb: string } } =>
-            !!(match.loaderData as any)?.crumb,
-        )
-        .map((match) => ({
-          to: match.pathname,
-          params: (match.params as never) || {},
-          search: (match.search as never) || {},
-          name: match.loaderData.crumb,
-        })),
+      matches.filter(hasCrumb).map((match) => ({
+        to: match.pathname,
+        params: match.params,
+        search: match.search,
+        name: match.loaderData.crumb,
+      })),
   })
 }

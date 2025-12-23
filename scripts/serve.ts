@@ -59,8 +59,9 @@
  *   bun run server.ts
  */
 
-import { env } from './src/lib/env/server'
-import { tryAsync, tryInline } from './src/lib/utils/try'
+import { env } from '../src/lib/env/server'
+import { tryAsync, tryInline } from '../src/lib/utils/try'
+import { runDatabaseMigrations } from './migrate'
 
 // Configuration
 const PORT = env.PORT
@@ -127,8 +128,8 @@ interface AssetMetadata {
  */
 interface PreloadResult {
   routes: Record<string, (req: Request) => Response | Promise<Response>>
-  loaded: Array<AssetMetadata>
-  skipped: Array<AssetMetadata>
+  loaded: AssetMetadata[]
+  skipped: AssetMetadata[]
 }
 
 /**
@@ -255,8 +256,8 @@ function buildCompositeGlob(): Bun.Glob {
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   const routes: Record<string, (req: Request) => Response | Promise<Response>> =
     {}
-  const loaded: Array<AssetMetadata> = []
-  const skipped: Array<AssetMetadata> = []
+  const loaded: AssetMetadata[] = []
+  const skipped: AssetMetadata[] = []
 
   console.log(`📦 Loading static assets from ${clientDir}...`)
   console.log(
@@ -446,18 +447,6 @@ async function startServer() {
   console.log(
     `\n🚀 Server running at http://localhost:${String(server.port)}\n`,
   )
-}
-
-async function runDatabaseMigrations() {
-  const { default: postgres } = await import('postgres')
-  const { drizzle } = await import('drizzle-orm/postgres-js')
-  const { migrate } = await import('drizzle-orm/postgres-js/migrator')
-
-  const postgresClient = postgres(env.DATABASE_URL)
-  const db = drizzle({ client: postgresClient })
-  console.log('ℹ️ Running migrations...')
-  await migrate(db, { migrationsFolder: './.drizzle' })
-  console.log('✅ Migrations completed successfully.\n')
 }
 
 async function main() {
