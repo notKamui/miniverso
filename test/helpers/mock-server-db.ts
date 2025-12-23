@@ -26,6 +26,12 @@ let usersByEmail = new Map<string, UserRow>()
 let timeEntriesById = new Map<string, InsertedTimeEntry>()
 let insertCalls: InsertedTimeEntry[][] = []
 
+let transactionDb: any = null
+
+export function configureTransactionDb(next: any) {
+  transactionDb = next
+}
+
 export function configureExport(next: {
   pages: ExportRow[][]
   throwOnQuery?: boolean
@@ -90,6 +96,13 @@ mock.module('@/server/db', () => ({
         },
       }),
     }),
+
+    transaction: async (fn: any) => {
+      if (!transactionDb) {
+        throw new Error('Transaction mock not configured')
+      }
+      return await transactionDb.transaction(fn)
+    },
   },
   buildConflictUpdateColumns: (_table: any, _cols: any[]) => ({}),
 }))

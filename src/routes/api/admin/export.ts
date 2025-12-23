@@ -8,6 +8,7 @@ import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
 const MAX_BUFFER_SIZE = 64000
+const CHUNK_SIZE = 1000
 
 const ExportQuerySchema = z.object({
   userEmail: z.email().trim().optional(),
@@ -41,7 +42,6 @@ async function exportTimeRecorderNdjsonV1(args: {
   userEmail?: string
 }) {
   const { controller, encoder, userEmail } = args
-  const CHUNK_SIZE = 1000
 
   let lastStartedAt: Time | null = null
   let lastId: string | null = null

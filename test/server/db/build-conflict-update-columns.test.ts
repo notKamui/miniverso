@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import type { BuildQueryConfig } from 'drizzle-orm'
-
-const dbMod = await import('@/server/db')
-const { timeEntry } = await import('@/server/db/schema/time')
+import { timeEntry } from '@/server/db/schema'
+import { buildConflictUpdateColumns } from '@/server/db/utils'
 
 describe('buildConflictUpdateColumns', () => {
   it('maps column keys to excluded.<db_column_name> SQL', () => {
-    const set = dbMod.buildConflictUpdateColumns(timeEntry, [
+    const set = buildConflictUpdateColumns(timeEntry, [
       'startedAt',
       'endedAt',
       'description',
