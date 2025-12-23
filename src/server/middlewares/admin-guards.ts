@@ -19,3 +19,14 @@ export async function adminApiGuard(args: {
 
   return await args.next({ context: { user: session.user } })
 }
+
+export async function adminFnGuard(args: {
+  user: { role?: string } | null | undefined
+  next: () => any
+  deny: (message: string, status: number) => any
+}): Promise<any> {
+  if (args.user?.role !== 'admin') {
+    return args.deny('Admin access required', 403)
+  }
+  return await args.next()
+}

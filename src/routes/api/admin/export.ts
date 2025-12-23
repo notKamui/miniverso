@@ -7,6 +7,8 @@ import { user } from '@/server/db/schema/auth'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
+const MAX_BUFFER_SIZE = 64000
+
 const ExportQuerySchema = z.object({
   userEmail: z.email().trim().optional(),
   apps: z.array(z.string()).default([]),
@@ -88,7 +90,7 @@ async function exportTimeRecorderNdjsonV1(args: {
       }
       buffer += `${JSON.stringify(line)}\n`
 
-      if (buffer.length > 64_000) {
+      if (buffer.length > MAX_BUFFER_SIZE) {
         controller.enqueue(encoder.encode(buffer))
         buffer = ''
       }
