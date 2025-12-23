@@ -174,6 +174,13 @@ export const Route = createFileRoute('/api/admin/export')({
               }
               controller.close()
             } catch (error) {
+              console.error('[admin-export] streaming failed', {
+                url: request.url,
+                apps,
+                userEmail: parsed.data.userEmail ?? null,
+                exportedAt,
+              })
+              console.error(error)
               controller.error(error)
             }
           },

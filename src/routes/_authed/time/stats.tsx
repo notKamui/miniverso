@@ -168,7 +168,7 @@ function RouteComponent() {
             navigate({ to: '.', search: { date: time.getDate(), type } })
           }
         >
-          <SelectTrigger className="w-45 max-lg:w-full">
+          <SelectTrigger className="w-44 max-lg:w-full">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
