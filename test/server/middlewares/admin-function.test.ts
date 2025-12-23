@@ -7,7 +7,7 @@ describe('$$admin', () => {
       try {
         await adminFnGuard({
           user: undefined,
-          next: () => new Response('ok'),
+          next: () => new Response('ok') as any,
           deny: (message, status) => {
             throw new Error(`${status}:${message}`)
           },
@@ -30,7 +30,7 @@ describe('$$admin', () => {
         user: { role: 'user' },
         next: () => {
           nextCalled = true
-          return new Response('ok')
+          return new Response('ok') as any
         },
         deny: (message, status) => {
           throw new Error(`${status}:${message}`)
@@ -44,7 +44,7 @@ describe('$$admin', () => {
   it('allows when user is admin', async () => {
     const res = await adminFnGuard({
       user: { role: 'admin' },
-      next: () => new Response('ok', { status: 200 }),
+      next: () => new Response('ok', { status: 200 }) as any,
       deny: () => new Response('nope', { status: 403 }),
     })
 

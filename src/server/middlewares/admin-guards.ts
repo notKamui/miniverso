@@ -1,8 +1,14 @@
+import type {
+  FunctionMiddlewareAfterServer,
+  FunctionMiddlewareServerNextFn,
+  RequestServerNextFn,
+} from '@tanstack/react-start'
+
 export async function adminApiGuard(args: {
   headers: Headers
   getSession: (headers: Headers) => Promise<{ user: { role: string } } | null>
-  next: (opts?: { context?: { user?: any } }) => any
-}): Promise<any> {
+  next: RequestServerNextFn<Record<string, unknown>, undefined>
+}) {
   const session = await args.getSession(args.headers)
   if (!session) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -22,7 +28,32 @@ export async function adminApiGuard(args: {
 
 export async function adminFnGuard(args: {
   user: { role?: string } | null | undefined
-  next: () => any
+  next: FunctionMiddlewareServerNextFn<
+    Record<string, unknown>,
+    readonly [
+      FunctionMiddlewareAfterServer<
+        Record<string, unknown>,
+        unknown,
+        undefined,
+        {
+          user: {
+            id: string
+            createdAt: Date
+            updatedAt: Date
+            email: string
+            emailVerified: boolean
+            name: string
+            image?: string | null | undefined | undefined
+            role: string
+          }
+        },
+        undefined,
+        undefined,
+        undefined
+      >,
+    ],
+    undefined
+  >
   deny: (message: string, status: number) => any
 }): Promise<any> {
   if (args.user?.role !== 'admin') {
