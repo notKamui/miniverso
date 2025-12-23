@@ -5,6 +5,7 @@ import {
   type GlobalContext,
   useGlobalContext,
 } from '@/lib/hooks/use-global-context'
+import { Time } from '@/lib/utils/time'
 
 export const Route = createFileRoute('/')({
   loader: ({ context: { user } }) => ({ user }),
@@ -63,7 +64,9 @@ const applications: Application[] = [
     description: 'Record your time and track your progress',
     link: {
       to: '/time/{-$day}',
-      params: { day: undefined },
+      search: {
+        tz: Time.getOffset(),
+      },
     },
   },
   {
@@ -92,6 +95,7 @@ function Main() {
               <Link
                 to={app.link.to}
                 params={app.link.params}
+                search={app.link.search}
                 from="/"
                 className={link()}
               >

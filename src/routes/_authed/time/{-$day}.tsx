@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { Collection } from '@/lib/utils/collection'
@@ -9,11 +10,19 @@ import {
 } from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
-  loader: async ({ params: { day } }) => {
+  validateSearch: z.object({
+    tz: z.coerce.number().int().min(-840).max(840).optional(),
+  }),
+  loaderDeps: ({ search }) => ({ search }),
+  loader: async ({ params: { day }, deps: { search } }) => {
     const date = Time.from(day)
+    const tzOffsetMinutes = search.tz ?? 0
 
     let entries = await $getTimeEntriesByDay({
-      data: { date },
+      data: {
+        dayKey: date.formatDayKey(),
+        tzOffsetMinutes,
+      },
     })
 
     if (!date.isToday()) {
