@@ -59,6 +59,14 @@ export class Time {
     toDriver: (time) => time.toISOString(),
   })
 
+  static getOffset(): number {
+    return new Date().getTimezoneOffset()
+  }
+
+  getOffset(): number {
+    return this.date.getTimezoneOffset()
+  }
+
   shift(type: ShiftType, count: number): Time {
     const date = new Date(this.date)
     switch (type) {
@@ -169,6 +177,13 @@ export class Time {
       month: '2-digit',
       year: 'numeric',
     })
+  }
+
+  formatDayKey(): string {
+    const year = this.date.getFullYear()
+    const month = String(this.date.getMonth() + 1).padStart(2, '0')
+    const day = String(this.date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   formatTime(options?: { short?: boolean }): string {

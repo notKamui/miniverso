@@ -23,10 +23,27 @@ import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ date: Time.schema })))
-  .handler(async ({ context: { user }, data: { date } }) => {
-    const dayBegin = date.startOf('days')
-    const dayEnd = date.endOf('days')
+  .inputValidator(
+    validate(
+      z.object({
+        dayKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        tzOffsetMinutes: z.number().int().min(-840).max(840).default(0),
+      }),
+    ),
+  )
+  .handler(async ({ context: { user }, data: { dayKey, tzOffsetMinutes } }) => {
+    const [y, m, d] = dayKey.split('-').map(Number)
+    if (!y || !m || !d) {
+      badRequest('Invalid dayKey', 400)
+    }
+
+    const offsetMs = tzOffsetMinutes * 60 * 1000
+    const dayBegin = Time.from(
+      new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) + offsetMs),
+    )
+    const dayEnd = Time.from(
+      new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs),
+    )
 
     return db
       .select({

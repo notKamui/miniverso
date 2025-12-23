@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
 import { useSidebarState } from '@/lib/hooks/use-sidebar-state'
+import { Time } from '@/lib/utils/time'
 
 const sections: AppNavGroupProps[] = [
   {
@@ -25,12 +26,22 @@ const sections: AppNavGroupProps[] = [
       },
       {
         title: 'Time recorder',
-        link: { to: '/time' },
+        link: {
+          to: '/time',
+          search: {
+            tz: Time.getOffset(),
+          },
+        },
         icon: ClockIcon,
         items: [
           {
             title: 'Statistics',
-            link: { to: '/time/stats' },
+            link: {
+              to: '/time/stats',
+              search: {
+                tz: Time.getOffset(),
+              },
+            },
           },
         ],
         condition: ({ user }) => !!user,

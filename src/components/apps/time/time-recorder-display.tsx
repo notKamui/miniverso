@@ -78,7 +78,8 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   function onDateChange(time: Time) {
     router.navigate({
       to: '/time/{-$day}',
-      params: { day: time.isToday() ? undefined : time.formatDayNumber() },
+      params: { day: time.isToday() ? undefined : time.formatDayKey() },
+      search: { tz: time.getOffset() },
     })
   }
 
@@ -160,7 +161,8 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
             <Link
               to="/time/{-$day}"
               from="/"
-              params={{ day: dayBefore.formatDayNumber() }}
+              params={{ day: dayBefore.formatDayKey() }}
+              search={{ tz: dayBefore.getOffset() }}
             >
               <ChevronLeftIcon />
             </Link>
@@ -181,7 +183,8 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
               <Link
                 to="/time/{-$day}"
                 from="/"
-                params={{ day: dayAfter.formatDayNumber() }}
+                params={{ day: dayAfter.formatDayKey() }}
+                search={{ tz: dayAfter.getOffset() }}
               >
                 <ChevronRightIcon />
               </Link>

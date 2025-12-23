@@ -120,6 +120,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
   validateSearch: z.object({
     date: z.coerce.date().optional(),
     type: z.enum(['week', 'month', 'year']).optional().default('week'),
+    tz: z.coerce.number().int().min(-840).max(840).optional(),
   }),
   loaderDeps: ({ search }) => {
     return { search }
@@ -151,6 +152,7 @@ function RouteComponent() {
   const { stats, time, type } = Route.useLoaderData({
     select: ({ stats, time, type }) => ({ stats, time, type }),
   })
+  const { tz = Time.getOffset() } = Route.useSearch()
 
   const chart = CHARTS[type](stats, time)
 
@@ -159,13 +161,16 @@ function RouteComponent() {
       <div className="flex flex-row gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
-          onChange={(date) => navigate({ to: '.', search: { date, type } })}
+          onChange={(date) => navigate({ to: '.', search: { date, type, tz } })}
           className="max-lg:w-full"
         />
         <Select
           value={type}
           onValueChange={(type: 'week' | 'month' | 'year') =>
-            navigate({ to: '.', search: { date: time.getDate(), type } })
+            navigate({
+              to: '.',
+              search: { date: time.getDate(), type, tz },
+            })
           }
         >
           <SelectTrigger className="w-44 max-lg:w-full">

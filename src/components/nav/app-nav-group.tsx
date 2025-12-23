@@ -95,6 +95,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
             to={item.link.to}
             from="/"
             params={item.link.params}
+            search={item.link.search}
             onClick={handleLinkClick}
           >
             <item.icon />
@@ -118,6 +119,7 @@ function MenuItem({ item }: { item: NavGroupItem }) {
                         to={subItem.link.to}
                         from="/"
                         params={subItem.link.params}
+                        search={subItem.link.search}
                         onClick={handleLinkClick}
                       >
                         <span>{subItem.title}</span>
