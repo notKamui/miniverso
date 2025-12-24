@@ -14,7 +14,7 @@ export type ShiftType =
 
 export type RangeType = 'day' | 'week' | 'month' | 'year'
 
-type Ymd = { y: number; m: number; d: number }
+type YMD = { y: number; m: number; d: number }
 
 const CLASS_NAME = 'Time'
 export class Time {
@@ -277,7 +277,7 @@ export class Time {
 // Helpers for converting a local calendar day (dayKey) into UTC instants.
 // `tzOffsetMinutes` must match `Date.getTimezoneOffset()` semantics.
 export namespace UTCTime {
-  export function parseDayKey(dayKey: string): Ymd {
+  export function parseDayKey(dayKey: string): YMD {
     const [y, m, d] = dayKey.split('-').map(Number)
     if (!y || !m || !d) {
       throw new Error('Invalid dayKey')
@@ -305,7 +305,7 @@ export namespace UTCTime {
     const DAY_MS = 24 * 60 * 60 * 1000
     const offsetMs = tzOffsetMinutes * 60 * 1000
 
-    const toYmd = (utcMs: number): Ymd => {
+    const toYmd = (utcMs: number): YMD => {
       const dt = new Date(utcMs)
       return {
         y: dt.getUTCFullYear(),
@@ -314,8 +314,8 @@ export namespace UTCTime {
       }
     }
 
-    let startYmd: Ymd
-    let endYmd: Ymd
+    let startYmd: YMD
+    let endYmd: YMD
 
     switch (type) {
       case 'week': {
