@@ -21,6 +21,85 @@ import { timeEntry } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
+type Ymd = { y: number; m: number; d: number }
+
+function parseDayKeyOrThrow(dayKey: string): Ymd {
+  const [y, m, d] = dayKey.split('-').map(Number)
+  if (!y || !m || !d) {
+    badRequest('Invalid dayKey', 400)
+  }
+  return { y, m, d }
+}
+
+function toYmd(utcMs: number): Ymd {
+  const dt = new Date(utcMs)
+  return {
+    y: dt.getUTCFullYear(),
+    m: dt.getUTCMonth() + 1,
+    d: dt.getUTCDate(),
+  }
+}
+
+function localDayBeginUtcMs(ymd: Ymd, tzOffsetMinutes: number) {
+  const offsetMs = tzOffsetMinutes * 60 * 1000
+  return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 0, 0, 0, 0) + offsetMs
+}
+
+function localDayEndUtcMs(ymd: Ymd, tzOffsetMinutes: number) {
+  const offsetMs = tzOffsetMinutes * 60 * 1000
+  return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 23, 59, 59, 999) + offsetMs
+}
+
+function localDayUtcRange(dayKey: string, tzOffsetMinutes: number) {
+  const ymd = parseDayKeyOrThrow(dayKey)
+  return {
+    start: Time.from(new Date(localDayBeginUtcMs(ymd, tzOffsetMinutes))),
+    end: Time.from(new Date(localDayEndUtcMs(ymd, tzOffsetMinutes))),
+  }
+}
+
+function localPeriodUtcRange(
+  dayKey: string,
+  type: 'week' | 'month' | 'year',
+  tzOffsetMinutes: number,
+) {
+  const { y, m, d } = parseDayKeyOrThrow(dayKey)
+
+  const DAY_MS = 24 * 60 * 60 * 1000
+  let startYmd: Ymd
+  let endYmd: Ymd
+
+  if (type === 'week') {
+    // Work in the user's calendar space (represented via UTC fields).
+    const baseUtc = Date.UTC(y, m - 1, d)
+    const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
+    const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+    const mondayUtc = baseUtc + diffToMonday * DAY_MS
+    const sundayUtc = mondayUtc + 6 * DAY_MS
+    startYmd = toYmd(mondayUtc)
+    endYmd = toYmd(sundayUtc)
+  } else if (type === 'month') {
+    startYmd = { y, m, d: 1 }
+    const lastDayUtc = Date.UTC(y, m, 0)
+    endYmd = toYmd(lastDayUtc)
+  } else {
+    // year
+    startYmd = { y, m: 1, d: 1 }
+    const lastDayUtc = Date.UTC(y, 12, 0)
+    endYmd = toYmd(lastDayUtc)
+  }
+
+  return {
+    start: Time.from(new Date(localDayBeginUtcMs(startYmd, tzOffsetMinutes))),
+    end: Time.from(new Date(localDayEndUtcMs(endYmd, tzOffsetMinutes))),
+  }
+}
+
+function startedLocalExpr(tzOffsetMinutes: number) {
+  // Cast so Postgres can type prepared statements reliably.
+  return sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
+}
+
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(
@@ -32,17 +111,9 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     ),
   )
   .handler(async ({ context: { user }, data: { dayKey, tzOffsetMinutes } }) => {
-    const [y, m, d] = dayKey.split('-').map(Number)
-    if (!y || !m || !d) {
-      badRequest('Invalid dayKey', 400)
-    }
-
-    const offsetMs = tzOffsetMinutes * 60 * 1000
-    const dayBegin = Time.from(
-      new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) + offsetMs),
-    )
-    const dayEnd = Time.from(
-      new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs),
+    const { start: dayBegin, end: dayEnd } = localDayUtcRange(
+      dayKey,
+      tzOffsetMinutes,
     )
 
     return db
@@ -76,69 +147,16 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   )
   .handler(
     async ({ context: { user }, data: { dayKey, type, tzOffsetMinutes } }) => {
-      // for the given user
-      // depending on the type given
-      // get totals of time differences per units of time
-      // for the given date.
-      // ignore entries that are not ended
-      // - week: get the totals per day of the week of the date
-      // - month: get the totals per day of the month of the date
-      // - year: get the totals per month of the year of the date
-
-      const [y, m, d] = dayKey.split('-').map(Number)
-      if (!y || !m || !d) {
-        badRequest('Invalid dayKey', 400)
-      }
-
-      const offsetMs = tzOffsetMinutes * 60 * 1000
-      const DAY_MS = 24 * 60 * 60 * 1000
-
-      function toYmd(utcMs: number) {
-        const dt = new Date(utcMs)
-        return {
-          y: dt.getUTCFullYear(),
-          m: dt.getUTCMonth() + 1,
-          d: dt.getUTCDate(),
-        }
-      }
-
-      function localDayBeginUtcMs(ymd: { y: number; m: number; d: number }) {
-        return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 0, 0, 0, 0) + offsetMs
-      }
-
-      function localDayEndUtcMs(ymd: { y: number; m: number; d: number }) {
-        return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 23, 59, 59, 999) + offsetMs
-      }
-
-      let startYmd: { y: number; m: number; d: number }
-      let endYmd: { y: number; m: number; d: number }
-
-      if (type === 'week') {
-        const baseUtc = Date.UTC(y, m - 1, d)
-        const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
-        const diffToMonday = weekday === 0 ? -6 : 1 - weekday
-        const mondayUtc = baseUtc + diffToMonday * DAY_MS
-        const sundayUtc = mondayUtc + 6 * DAY_MS
-        startYmd = toYmd(mondayUtc)
-        endYmd = toYmd(sundayUtc)
-      } else if (type === 'month') {
-        startYmd = { y, m, d: 1 }
-        const lastDayUtc = Date.UTC(y, m, 0)
-        endYmd = toYmd(lastDayUtc)
-      } else {
-        // year
-        startYmd = { y, m: 1, d: 1 }
-        const lastDayUtc = Date.UTC(y, 12, 0)
-        endYmd = toYmd(lastDayUtc)
-      }
-
-      const startDate = Time.from(new Date(localDayBeginUtcMs(startYmd)))
-      const endDate = Time.from(new Date(localDayEndUtcMs(endYmd)))
+      const { start: startDate, end: endDate } = localPeriodUtcRange(
+        dayKey,
+        type,
+        tzOffsetMinutes,
+      )
 
       const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
       type GroupBy = typeof groupBy
 
-      const startedLocal = sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
+      const startedLocal = startedLocalExpr(tzOffsetMinutes)
 
       const unitQuery = {
         day: sql<GroupBy>`DATE_TRUNC('day', ${startedLocal})`,
