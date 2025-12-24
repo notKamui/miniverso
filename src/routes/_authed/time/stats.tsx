@@ -1,15 +1,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { z } from 'zod'
 import { CalendarSelect } from '@/components/ui/calendar-select'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
 import {
   Select,
   SelectContent,
@@ -168,6 +165,13 @@ function RouteComponent() {
 
   const chart = CHARTS[type](stats, time)
 
+  const chartConfig = {
+    total: {
+      label: 'Total',
+      color: 'var(--chart-1)',
+    },
+  } as const
+
   return (
     <div className="flex size-full flex-col gap-4">
       <div className="flex flex-row gap-4 max-lg:flex-col">
@@ -200,41 +204,29 @@ function RouteComponent() {
           </SelectContent>
         </Select>
       </div>
-      <ResponsiveContainer>
-        <LineChart
-          data={chart.data}
-          margin={{
-            top: 5,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={chart.x} />
-          <YAxis dataKey={chart.y} tickFormatter={chart.format} />
-          <Tooltip
-            formatter={chart.format}
-            wrapperClassName="AAAA"
-            contentStyle={{
-              borderRadius: 'var(--radius)',
-              // ...(theme === 'light'
-              //   ? {}
-              //   : { backgroundColor: 'hsl(var(--background))' }),
-            }}
-            itemStyle={
-              {
-                // color: theme === 'light' ? '#8884d8' : '#b3b0e9',
-              }
-            }
+      <ChartContainer config={chartConfig} className="w-full">
+        <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey={chart.x}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
           />
-          <Line
-            type="monotone"
-            dataKey="total"
-            // stroke={theme === 'light' ? '#8884d8' : '#b3b0e9'}
-            activeDot={{ r: 8 }}
+          <YAxis tickFormatter={chart.format} />
+          <ChartTooltip
+            cursor={false}
+            content={(props) => (
+              <ChartTooltipContent
+                {...props}
+                nameKey="total"
+                formatter={(value) => chart.format(Number(value ?? 0))}
+              />
+            )}
           />
-        </LineChart>
-      </ResponsiveContainer>
+          <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+        </BarChart>
+      </ChartContainer>
     </div>
   )
 }
