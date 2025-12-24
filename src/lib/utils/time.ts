@@ -276,16 +276,16 @@ export class Time {
 
 // Helpers for converting a local calendar day (dayKey) into UTC instants.
 // `tzOffsetMinutes` must match `Date.getTimezoneOffset()` semantics.
-export const UTCTime = {
-  parseDayKey(dayKey: string): Ymd {
+export namespace UTCTime {
+  export function parseDayKey(dayKey: string): Ymd {
     const [y, m, d] = dayKey.split('-').map(Number)
     if (!y || !m || !d) {
       throw new Error('Invalid dayKey')
     }
     return { y, m, d }
-  },
+  }
 
-  localDayRange(dayKey: string, tzOffsetMinutes: number) {
+  export function localDayRange(dayKey: string, tzOffsetMinutes: number) {
     const { y, m, d } = UTCTime.parseDayKey(dayKey)
     const offsetMs = tzOffsetMinutes * 60 * 1000
     return {
@@ -294,9 +294,9 @@ export const UTCTime = {
         new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs),
       ),
     }
-  },
+  }
 
-  localPeriodRange(
+  export function localPeriodRange(
     dayKey: string,
     type: Exclude<RangeType, 'day'>,
     tzOffsetMinutes: number,
@@ -317,20 +317,27 @@ export const UTCTime = {
     let startYmd: Ymd
     let endYmd: Ymd
 
-    if (type === 'week') {
-      const baseUtc = Date.UTC(y, m - 1, d)
-      const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
-      const diffToMonday = weekday === 0 ? -6 : 1 - weekday
-      const mondayUtc = baseUtc + diffToMonday * DAY_MS
-      const sundayUtc = mondayUtc + 6 * DAY_MS
-      startYmd = toYmd(mondayUtc)
-      endYmd = toYmd(sundayUtc)
-    } else if (type === 'month') {
-      startYmd = { y, m, d: 1 }
-      endYmd = toYmd(Date.UTC(y, m, 0))
-    } else {
-      startYmd = { y, m: 1, d: 1 }
-      endYmd = toYmd(Date.UTC(y, 12, 0))
+    switch (type) {
+      case 'week': {
+        const baseUtc = Date.UTC(y, m - 1, d)
+        const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
+        const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+        const mondayUtc = baseUtc + diffToMonday * DAY_MS
+        const sundayUtc = mondayUtc + 6 * DAY_MS
+        startYmd = toYmd(mondayUtc)
+        endYmd = toYmd(sundayUtc)
+        break
+      }
+      case 'month': {
+        startYmd = { y, m, d: 1 }
+        endYmd = toYmd(Date.UTC(y, m, 0))
+        break
+      }
+      case 'year': {
+        startYmd = { y, m: 1, d: 1 }
+        endYmd = toYmd(Date.UTC(y, 12, 0))
+        break
+      }
     }
 
     return {
@@ -347,8 +354,8 @@ export const UTCTime = {
         ),
       ),
     }
-  },
-} as const
+  }
+}
 
 const fallthroughStartOf = createFallthroughExec<ShiftType, Date>([
   ['years', (date) => date.setMonth(0)],
