@@ -13,90 +13,15 @@ import {
 } from 'drizzle-orm'
 import { z } from 'zod'
 import { badRequest } from '@/lib/utils/response'
-import { Time } from '@/lib/utils/time'
-import { tryAsync } from '@/lib/utils/try'
+import { Time, UTCTime } from '@/lib/utils/time'
+import { tryAsync, tryInline } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
-type Ymd = { y: number; m: number; d: number }
-
-function parseDayKeyOrThrow(dayKey: string): Ymd {
-  const [y, m, d] = dayKey.split('-').map(Number)
-  if (!y || !m || !d) {
-    badRequest('Invalid dayKey', 400)
-  }
-  return { y, m, d }
-}
-
-function toYmd(utcMs: number): Ymd {
-  const dt = new Date(utcMs)
-  return {
-    y: dt.getUTCFullYear(),
-    m: dt.getUTCMonth() + 1,
-    d: dt.getUTCDate(),
-  }
-}
-
-function localDayBeginUtcMs(ymd: Ymd, tzOffsetMinutes: number) {
-  const offsetMs = tzOffsetMinutes * 60 * 1000
-  return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 0, 0, 0, 0) + offsetMs
-}
-
-function localDayEndUtcMs(ymd: Ymd, tzOffsetMinutes: number) {
-  const offsetMs = tzOffsetMinutes * 60 * 1000
-  return Date.UTC(ymd.y, ymd.m - 1, ymd.d, 23, 59, 59, 999) + offsetMs
-}
-
-function localDayUtcRange(dayKey: string, tzOffsetMinutes: number) {
-  const ymd = parseDayKeyOrThrow(dayKey)
-  return {
-    start: Time.from(new Date(localDayBeginUtcMs(ymd, tzOffsetMinutes))),
-    end: Time.from(new Date(localDayEndUtcMs(ymd, tzOffsetMinutes))),
-  }
-}
-
-function localPeriodUtcRange(
-  dayKey: string,
-  type: 'week' | 'month' | 'year',
-  tzOffsetMinutes: number,
-) {
-  const { y, m, d } = parseDayKeyOrThrow(dayKey)
-
-  const DAY_MS = 24 * 60 * 60 * 1000
-  let startYmd: Ymd
-  let endYmd: Ymd
-
-  if (type === 'week') {
-    // Work in the user's calendar space (represented via UTC fields).
-    const baseUtc = Date.UTC(y, m - 1, d)
-    const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
-    const diffToMonday = weekday === 0 ? -6 : 1 - weekday
-    const mondayUtc = baseUtc + diffToMonday * DAY_MS
-    const sundayUtc = mondayUtc + 6 * DAY_MS
-    startYmd = toYmd(mondayUtc)
-    endYmd = toYmd(sundayUtc)
-  } else if (type === 'month') {
-    startYmd = { y, m, d: 1 }
-    const lastDayUtc = Date.UTC(y, m, 0)
-    endYmd = toYmd(lastDayUtc)
-  } else {
-    // year
-    startYmd = { y, m: 1, d: 1 }
-    const lastDayUtc = Date.UTC(y, 12, 0)
-    endYmd = toYmd(lastDayUtc)
-  }
-
-  return {
-    start: Time.from(new Date(localDayBeginUtcMs(startYmd, tzOffsetMinutes))),
-    end: Time.from(new Date(localDayEndUtcMs(endYmd, tzOffsetMinutes))),
-  }
-}
-
 function startedLocalExpr(tzOffsetMinutes: number) {
-  // Cast so Postgres can type prepared statements reliably.
   return sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
 }
 
@@ -111,10 +36,15 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     ),
   )
   .handler(async ({ context: { user }, data: { dayKey, tzOffsetMinutes } }) => {
-    const { start: dayBegin, end: dayEnd } = localDayUtcRange(
-      dayKey,
-      tzOffsetMinutes,
+    const [error, range] = tryInline(() =>
+      UTCTime.localDayRange(dayKey, tzOffsetMinutes),
     )
+
+    if (error) {
+      badRequest('Invalid dayKey', 400)
+    }
+
+    const { start: dayBegin, end: dayEnd } = range
 
     return db
       .select({
@@ -147,11 +77,15 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   )
   .handler(
     async ({ context: { user }, data: { dayKey, type, tzOffsetMinutes } }) => {
-      const { start: startDate, end: endDate } = localPeriodUtcRange(
-        dayKey,
-        type,
-        tzOffsetMinutes,
+      const [error, range] = tryInline(() =>
+        UTCTime.localPeriodRange(dayKey, type, tzOffsetMinutes),
       )
+
+      if (error) {
+        badRequest('Invalid dayKey', 400)
+      }
+
+      const { start: startDate, end: endDate } = range
 
       const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
       type GroupBy = typeof groupBy

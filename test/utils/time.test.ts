@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { Time } from '../../src/lib/utils/time'
+import { Time, UTCTime } from '../../src/lib/utils/time'
 
 describe('Time', () => {
   it('formatDuration formats HH:MM:SS with zero padding', () => {
@@ -160,5 +160,18 @@ describe('Time', () => {
     const restored = adapter.fromSerializable(serial)
     expect(restored).toBeInstanceOf(Time)
     expect(restored.toISOString()).toBe(iso)
+  })
+
+  it('UTCTime.localDayRange computes UTC boundaries for tz=0', () => {
+    const { start, end } = UTCTime.localDayRange('2025-12-24', 0)
+    expect(start.toISOString()).toBe('2025-12-24T00:00:00.000Z')
+    expect(end.toISOString()).toBe('2025-12-24T23:59:59.999Z')
+  })
+
+  it('UTCTime.localDayRange shifts boundaries by tz offset minutes', () => {
+    // tzOffsetMinutes follows Date.getTimezoneOffset(): UTC+1 => -60
+    const { start, end } = UTCTime.localDayRange('2025-12-24', -60)
+    expect(start.toISOString()).toBe('2025-12-23T23:00:00.000Z')
+    expect(end.toISOString()).toBe('2025-12-24T22:59:59.999Z')
   })
 })

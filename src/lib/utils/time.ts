@@ -14,6 +14,8 @@ export type ShiftType =
 
 export type RangeType = 'day' | 'week' | 'month' | 'year'
 
+type Ymd = { y: number; m: number; d: number }
+
 const CLASS_NAME = 'Time'
 export class Time {
   private constructor(private readonly date: Date) {}
@@ -271,6 +273,82 @@ export class Time {
     return new Time(date)
   }
 }
+
+// Helpers for converting a local calendar day (dayKey) into UTC instants.
+// `tzOffsetMinutes` must match `Date.getTimezoneOffset()` semantics.
+export const UTCTime = {
+  parseDayKey(dayKey: string): Ymd {
+    const [y, m, d] = dayKey.split('-').map(Number)
+    if (!y || !m || !d) {
+      throw new Error('Invalid dayKey')
+    }
+    return { y, m, d }
+  },
+
+  localDayRange(dayKey: string, tzOffsetMinutes: number) {
+    const { y, m, d } = UTCTime.parseDayKey(dayKey)
+    const offsetMs = tzOffsetMinutes * 60 * 1000
+    return {
+      start: Time.from(new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) + offsetMs)),
+      end: Time.from(
+        new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs),
+      ),
+    }
+  },
+
+  localPeriodRange(
+    dayKey: string,
+    type: Exclude<RangeType, 'day'>,
+    tzOffsetMinutes: number,
+  ) {
+    const { y, m, d } = UTCTime.parseDayKey(dayKey)
+    const DAY_MS = 24 * 60 * 60 * 1000
+    const offsetMs = tzOffsetMinutes * 60 * 1000
+
+    const toYmd = (utcMs: number): Ymd => {
+      const dt = new Date(utcMs)
+      return {
+        y: dt.getUTCFullYear(),
+        m: dt.getUTCMonth() + 1,
+        d: dt.getUTCDate(),
+      }
+    }
+
+    let startYmd: Ymd
+    let endYmd: Ymd
+
+    if (type === 'week') {
+      const baseUtc = Date.UTC(y, m - 1, d)
+      const weekday = new Date(baseUtc).getUTCDay() // 0..6 (Sun..Sat)
+      const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+      const mondayUtc = baseUtc + diffToMonday * DAY_MS
+      const sundayUtc = mondayUtc + 6 * DAY_MS
+      startYmd = toYmd(mondayUtc)
+      endYmd = toYmd(sundayUtc)
+    } else if (type === 'month') {
+      startYmd = { y, m, d: 1 }
+      endYmd = toYmd(Date.UTC(y, m, 0))
+    } else {
+      startYmd = { y, m: 1, d: 1 }
+      endYmd = toYmd(Date.UTC(y, 12, 0))
+    }
+
+    return {
+      start: Time.from(
+        new Date(
+          Date.UTC(startYmd.y, startYmd.m - 1, startYmd.d, 0, 0, 0, 0) +
+            offsetMs,
+        ),
+      ),
+      end: Time.from(
+        new Date(
+          Date.UTC(endYmd.y, endYmd.m - 1, endYmd.d, 23, 59, 59, 999) +
+            offsetMs,
+        ),
+      ),
+    }
+  },
+} as const
 
 const fallthroughStartOf = createFallthroughExec<ShiftType, Date>([
   ['years', (date) => date.setMonth(0)],
