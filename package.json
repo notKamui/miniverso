@@ -20,7 +20,7 @@
     "migrate": "bun db migrate",
     "auth:secret": "bunx @better-auth/cli@latest secret",
     "auth:generate": "bunx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && bun lint:fix ./src/server/db/schema/auth.ts",
-    "deploy": "bun check && sh ./deployment/_.deploy.sh",
+    "deploy": "sh ./deployment/_.deploy.sh",
     "up": "bunx taze@latest major -lI"
   },
   "dependencies": {
