@@ -173,8 +173,8 @@ function RouteComponent() {
   } as const
 
   return (
-    <div className="flex size-full flex-col gap-4">
-      <div className="flex flex-row gap-4 max-lg:flex-col">
+    <div className="flex size-full min-h-0 flex-col gap-4">
+      <div className="flex shrink-0 flex-row gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
           onChange={(date) =>
@@ -204,7 +204,7 @@ function RouteComponent() {
           </SelectContent>
         </Select>
       </div>
-      <ChartContainer config={chartConfig} className="w-full">
+      <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1">
         <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
           <CartesianGrid vertical={false} />
           <XAxis
