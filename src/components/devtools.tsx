@@ -8,6 +8,9 @@ export function DevTools() {
 
   return (
     <TanStackDevtools
+      config={{
+        hideUntilHover: true,
+      }}
       plugins={[
         {
           name: 'Tanstack Query',
