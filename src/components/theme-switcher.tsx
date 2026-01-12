@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react'
-import { motion } from 'motion/react'
+import * as m from 'motion/react-m'
 import { themeQueryOptions, useUpdateTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 
@@ -54,7 +54,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
             aria-label={label}
           >
             {isActiveTheme && (
-              <motion.div
+              <m.div
                 layoutId="activeTheme"
                 className="absolute inset-0 rounded-full bg-secondary"
                 transition={{ type: 'spring', duration: 0.5 }}

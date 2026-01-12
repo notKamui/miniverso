@@ -8,7 +8,8 @@ import {
   MoreVerticalIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
@@ -64,7 +65,7 @@ const timeTableColumns: ColumnDef<TimeEntry>[] = [
   },
 ]
 
-const MotionDialog = motion.create(EditEntryDialog)
+const MotionDialog = m.create(EditEntryDialog)
 
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
@@ -197,7 +198,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         <div className="grow">
           <AnimatePresence>
             {Object.keys(selectedRows).length > 0 && (
-              <motion.div
+              <m.div
                 key="delete-rows"
                 initial={{ height: 0, opacity: 0, marginBottom: 0 }}
                 exit={{ height: 0, opacity: 0, marginBottom: 0 }}
@@ -219,7 +220,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                 >
                   Delete
                 </Button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
           <DataTable
