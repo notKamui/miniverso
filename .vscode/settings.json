@@ -34,9 +34,6 @@
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit"
-  },
   "[routeTree.gen.ts]": {
     "editor.formatOnSave": false,
     "editor.formatOnPaste": false,
@@ -46,6 +43,10 @@
     }
   },
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
   "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
   "tailwindCSS.emmetCompletions": true,
   "tailwindCSS.classAttributes": [
