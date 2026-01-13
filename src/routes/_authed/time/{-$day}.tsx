@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
+import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { Collection } from '@/lib/utils/collection'

@@ -11,7 +11,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm'
-import { z } from 'zod'
+import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { Time, UTCTime } from '@/lib/utils/time'
 import { tryAsync, tryInline } from '@/lib/utils/try'

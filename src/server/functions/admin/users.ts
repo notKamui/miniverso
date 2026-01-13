@@ -1,7 +1,7 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { and, asc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm'
-import { z } from 'zod'
+import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
 import { db, paginated } from '@/server/db'

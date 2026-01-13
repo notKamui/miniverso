@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { z } from 'zod'
+import * as z from 'zod'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import {
   ChartContainer,

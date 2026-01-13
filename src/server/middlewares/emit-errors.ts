@@ -1,5 +1,5 @@
 import { createMiddleware } from '@tanstack/react-start'
-import { ZodError } from 'zod'
+import * as z from 'zod'
 import { ServerErrorEvent } from '@/lib/hooks/use-server-errors'
 
 export const $$emitErrors = createMiddleware({ type: 'function' })
@@ -7,7 +7,7 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
     try {
       return await next()
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         window?.dispatchEvent(new ServerErrorEvent(error))
       } else if (error instanceof Response) {
         const body = await error.json().catch(() => 'Error on the server')
