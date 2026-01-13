@@ -24,6 +24,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Spinner } from '@/components/ui/spinner'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
@@ -113,6 +115,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     {},
   )
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
+
+  // Delay showing pending state to avoid flashing
+  const showDeleting = useDebounce(deleteMutation.isPending, 300)
 
   const columnsWithActions: typeof timeTableColumns = [
     {
@@ -237,7 +242,8 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                   }}
                   disabled={deleteMutation.isPending}
                 >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                  {showDeleting && <Spinner />}
+                  Delete
                 </Button>
               </m.div>
             )}

@@ -2,8 +2,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { title } from '@/components/ui/typography'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
@@ -89,6 +91,10 @@ export function TimeRecorderControls({
 
   const [description, setDescription] = useState<string>('')
 
+  // Delay showing pending state to avoid flashing
+  const showCreating = useDebounce(isCreating, 300)
+  const showUpdating = useDebounce(isUpdating, 300)
+
   async function onStart() {
     await start()
   }
@@ -122,11 +128,13 @@ export function TimeRecorderControls({
       />
       {currentEntry ? (
         <Button onClick={onEnd} disabled={isUpdating}>
-          {isUpdating ? 'Ending...' : 'End'}
+          {showUpdating && <Spinner />}
+          End
         </Button>
       ) : (
         <Button onClick={onStart} disabled={isCreating}>
-          {isCreating ? 'Starting...' : 'Start'}
+          {showCreating && <Spinner />}
+          Start
         </Button>
       )}
     </div>
