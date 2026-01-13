@@ -112,6 +112,7 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
       })
     },
     currentEntry,
+    isPending: createMutation.isPending || updateMutation.isPending,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
   }
@@ -121,7 +122,7 @@ export function TimeRecorderControls({
   entries,
   className,
 }: TimeRecorderControlsProps) {
-  const { start, end, currentEntry, isCreating, isUpdating } =
+  const { start, end, currentEntry, isPending, isCreating, isUpdating } =
     useTimeTableControls(entries)
   const now = useNow()
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
@@ -160,17 +161,17 @@ export function TimeRecorderControls({
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
-        disabled={isUpdating}
+        disabled={isPending}
       />
       {currentEntry ? (
-        <Button onClick={onEnd} disabled={isUpdating}>
+        <Button onClick={onEnd} disabled={isPending}>
           <span className="flex items-center gap-2">
             <AnimatedSpinner show={showUpdating} />
             End
           </span>
         </Button>
       ) : (
-        <Button onClick={onStart} disabled={isCreating}>
+        <Button onClick={onStart} disabled={isPending}>
           <span className="flex items-center gap-2">
             <AnimatedSpinner show={showCreating} />
             Start
