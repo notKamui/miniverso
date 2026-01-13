@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
@@ -150,11 +153,32 @@ export function TimeRecorderControls({
     >
       <div className="space-x-2">
         <span className={title({ h: 4 })}>Elapsed time:</span>
-        {currentStart ? (
-          <span>{currentStart.formatDiff(now)}</span>
-        ) : (
-          <span>00:00:00</span>
-        )}
+        <AnimatePresence mode="wait">
+          {currentStart && now ? (
+            <m.span
+              key="elapsed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {currentStart.formatDiff(now)}
+            </m.span>
+          ) : (
+            <m.span
+              key="placeholder"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="inline-flex items-center"
+            >
+              {now ? (
+                '00:00:00'
+              ) : (
+                <Skeleton className="inline-block h-4 w-16 translate-y-0.5" />
+              )}
+            </m.span>
+          )}
+        </AnimatePresence>
       </div>
       <Textarea
         className="grow resize-none"

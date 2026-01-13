@@ -25,6 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
@@ -335,7 +336,7 @@ function ActionsMenu({
 }
 
 function TotalTime({ entries }: { entries: TimeEntry[] }) {
-  const now = useNow().getMillis()
+  const now = useNow()?.getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
     .reduce(
@@ -344,15 +345,39 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
       0,
     )
   const currentEntry = entries.find((entry) => !entry.endedAt)
-  const currentElapsed = currentEntry
-    ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
-    : 0
+  const currentElapsed =
+    currentEntry && now
+      ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
+      : 0
+
+  const hasRunningEntry = !!currentEntry
+  const isHydrated = now !== undefined
 
   return (
     entries.length > 0 && (
       <div className="flex h-9 flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
-        <span>{Time.formatDuration(totalTime + currentElapsed)}</span>
+        <AnimatePresence mode="wait">
+          {isHydrated || !hasRunningEntry ? (
+            <m.span
+              key="total"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {Time.formatDuration(totalTime + currentElapsed)}
+            </m.span>
+          ) : (
+            <m.span
+              key="skeleton"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Skeleton className="mt-2 inline-block h-4 w-17" />
+            </m.span>
+          )}
+        </AnimatePresence>
       </div>
     )
   )
