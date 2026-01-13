@@ -49,20 +49,26 @@ export type TimeTableData = Omit<TimeEntry, 'startedAt' | 'endedAt'> & {
 type RecorderDisplayProps = {
   time: Time
   entries: TimeEntry[]
+  tzOffset: number
 }
 
-const timeTableColumns: ColumnDef<TimeEntry>[] = [
+const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
   {
     accessorKey: 'startedAt',
-    accessorFn: (row) => Time.from(row.startedAt).formatTime(),
     header: 'Started at',
+    cell: ({ row }) =>
+      Time.from(row.original.startedAt).formatTime({ offsetMinutes: tzOffset }),
     size: 0, // force minimum width
   },
   {
     accessorKey: 'endedAt',
-    accessorFn: (row) =>
-      row.endedAt ? Time.from(row.endedAt).formatTime() : null,
     header: 'Ended at',
+    cell: ({ row }) =>
+      row.original.endedAt
+        ? Time.from(row.original.endedAt).formatTime({
+            offsetMinutes: tzOffset,
+          })
+        : null,
     size: 0, // force minimum width
   },
   {
@@ -74,7 +80,11 @@ const timeTableColumns: ColumnDef<TimeEntry>[] = [
 
 const MotionDialog = m.create(EditEntryDialog)
 
-export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
+export function RecorderDisplay({
+  time,
+  entries,
+  tzOffset,
+}: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
@@ -136,7 +146,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     })
   }
 
-  const columnsWithActions: typeof timeTableColumns = [
+  const columnsWithActions: ReturnType<typeof timeTableColumns> = [
     {
       id: 'select',
       header: () => {
@@ -181,7 +191,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       },
       size: 32,
     },
-    ...timeTableColumns,
+    ...timeTableColumns(tzOffset),
     {
       id: 'actions',
       cell: ({ row }) => {
