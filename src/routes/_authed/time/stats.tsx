@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
-import { $getTimeStatsBy } from '@/server/functions/time-entry'
+import { getTimeStatsQueryOptions } from '@/server/functions/time-entry'
 
 type Stats = {
   unit: 'day' | 'month'
@@ -129,18 +129,19 @@ export const Route = createFileRoute('/_authed/time/stats')({
     deps: {
       search: { day, type, tz },
     },
+    context: { queryClient },
   }) => {
     const tzOffsetMinutes = tz ?? Time.getOffset()
 
     const dayKey = day ?? Time.now().formatDayKey()
 
-    const stats = await $getTimeStatsBy({
-      data: {
+    const stats = await queryClient.fetchQuery(
+      getTimeStatsQueryOptions({
         dayKey,
         type,
         tzOffsetMinutes,
-      },
-    })
+      }),
+    )
 
     return {
       stats,

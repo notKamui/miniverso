@@ -6,7 +6,7 @@ import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import {
   $deleteTimeEntries,
-  $getTimeEntriesByDay,
+  getTimeEntriesByDayQueryOptions,
 } from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
@@ -14,16 +14,20 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
     tz: z.coerce.number().int().min(-840).max(840).optional(),
   }),
   loaderDeps: ({ search }) => ({ search }),
-  loader: async ({ params: { day }, deps: { search } }) => {
+  loader: async ({
+    params: { day },
+    deps: { search },
+    context: { queryClient },
+  }) => {
     const date = Time.from(day)
     const tzOffsetMinutes = search.tz ?? 0
 
-    let entries = await $getTimeEntriesByDay({
-      data: {
+    let entries = await queryClient.fetchQuery(
+      getTimeEntriesByDayQueryOptions({
         dayKey: date.formatDayKey(),
         tzOffsetMinutes,
-      },
-    })
+      }),
+    )
 
     if (!date.isToday()) {
       const [ended, notEnded] = Collection.partition(

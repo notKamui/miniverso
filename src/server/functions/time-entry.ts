@@ -1,3 +1,4 @@
+import { queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import {
@@ -23,6 +24,44 @@ import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
 function startedLocalExpr(tzOffsetMinutes: number) {
   return sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
+}
+
+export const timeEntriesQueryKey = ['time-entries'] as const
+export const timeStatsQueryKey = ['time-stats'] as const
+
+export function getTimeEntriesByDayQueryOptions({
+  dayKey,
+  tzOffsetMinutes,
+}: {
+  dayKey: string
+  tzOffsetMinutes: number
+}) {
+  return queryOptions({
+    queryKey: [...timeEntriesQueryKey, { dayKey, tzOffsetMinutes }] as const,
+    queryFn: ({ signal }) =>
+      $getTimeEntriesByDay({ signal, data: { dayKey, tzOffsetMinutes } }),
+    staleTime: 1000 * 30, // 30 seconds
+  })
+}
+
+export function getTimeStatsQueryOptions({
+  dayKey,
+  type,
+  tzOffsetMinutes,
+}: {
+  dayKey: string
+  type: 'week' | 'month' | 'year'
+  tzOffsetMinutes: number
+}) {
+  return queryOptions({
+    queryKey: [
+      ...timeStatsQueryKey,
+      { dayKey, type, tzOffsetMinutes },
+    ] as const,
+    queryFn: ({ signal }) =>
+      $getTimeStatsBy({ signal, data: { dayKey, type, tzOffsetMinutes } }),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  })
 }
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })

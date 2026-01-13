@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
@@ -11,6 +12,8 @@ import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $createTimeEntry,
   $updateTimeEntry,
+  timeEntriesQueryKey,
+  timeStatsQueryKey,
 } from '@/server/functions/time-entry'
 
 export type TimeRecorderControlsProps = {
@@ -20,6 +23,7 @@ export type TimeRecorderControlsProps = {
 
 function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const createTimeEntry = useServerFn($createTimeEntry)
   const updateTimeEntry = useServerFn($updateTimeEntry)
 
@@ -29,10 +33,18 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
     return lastEntry ?? null
   })
 
+  async function invalidateTimeQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+      queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+      router.invalidate(),
+    ])
+  }
+
   async function start() {
     const entry = await createTimeEntry({ data: { startedAt: Time.now() } })
     setCurrentEntry(entry)
-    router.invalidate()
+    await invalidateTimeQueries()
   }
 
   async function end(description: string) {
@@ -46,7 +58,7 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
       },
     })
     setCurrentEntry(null)
-    router.invalidate()
+    await invalidateTimeQueries()
   }
 
   return {

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -32,6 +33,8 @@ import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $deleteTimeEntries,
   $updateTimeEntry,
+  timeEntriesQueryKey,
+  timeStatsQueryKey,
 } from '@/server/functions/time-entry'
 
 export type TimeTableData = Omit<TimeEntry, 'startedAt' | 'endedAt'> & {
@@ -69,12 +72,21 @@ const MotionDialog = m.create(EditEntryDialog)
 
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const updateEntry = useServerFn($updateTimeEntry)
   const deleteEntries = useServerFn($deleteTimeEntries)
 
   const dayBefore = time.shift('days', -1)
   const dayAfter = time.shift('days', 1)
   const isToday = time.isToday()
+
+  async function invalidateTimeQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+      queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+      router.invalidate(),
+    ])
+  }
 
   function onDateChange(time: Time) {
     router.navigate({
@@ -145,7 +157,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
             onEdit={() => setSelectedEntry(entry)}
             onDelete={async () => {
               await deleteEntries({ data: { ids: [entry.id] } })
-              await router.invalidate()
+              await invalidateTimeQueries()
             }}
           />
         )
@@ -215,7 +227,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                         ids: Object.values(selectedRows).map((e) => e.id),
                       },
                     })
-                    await router.invalidate()
+                    await invalidateTimeQueries()
                   }}
                 >
                   Delete
@@ -247,7 +259,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           entry={selectedEntry}
           onEdit={async (entry) => {
             await updateEntry({ data: entry })
-            await router.invalidate()
+            await invalidateTimeQueries()
           }}
           onClose={() => setSelectedEntry(null)}
         />
