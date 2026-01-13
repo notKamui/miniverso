@@ -1,6 +1,6 @@
 import { createSerializationAdapter } from '@tanstack/react-router'
 import { customType } from 'drizzle-orm/pg-core'
-import z from 'zod'
+import * as z from 'zod'
 import { createFallthroughExec } from '@/lib/utils/fallthrough'
 
 export type ShiftType =

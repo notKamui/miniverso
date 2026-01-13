@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { and, asc, eq, gt, or } from 'drizzle-orm'
-import { z } from 'zod'
+import * as z from 'zod'
 import type { Time } from '@/lib/utils/time'
 import { db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'

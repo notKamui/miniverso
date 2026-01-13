@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
-import { z } from 'zod'
+import * as z from 'zod'
 import { UsersList } from '@/components/admin/users-list'
 import {
   $deleteUsers,

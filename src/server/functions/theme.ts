@@ -4,7 +4,7 @@ import {
   getCookie,
   setCookie,
 } from '@tanstack/react-start/server'
-import { z } from 'zod'
+import * as z from 'zod'
 import { env } from '@/lib/env/server'
 import { validate } from '@/lib/utils/validate'
 

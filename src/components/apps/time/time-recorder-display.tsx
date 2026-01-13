@@ -1,5 +1,5 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
@@ -8,11 +8,13 @@ import {
   MoreVerticalIcon,
   Trash2Icon,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
 import { DataTable } from '@/components/data/data-table'
+import { AnimatedButtonContent } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -23,14 +25,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
+import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
+import type { PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $deleteTimeEntries,
   $updateTimeEntry,
+  timeEntriesQueryKey,
+  timeStatsQueryKey,
 } from '@/server/functions/time-entry'
 
 export type TimeTableData = Omit<TimeEntry, 'startedAt' | 'endedAt'> & {
@@ -64,13 +71,58 @@ const timeTableColumns: ColumnDef<TimeEntry>[] = [
   },
 ]
 
-const MotionDialog = motion.create(EditEntryDialog)
+const MotionDialog = m.create(EditEntryDialog)
 
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
-  const updateEntry = useServerFn($updateTimeEntry)
-  const deleteEntries = useServerFn($deleteTimeEntries)
+  const queryClient = useQueryClient()
+  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
+    {},
+  )
+  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
+  const helpers = createOptimisticMutationHelpers(
+    queryClient,
+    router,
+    timeEntriesQueryKey,
+    timeStatsQueryKey,
+  )
+
+  const updateMutation = useMutation({
+    mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) =>
+      $updateTimeEntry({ data: entry }),
+    onMutate: async (variables) => {
+      const context = await helpers.onMutate()
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) =>
+          old?.map((entry) =>
+            entry.id === variables.id ? { ...entry, ...variables } : entry,
+          ),
+      )
+      return context
+    },
+    onError: helpers.onError,
+    onSettled: helpers.onSettled,
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (ids: string[]) => $deleteTimeEntries({ data: { ids } }),
+    onMutate: async (ids) => {
+      const context = await helpers.onMutate()
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) =>
+          old?.filter((entry) => !ids.includes(entry.id)),
+      )
+      setSelectedRows({})
+      return context
+    },
+    onError: helpers.onError,
+    onSettled: helpers.onSettled,
+  })
+
+  const showDeleting = useDebounce(deleteMutation.isPending, 300)
   const dayBefore = time.shift('days', -1)
   const dayAfter = time.shift('days', 1)
   const isToday = time.isToday()
@@ -82,11 +134,6 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       search: { tz: time.getOffset() },
     })
   }
-
-  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
-    {},
-  )
-  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
   const columnsWithActions: typeof timeTableColumns = [
     {
@@ -142,10 +189,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         return (
           <ActionsMenu
             onEdit={() => setSelectedEntry(entry)}
-            onDelete={async () => {
-              await deleteEntries({ data: { ids: [entry.id] } })
-              await router.invalidate()
-            }}
+            onDelete={() => deleteMutation.mutate([entry.id])}
           />
         )
       },
@@ -197,7 +241,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         <div className="grow">
           <AnimatePresence>
             {Object.keys(selectedRows).length > 0 && (
-              <motion.div
+              <m.div
                 key="delete-rows"
                 initial={{ height: 0, opacity: 0, marginBottom: 0 }}
                 exit={{ height: 0, opacity: 0, marginBottom: 0 }}
@@ -207,19 +251,18 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                 <span>{Object.keys(selectedRows).length} selected</span>
                 <Button
                   variant="destructive"
-                  onClick={async () => {
-                    setSelectedRows({})
-                    await deleteEntries({
-                      data: {
-                        ids: Object.values(selectedRows).map((e) => e.id),
-                      },
-                    })
-                    await router.invalidate()
+                  onClick={() => {
+                    const ids = Object.values(selectedRows).map((e) => e.id)
+                    deleteMutation.mutate(ids)
                   }}
+                  disabled={deleteMutation.isPending}
+                  className="min-w-20"
                 >
-                  Delete
+                  <AnimatedButtonContent loading={showDeleting}>
+                    Delete
+                  </AnimatedButtonContent>
                 </Button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
           <DataTable
@@ -244,10 +287,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           key={selectedEntry?.id}
           transition={{ duration: 0.15 }}
           entry={selectedEntry}
-          onEdit={async (entry) => {
-            await updateEntry({ data: entry })
-            await router.invalidate()
-          }}
+          onEdit={(entry) => updateMutation.mutate(entry)}
           onClose={() => setSelectedEntry(null)}
         />
       </AnimatePresence>

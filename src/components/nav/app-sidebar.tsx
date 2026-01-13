@@ -1,5 +1,5 @@
 import { ClockIcon, HomeIcon, ShieldIcon, StarIcon } from 'lucide-react'
-import { motion } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import {
   AppNavGroup,
@@ -82,10 +82,10 @@ export function AppSidebar() {
 
 function Header() {
   const open = useSidebarState() === 'open'
-  const MotionIcon = motion.create(StarIcon)
+  const MotionIcon = m.create(StarIcon)
   return (
     <SidebarHeader className="flex flex-row justify-between">
-      <motion.h1
+      <m.h1
         className={title({ h: 1, class: 'px-1' })}
         animate={{
           opacity: open ? 1 : 0,
@@ -102,7 +102,7 @@ function Header() {
         }
       >
         Miniverso
-      </motion.h1>
+      </m.h1>
       <div>
         <MotionIcon
           className="absolute inset-0 top-4 left-4 h-8 w-4"

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { z } from 'zod'
+import * as z from 'zod'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import {
   ChartContainer,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
-import { $getTimeStatsBy } from '@/server/functions/time-entry'
+import { getTimeStatsQueryOptions } from '@/server/functions/time-entry'
 
 type Stats = {
   unit: 'day' | 'month'
@@ -129,18 +129,19 @@ export const Route = createFileRoute('/_authed/time/stats')({
     deps: {
       search: { day, type, tz },
     },
+    context: { queryClient },
   }) => {
     const tzOffsetMinutes = tz ?? Time.getOffset()
 
     const dayKey = day ?? Time.now().formatDayKey()
 
-    const stats = await $getTimeStatsBy({
-      data: {
+    const stats = await queryClient.fetchQuery(
+      getTimeStatsQueryOptions({
         dayKey,
         type,
         tzOffsetMinutes,
-      },
-    })
+      }),
+    )
 
     return {
       stats,
@@ -173,8 +174,8 @@ function RouteComponent() {
   } as const
 
   return (
-    <div className="flex size-full flex-col gap-4">
-      <div className="flex flex-row gap-4 max-lg:flex-col">
+    <div className="flex size-full min-h-0 flex-col gap-4">
+      <div className="flex shrink-0 flex-row gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
           onChange={(date) =>
@@ -204,7 +205,7 @@ function RouteComponent() {
           </SelectContent>
         </Select>
       </div>
-      <ChartContainer config={chartConfig} className="w-full">
+      <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1">
         <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
           <CartesianGrid vertical={false} />
           <XAxis

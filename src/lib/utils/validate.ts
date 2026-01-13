@@ -1,5 +1,5 @@
 import { setResponseStatus } from '@tanstack/react-start/server'
-import { z } from 'zod'
+import * as z from 'zod'
 
 export function validate<T>(
   schema: z.ZodType<T>,

@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form'
+import type { MaybePromise } from 'bun'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,7 @@ export function EditEntryDialog({
   ref,
 }: {
   entry: TimeEntry | null
-  onEdit: (entry: PartialExcept<TimeEntry, 'id'>) => Promise<void>
+  onEdit: (entry: PartialExcept<TimeEntry, 'id'>) => MaybePromise<void>
   onClose?: () => void
   ref?: React.RefObject<HTMLDivElement>
 }) {

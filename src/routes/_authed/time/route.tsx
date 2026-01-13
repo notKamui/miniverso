@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
+import * as z from 'zod'
 
 export const Route = createFileRoute('/_authed/time')({
   validateSearch: z.object({

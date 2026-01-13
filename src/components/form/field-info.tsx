@@ -1,4 +1,5 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { text } from '@/components/ui/typography'
 import type { ReactFormField } from '@/lib/utils/types'
 
@@ -6,7 +7,7 @@ export function FieldInfo({ field }: { field: ReactFormField }) {
   return (
     <AnimatePresence>
       {field.state.meta.isTouched && field.state.meta.errors.length && (
-        <motion.p
+        <m.p
           key={`${field.name}Errors`}
           exit={{ height: 0, opacity: 0 }}
           initial={{ height: 0, opacity: 0 }}
@@ -14,7 +15,7 @@ export function FieldInfo({ field }: { field: ReactFormField }) {
           className={text({ variant: 'small', color: 'error' })}
         >
           {field.state.meta.errors.map(({ message }) => message).join(',')}
-        </motion.p>
+        </m.p>
       )}
     </AnimatePresence>
   )
