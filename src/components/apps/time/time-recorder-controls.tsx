@@ -1,6 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -24,8 +23,6 @@ export type TimeRecorderControlsProps = {
 function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const createTimeEntry = useServerFn($createTimeEntry)
-  const updateTimeEntry = useServerFn($updateTimeEntry)
 
   const [currentEntry, setCurrentEntry] = useState<TimeEntry | null>(() => {
     const lastEntry = entries[0]
@@ -33,38 +30,51 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
     return lastEntry ?? null
   })
 
-  async function invalidateTimeQueries() {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-      queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-      router.invalidate(),
-    ])
-  }
+  const createMutation = useMutation({
+    mutationFn: (startedAt: Time) => $createTimeEntry({ data: { startedAt } }),
+    onSuccess: async (entry) => {
+      setCurrentEntry(entry)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+        router.invalidate(),
+      ])
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: string; endedAt?: Time; description?: string }) =>
+      $updateTimeEntry({ data }),
+    onSuccess: async () => {
+      setCurrentEntry(null)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+        router.invalidate(),
+      ])
+    },
+  })
 
   async function start() {
-    const entry = await createTimeEntry({ data: { startedAt: Time.now() } })
-    setCurrentEntry(entry)
-    await invalidateTimeQueries()
+    await createMutation.mutateAsync(Time.now())
   }
 
   async function end(description: string) {
     if (!currentEntry) return
     const trimmedDescription = description.trim()
-    await updateTimeEntry({
-      data: {
-        id: currentEntry.id,
-        endedAt: Time.now(),
-        description: trimmedDescription.length ? trimmedDescription : undefined,
-      },
+    await updateMutation.mutateAsync({
+      id: currentEntry.id,
+      endedAt: Time.now(),
+      description: trimmedDescription.length ? trimmedDescription : undefined,
     })
-    setCurrentEntry(null)
-    await invalidateTimeQueries()
   }
 
   return {
     start,
     end,
     currentEntry,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
   }
 }
 
@@ -72,7 +82,8 @@ export function TimeRecorderControls({
   entries,
   className,
 }: TimeRecorderControlsProps) {
-  const { start, end, currentEntry } = useTimeTableControls(entries)
+  const { start, end, currentEntry, isCreating, isUpdating } =
+    useTimeTableControls(entries)
   const now = useNow()
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
@@ -107,11 +118,16 @@ export function TimeRecorderControls({
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
+        disabled={isUpdating}
       />
       {currentEntry ? (
-        <Button onClick={onEnd}>End</Button>
+        <Button onClick={onEnd} disabled={isUpdating}>
+          {isUpdating ? 'Ending...' : 'End'}
+        </Button>
       ) : (
-        <Button onClick={onStart}>Start</Button>
+        <Button onClick={onStart} disabled={isCreating}>
+          {isCreating ? 'Starting...' : 'Start'}
+        </Button>
       )}
     </div>
   )

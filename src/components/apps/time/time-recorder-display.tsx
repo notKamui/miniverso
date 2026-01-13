@@ -1,6 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
@@ -29,6 +28,7 @@ import { useNow } from '@/lib/hooks/use-now'
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
+import type { PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $deleteTimeEntries,
@@ -73,20 +73,33 @@ const MotionDialog = m.create(EditEntryDialog)
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const updateEntry = useServerFn($updateTimeEntry)
-  const deleteEntries = useServerFn($deleteTimeEntries)
 
   const dayBefore = time.shift('days', -1)
   const dayAfter = time.shift('days', 1)
   const isToday = time.isToday()
 
-  async function invalidateTimeQueries() {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-      queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-      router.invalidate(),
-    ])
-  }
+  const updateMutation = useMutation({
+    mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) =>
+      $updateTimeEntry({ data: entry }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+        router.invalidate(),
+      ])
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (ids: string[]) => $deleteTimeEntries({ data: { ids } }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+        router.invalidate(),
+      ])
+    },
+  })
 
   function onDateChange(time: Time) {
     router.navigate({
@@ -155,10 +168,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
         return (
           <ActionsMenu
             onEdit={() => setSelectedEntry(entry)}
-            onDelete={async () => {
-              await deleteEntries({ data: { ids: [entry.id] } })
-              await invalidateTimeQueries()
-            }}
+            onDelete={() => deleteMutation.mutate([entry.id])}
           />
         )
       },
@@ -220,17 +230,14 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                 <span>{Object.keys(selectedRows).length} selected</span>
                 <Button
                   variant="destructive"
-                  onClick={async () => {
+                  onClick={() => {
+                    const ids = Object.values(selectedRows).map((e) => e.id)
                     setSelectedRows({})
-                    await deleteEntries({
-                      data: {
-                        ids: Object.values(selectedRows).map((e) => e.id),
-                      },
-                    })
-                    await invalidateTimeQueries()
+                    deleteMutation.mutate(ids)
                   }}
+                  disabled={deleteMutation.isPending}
                 >
-                  Delete
+                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
                 </Button>
               </m.div>
             )}
@@ -257,10 +264,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
           key={selectedEntry?.id}
           transition={{ duration: 0.15 }}
           entry={selectedEntry}
-          onEdit={async (entry) => {
-            await updateEntry({ data: entry })
-            await invalidateTimeQueries()
-          }}
+          onEdit={(entry) => updateMutation.mutate(entry)}
           onClose={() => setSelectedEntry(null)}
         />
       </AnimatePresence>
