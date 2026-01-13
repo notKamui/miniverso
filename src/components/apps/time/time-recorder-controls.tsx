@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
+import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
 import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
 import type { TimeEntry } from '@/server/db/schema/time'
@@ -34,18 +35,20 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
     return lastEntry ?? null
   })
 
+  const helpers = createOptimisticMutationHelpers(
+    queryClient,
+    router,
+    timeEntriesQueryKey,
+    timeStatsQueryKey,
+  )
+
   const createMutation = useMutation({
     mutationFn: (startedAt: Time) => $createTimeEntry({ data: { startedAt } }),
     onMutate: async (startedAt) => {
-      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
+      const context = await helpers.onMutate()
 
-      const previousEntries = queryClient.getQueriesData({
-        queryKey: timeEntriesQueryKey,
-      })
-
-      const tempId = `temp-${Date.now()}`
       const optimisticEntry: TimeEntry = {
-        id: tempId,
+        id: `temp-${Date.now()}`,
         userId: '',
         startedAt,
         endedAt: null,
@@ -54,51 +57,31 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
 
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) => {
-          if (!old) return [optimisticEntry]
-          return [optimisticEntry, ...old]
-        },
+        (old: TimeEntry[] | undefined) =>
+          old ? [optimisticEntry, ...old] : [optimisticEntry],
       )
 
       setCurrentEntry(optimisticEntry)
-
-      return { previousEntries }
+      return context
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previousEntries) {
-        for (const [queryKey, data] of context.previousEntries) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
+    onError: (err, variables, context) => {
+      helpers.onError(err, variables, context)
       setCurrentEntry(null)
     },
-    onSuccess: (entry) => {
-      setCurrentEntry(entry)
-    },
-    onSettled: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-        router.invalidate(),
-      ])
-    },
+    onSuccess: setCurrentEntry,
+    onSettled: helpers.onSettled,
   })
 
   const updateMutation = useMutation({
     mutationFn: (data: { id: string; endedAt?: Time; description?: string }) =>
       $updateTimeEntry({ data }),
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
-
-      const previousEntries = queryClient.getQueriesData({
-        queryKey: timeEntriesQueryKey,
-      })
+      const context = await helpers.onMutate()
 
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) => {
-          if (!old) return old
-          return old.map((entry) =>
+        (old: TimeEntry[] | undefined) =>
+          old?.map((entry) =>
             entry.id === variables.id
               ? {
                   ...entry,
@@ -106,50 +89,30 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
                   description: variables.description ?? entry.description,
                 }
               : entry,
-          )
-        },
+          ),
       )
 
       setCurrentEntry(null)
-
-      return { previousEntries }
+      return context
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previousEntries) {
-        for (const [queryKey, data] of context.previousEntries) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
-      if (currentEntry) {
-        setCurrentEntry(currentEntry)
-      }
+    onError: (err, variables, context) => {
+      helpers.onError(err, variables, context)
+      if (currentEntry) setCurrentEntry(currentEntry)
     },
-    onSettled: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-        router.invalidate(),
-      ])
-    },
+    onSettled: helpers.onSettled,
   })
 
-  async function start() {
-    await createMutation.mutateAsync(Time.now())
-  }
-
-  async function end(description: string) {
-    if (!currentEntry) return
-    const trimmedDescription = description.trim()
-    await updateMutation.mutateAsync({
-      id: currentEntry.id,
-      endedAt: Time.now(),
-      description: trimmedDescription.length ? trimmedDescription : undefined,
-    })
-  }
-
   return {
-    start,
-    end,
+    start: () => createMutation.mutateAsync(Time.now()),
+    end: (description: string) => {
+      if (!currentEntry) return
+      const trimmed = description.trim()
+      return updateMutation.mutateAsync({
+        id: currentEntry.id,
+        endedAt: Time.now(),
+        description: trimmed || undefined,
+      })
+    },
     currentEntry,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,

@@ -27,6 +27,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
+import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
@@ -75,85 +76,56 @@ const MotionDialog = m.create(EditEntryDialog)
 export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
+    {},
+  )
+  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
-  const dayBefore = time.shift('days', -1)
-  const dayAfter = time.shift('days', 1)
-  const isToday = time.isToday()
+  const helpers = createOptimisticMutationHelpers(
+    queryClient,
+    router,
+    timeEntriesQueryKey,
+    timeStatsQueryKey,
+  )
 
   const updateMutation = useMutation({
     mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) =>
       $updateTimeEntry({ data: entry }),
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
-
-      const previousEntries = queryClient.getQueriesData({
-        queryKey: timeEntriesQueryKey,
-      })
-
+      const context = await helpers.onMutate()
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) => {
-          if (!old) return old
-          return old.map((entry) =>
+        (old: TimeEntry[] | undefined) =>
+          old?.map((entry) =>
             entry.id === variables.id ? { ...entry, ...variables } : entry,
-          )
-        },
+          ),
       )
-
-      return { previousEntries }
+      return context
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previousEntries) {
-        for (const [queryKey, data] of context.previousEntries) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
-    },
-    onSettled: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-        router.invalidate(),
-      ])
-    },
+    onError: helpers.onError,
+    onSettled: helpers.onSettled,
   })
 
   const deleteMutation = useMutation({
     mutationFn: (ids: string[]) => $deleteTimeEntries({ data: { ids } }),
     onMutate: async (ids) => {
-      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
-
-      const previousEntries = queryClient.getQueriesData({
-        queryKey: timeEntriesQueryKey,
-      })
-
+      const context = await helpers.onMutate()
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) => {
-          if (!old) return old
-          return old.filter((entry) => !ids.includes(entry.id))
-        },
+        (old: TimeEntry[] | undefined) =>
+          old?.filter((entry) => !ids.includes(entry.id)),
       )
-
       setSelectedRows({})
-
-      return { previousEntries }
+      return context
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previousEntries) {
-        for (const [queryKey, data] of context.previousEntries) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
-    },
-    onSettled: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
-        queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
-        router.invalidate(),
-      ])
-    },
+    onError: helpers.onError,
+    onSettled: helpers.onSettled,
   })
+
+  const showDeleting = useDebounce(deleteMutation.isPending, 300)
+  const dayBefore = time.shift('days', -1)
+  const dayAfter = time.shift('days', 1)
+  const isToday = time.isToday()
 
   function onDateChange(time: Time) {
     router.navigate({
@@ -162,13 +134,6 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       search: { tz: time.getOffset() },
     })
   }
-
-  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
-    {},
-  )
-  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
-
-  const showDeleting = useDebounce(deleteMutation.isPending, 300)
 
   const columnsWithActions: typeof timeTableColumns = [
     {
