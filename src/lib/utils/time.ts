@@ -188,7 +188,21 @@ export class Time {
     return `${year}-${month}-${day}`
   }
 
-  formatTime(options?: { short?: boolean }): string {
+  formatTime(options?: { short?: boolean; offsetMinutes?: number }): string {
+    if (options?.offsetMinutes !== undefined) {
+      const utcMillis = this.date.getTime()
+      const offsetMillis = options.offsetMinutes * 60 * 1000
+      const localDate = new Date(utcMillis - offsetMillis)
+
+      const hours = String(localDate.getUTCHours()).padStart(2, '0')
+      const minutes = String(localDate.getUTCMinutes()).padStart(2, '0')
+      const seconds = String(localDate.getUTCSeconds()).padStart(2, '0')
+
+      return options.short
+        ? `${hours}:${minutes}`
+        : `${hours}:${minutes}:${seconds}`
+    }
+
     return this.date.toLocaleTimeString(['en'], {
       hour: '2-digit',
       minute: '2-digit',

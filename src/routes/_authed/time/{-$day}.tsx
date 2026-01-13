@@ -64,7 +64,7 @@ function RouteComponent() {
   return (
     <div className="space-y-8">
       <h2 className={title({ h: 2 })}>Time recorder</h2>
-      <RecorderDisplay time={time} entries={sortedEntries} />
+      <RecorderDisplay time={time} entries={sortedEntries} tzOffset={tz} />
     </div>
   )
 }

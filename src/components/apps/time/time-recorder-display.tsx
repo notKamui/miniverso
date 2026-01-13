@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useHydrated, useRouter } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
@@ -25,6 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
@@ -48,20 +49,26 @@ export type TimeTableData = Omit<TimeEntry, 'startedAt' | 'endedAt'> & {
 type RecorderDisplayProps = {
   time: Time
   entries: TimeEntry[]
+  tzOffset: number
 }
 
-const timeTableColumns: ColumnDef<TimeEntry>[] = [
+const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
   {
     accessorKey: 'startedAt',
-    accessorFn: (row) => Time.from(row.startedAt).formatTime(),
     header: 'Started at',
+    cell: ({ row }) =>
+      Time.from(row.original.startedAt).formatTime({ offsetMinutes: tzOffset }),
     size: 0, // force minimum width
   },
   {
     accessorKey: 'endedAt',
-    accessorFn: (row) =>
-      row.endedAt ? Time.from(row.endedAt).formatTime() : null,
     header: 'Ended at',
+    cell: ({ row }) =>
+      row.original.endedAt
+        ? Time.from(row.original.endedAt).formatTime({
+            offsetMinutes: tzOffset,
+          })
+        : null,
     size: 0, // force minimum width
   },
   {
@@ -73,7 +80,11 @@ const timeTableColumns: ColumnDef<TimeEntry>[] = [
 
 const MotionDialog = m.create(EditEntryDialog)
 
-export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
+export function RecorderDisplay({
+  time,
+  entries,
+  tzOffset,
+}: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
@@ -135,7 +146,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
     })
   }
 
-  const columnsWithActions: typeof timeTableColumns = [
+  const columnsWithActions: ReturnType<typeof timeTableColumns> = [
     {
       id: 'select',
       header: () => {
@@ -180,7 +191,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
       },
       size: 32,
     },
-    ...timeTableColumns,
+    ...timeTableColumns(tzOffset),
     {
       id: 'actions',
       cell: ({ row }) => {
@@ -335,7 +346,8 @@ function ActionsMenu({
 }
 
 function TotalTime({ entries }: { entries: TimeEntry[] }) {
-  const now = useNow().getMillis()
+  const isHydrated = useHydrated()
+  const now = useNow()?.getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
     .reduce(
@@ -344,15 +356,36 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
       0,
     )
   const currentEntry = entries.find((entry) => !entry.endedAt)
-  const currentElapsed = currentEntry
-    ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
-    : 0
+  const currentElapsed =
+    currentEntry && now
+      ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
+      : 0
 
   return (
     entries.length > 0 && (
       <div className="flex h-9 flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
-        <span>{Time.formatDuration(totalTime + currentElapsed)}</span>
+        <AnimatePresence mode="wait">
+          {isHydrated ? (
+            <m.span
+              key="total"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {Time.formatDuration(totalTime + currentElapsed)}
+            </m.span>
+          ) : (
+            <m.span
+              key="skeleton"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Skeleton className="mt-2 inline-block h-4 w-17" />
+            </m.span>
+          )}
+        </AnimatePresence>
       </div>
     )
   )
