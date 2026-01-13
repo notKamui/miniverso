@@ -1,16 +1,17 @@
+import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Time } from '@/lib/utils/time'
 
 export function useNow() {
-  const [now, setNow] = useState<Date | null>(null)
+  const isHydrated = useHydrated()
+  const [now, setNow] = useState(new Date())
 
   useEffect(() => {
-    setNow(new Date())
     const interval = setInterval(() => {
       setNow(new Date())
     }, 1000)
     return () => clearInterval(interval)
   }, [])
 
-  return now ? Time.from(now) : null
+  return isHydrated ? Time.from(now) : null
 }

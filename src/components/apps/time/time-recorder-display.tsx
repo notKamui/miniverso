@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useHydrated, useRouter } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
@@ -346,6 +346,7 @@ function ActionsMenu({
 }
 
 function TotalTime({ entries }: { entries: TimeEntry[] }) {
+  const isHydrated = useHydrated()
   const now = useNow()?.getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
@@ -360,15 +361,12 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
       ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
       : 0
 
-  const hasRunningEntry = !!currentEntry
-  const isHydrated = now !== undefined
-
   return (
     entries.length > 0 && (
       <div className="flex h-9 flex-row items-center gap-2 rounded-md border px-4">
         <span className="font-extrabold">Total:</span>
         <AnimatePresence mode="wait">
-          {isHydrated || !hasRunningEntry ? (
+          {isHydrated ? (
             <m.span
               key="total"
               initial={{ opacity: 0 }}
