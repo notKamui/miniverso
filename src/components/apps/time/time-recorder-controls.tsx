@@ -36,8 +36,46 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
 
   const createMutation = useMutation({
     mutationFn: (startedAt: Time) => $createTimeEntry({ data: { startedAt } }),
-    onSuccess: async (entry) => {
+    onMutate: async (startedAt) => {
+      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
+
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: timeEntriesQueryKey,
+      })
+
+      const tempId = `temp-${Date.now()}`
+      const optimisticEntry: TimeEntry = {
+        id: tempId,
+        userId: '',
+        startedAt,
+        endedAt: null,
+        description: null,
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) => {
+          if (!old) return [optimisticEntry]
+          return [optimisticEntry, ...old]
+        },
+      )
+
+      setCurrentEntry(optimisticEntry)
+
+      return { previousEntries }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousEntries) {
+        for (const [queryKey, data] of context.previousEntries) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      setCurrentEntry(null)
+    },
+    onSuccess: (entry) => {
       setCurrentEntry(entry)
+    },
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
         queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
@@ -49,8 +87,44 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
   const updateMutation = useMutation({
     mutationFn: (data: { id: string; endedAt?: Time; description?: string }) =>
       $updateTimeEntry({ data }),
-    onSuccess: async () => {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
+
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: timeEntriesQueryKey,
+      })
+
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) => {
+          if (!old) return old
+          return old.map((entry) =>
+            entry.id === variables.id
+              ? {
+                  ...entry,
+                  endedAt: variables.endedAt ?? entry.endedAt,
+                  description: variables.description ?? entry.description,
+                }
+              : entry,
+          )
+        },
+      )
+
       setCurrentEntry(null)
+
+      return { previousEntries }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousEntries) {
+        for (const [queryKey, data] of context.previousEntries) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      if (currentEntry) {
+        setCurrentEntry(currentEntry)
+      }
+    },
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
         queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
@@ -93,7 +167,6 @@ export function TimeRecorderControls({
 
   const [description, setDescription] = useState<string>('')
 
-  // Delay showing pending state to avoid flashing
   const showCreating = useDebounce(isCreating, 300)
   const showUpdating = useDebounce(isUpdating, 300)
 

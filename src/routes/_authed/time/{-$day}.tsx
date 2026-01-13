@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
@@ -50,14 +51,26 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
 })
 
 function RouteComponent() {
-  const { entries, time } = Route.useLoaderData({
-    select: ({ entries, time }) => ({ entries, time }),
+  const { time } = Route.useLoaderData({
+    select: ({ time }) => ({ time }),
   })
+  const { tz = 0 } = Route.useSearch()
+
+  const { data: entries } = useSuspenseQuery(
+    getTimeEntriesByDayQueryOptions({
+      dayKey: time.formatDayKey(),
+      tzOffsetMinutes: tz,
+    }),
+  )
+
+  const sortedEntries = [...entries].sort((a, b) =>
+    b.startedAt.compare(a.startedAt),
+  )
 
   return (
     <div className="space-y-8">
       <h2 className={title({ h: 2 })}>Time recorder</h2>
-      <RecorderDisplay time={time} entries={entries} />
+      <RecorderDisplay time={time} entries={sortedEntries} />
     </div>
   )
 }

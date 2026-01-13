@@ -83,7 +83,33 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const updateMutation = useMutation({
     mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) =>
       $updateTimeEntry({ data: entry }),
-    onSuccess: async () => {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
+
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: timeEntriesQueryKey,
+      })
+
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) => {
+          if (!old) return old
+          return old.map((entry) =>
+            entry.id === variables.id ? { ...entry, ...variables } : entry,
+          )
+        },
+      )
+
+      return { previousEntries }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousEntries) {
+        for (const [queryKey, data] of context.previousEntries) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+    },
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
         queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
@@ -94,8 +120,33 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
 
   const deleteMutation = useMutation({
     mutationFn: (ids: string[]) => $deleteTimeEntries({ data: { ids } }),
-    onSuccess: async () => {
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: timeEntriesQueryKey })
+
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: timeEntriesQueryKey,
+      })
+
+      queryClient.setQueriesData(
+        { queryKey: timeEntriesQueryKey },
+        (old: TimeEntry[] | undefined) => {
+          if (!old) return old
+          return old.filter((entry) => !ids.includes(entry.id))
+        },
+      )
+
       setSelectedRows({})
+
+      return { previousEntries }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousEntries) {
+        for (const [queryKey, data] of context.previousEntries) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+    },
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
         queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
@@ -117,7 +168,6 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   )
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
-  // Delay showing pending state to avoid flashing
   const showDeleting = useDebounce(deleteMutation.isPending, 300)
 
   const columnsWithActions: typeof timeTableColumns = [
