@@ -95,6 +95,7 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
   const deleteMutation = useMutation({
     mutationFn: (ids: string[]) => $deleteTimeEntries({ data: { ids } }),
     onSuccess: async () => {
+      setSelectedRows({})
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
         queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
@@ -237,13 +238,34 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                   variant="destructive"
                   onClick={() => {
                     const ids = Object.values(selectedRows).map((e) => e.id)
-                    setSelectedRows({})
                     deleteMutation.mutate(ids)
                   }}
                   disabled={deleteMutation.isPending}
+                  className="min-w-20"
                 >
-                  {showDeleting && <Spinner />}
-                  Delete
+                  <AnimatePresence mode="wait">
+                    {showDeleting ? (
+                      <m.span
+                        key="deleting-spinner"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Spinner />
+                      </m.span>
+                    ) : (
+                      <m.span
+                        key="delete-text"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        Delete
+                      </m.span>
+                    )}
+                  </AnimatePresence>
                 </Button>
               </m.div>
             )}

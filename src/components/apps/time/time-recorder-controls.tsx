@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -128,13 +130,45 @@ export function TimeRecorderControls({
       />
       {currentEntry ? (
         <Button onClick={onEnd} disabled={isUpdating}>
-          {showUpdating && <Spinner />}
-          End
+          <span className="flex items-center gap-2">
+            <span className="inline-flex w-4 items-center justify-center">
+              <AnimatePresence>
+                {showUpdating && (
+                  <m.span
+                    key="updating-spinner"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Spinner />
+                  </m.span>
+                )}
+              </AnimatePresence>
+            </span>
+            End
+          </span>
         </Button>
       ) : (
         <Button onClick={onStart} disabled={isCreating}>
-          {showCreating && <Spinner />}
-          Start
+          <span className="flex items-center gap-2">
+            <span className="inline-flex w-4 items-center justify-center">
+              <AnimatePresence>
+                {showCreating && (
+                  <m.span
+                    key="creating-spinner"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Spinner />
+                  </m.span>
+                )}
+              </AnimatePresence>
+            </span>
+            Start
+          </span>
         </Button>
       )}
     </div>
