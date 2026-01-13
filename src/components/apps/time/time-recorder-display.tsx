@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
 import { DataTable } from '@/components/data/data-table'
+import { AnimatedButtonContent } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -24,7 +25,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Spinner } from '@/components/ui/spinner'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
@@ -258,29 +258,9 @@ export function RecorderDisplay({ time, entries }: RecorderDisplayProps) {
                   disabled={deleteMutation.isPending}
                   className="min-w-20"
                 >
-                  <AnimatePresence mode="wait">
-                    {showDeleting ? (
-                      <m.span
-                        key="deleting-spinner"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.15 }}
-                      >
-                        <Spinner />
-                      </m.span>
-                    ) : (
-                      <m.span
-                        key="delete-text"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                      >
-                        Delete
-                      </m.span>
-                    )}
-                  </AnimatePresence>
+                  <AnimatedButtonContent loading={showDeleting}>
+                    Delete
+                  </AnimatedButtonContent>
                 </Button>
               </m.div>
             )}
