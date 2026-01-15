@@ -16,8 +16,6 @@ const manualChunks = {
   'vendor-charts': ['recharts', 'victory', 'd3-'],
   'vendor-motion': ['motion', 'framer-motion'],
   'vendor-auth': ['better-auth', '@better-auth'],
-  'vendor-icons': ['lucide-react'],
-  'vendor-zod': ['zod'],
   'vendor-db': ['drizzle', 'kysely', 'sqlite'],
   'vendor-radix': ['@radix-ui'],
   'vendor-date': ['date-fns', 'react-day-picker'],
