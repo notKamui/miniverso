@@ -20,9 +20,9 @@
         "@radix-ui/react-tooltip": "^1.2.8",
         "@t3-oss/env-core": "^0.13.10",
         "@tanstack/match-sorter-utils": "^8.19.4",
-        "@tanstack/query-core": "^5.90.17",
+        "@tanstack/query-core": "^5.90.18",
         "@tanstack/react-form": "^1.27.7",
-        "@tanstack/react-query": "^5.90.17",
+        "@tanstack/react-query": "^5.90.18",
         "@tanstack/react-router": "^1.150.0",
         "@tanstack/react-router-ssr-query": "^1.150.0",
         "@tanstack/react-start": "^1.150.0",
@@ -59,7 +59,7 @@
         "@types/node": "^25.0.9",
         "@types/react": "^19.2.8",
         "@types/react-dom": "^19.2.3",
-        "@typescript/native-preview": "7.0.0-dev.20260115.1",
+        "@typescript/native-preview": "7.0.0-dev.20260116.1",
         "@vitejs/plugin-react": "^5.1.2",
         "cross-env": "^10.1.0",
         "drizzle-kit": "0.31.8",
@@ -561,7 +561,7 @@
 
     "@tanstack/pacer-lite": ["@tanstack/pacer-lite@0.1.1", "", {}, "sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.90.17", "", {}, "sha512-hDww+RyyYhjhUfoYQ4es6pbgxY7LNiPWxt4l1nJqhByjndxJ7HIjDxTBtfvMr5HwjYavMrd+ids5g4Rfev3lVQ=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.90.18", "", {}, "sha512-rbGx6bHgPNVzutP7BEr+53UPKohpckqlMAad+To9UxTbeaQ+kC/1SDRj+QzkwbQ7qhLT/1IKp34yS6thda6fzA=="],
 
     "@tanstack/query-devtools": ["@tanstack/query-devtools@5.92.0", "", {}, "sha512-N8D27KH1vEpVacvZgJL27xC6yPFUy0Zkezn5gnB3L3gRCxlDeSuiya7fKge8Y91uMTnC8aSxBQhcK6ocY7alpQ=="],
 
@@ -571,7 +571,7 @@
 
     "@tanstack/react-form-devtools": ["@tanstack/react-form-devtools@0.2.11", "", { "dependencies": { "@tanstack/devtools-utils": "^0.2.3", "@tanstack/form-devtools": "0.2.11" }, "peerDependencies": { "react": "^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-Hv6aZqH2dfamFPWwonA20xKj61xU3omilOYEGdihldOddl+cFLY6P7q66Zqs0p9a9mOQvBS+/i0zBcZjRzvupg=="],
 
-    "@tanstack/react-query": ["@tanstack/react-query@5.90.17", "", { "dependencies": { "@tanstack/query-core": "5.90.17" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-PGc2u9KLwohDUSchjW9MZqeDQJfJDON7y4W7REdNBgiFKxQy+Pf7eGjiFWEj5xPqKzAeHYdAb62IWI1a9UJyGQ=="],
+    "@tanstack/react-query": ["@tanstack/react-query@5.90.18", "", { "dependencies": { "@tanstack/query-core": "5.90.18" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-KqNZX0C5IFz4639zR1ilnQ288tQdJrMNLtzmlzyJ14xauBkhtLEy3mPU/V4KiHsr41eL1ILZbDP36TB12lYfCQ=="],
 
     "@tanstack/react-query-devtools": ["@tanstack/react-query-devtools@5.91.2", "", { "dependencies": { "@tanstack/query-devtools": "5.92.0" }, "peerDependencies": { "@tanstack/react-query": "^5.90.14", "react": "^18 || ^19" } }, "sha512-ZJ1503ay5fFeEYFUdo7LMNFzZryi6B0Cacrgr2h1JRkvikK1khgIq6Nq2EcblqEdIlgB/r7XDW8f8DQ89RuUgg=="],
 
@@ -671,21 +671,21 @@
 
     "@types/use-sync-external-store": ["@types/use-sync-external-store@0.0.6", "", {}, "sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg=="],
 
-    "@typescript/native-preview": ["@typescript/native-preview@7.0.0-dev.20260115.1", "", { "optionalDependencies": { "@typescript/native-preview-darwin-arm64": "7.0.0-dev.20260115.1", "@typescript/native-preview-darwin-x64": "7.0.0-dev.20260115.1", "@typescript/native-preview-linux-arm": "7.0.0-dev.20260115.1", "@typescript/native-preview-linux-arm64": "7.0.0-dev.20260115.1", "@typescript/native-preview-linux-x64": "7.0.0-dev.20260115.1", "@typescript/native-preview-win32-arm64": "7.0.0-dev.20260115.1", "@typescript/native-preview-win32-x64": "7.0.0-dev.20260115.1" }, "bin": { "tsgo": "bin/tsgo.js" } }, "sha512-wCW5A5Olb/Iyzr6azx1lrS42DEmkUvzLqrtL+0mzKDov4l3sdxKsO5q/m8Mdqcx9WBTY07e+WgHZ6IIfjSOWrQ=="],
+    "@typescript/native-preview": ["@typescript/native-preview@7.0.0-dev.20260116.1", "", { "optionalDependencies": { "@typescript/native-preview-darwin-arm64": "7.0.0-dev.20260116.1", "@typescript/native-preview-darwin-x64": "7.0.0-dev.20260116.1", "@typescript/native-preview-linux-arm": "7.0.0-dev.20260116.1", "@typescript/native-preview-linux-arm64": "7.0.0-dev.20260116.1", "@typescript/native-preview-linux-x64": "7.0.0-dev.20260116.1", "@typescript/native-preview-win32-arm64": "7.0.0-dev.20260116.1", "@typescript/native-preview-win32-x64": "7.0.0-dev.20260116.1" }, "bin": { "tsgo": "bin/tsgo.js" } }, "sha512-9N2Sa3Ap8E5+V4K+eTs5y8//dW77qFKzo+OfmYpL4f/Vb6WEoo6SDhjaSB2eNtgeiCKkNQySLO3pz3/QEpuVXg=="],
 
-    "@typescript/native-preview-darwin-arm64": ["@typescript/native-preview-darwin-arm64@7.0.0-dev.20260115.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-ICAIUBa9ecoHrKTIG9WgHBUMOpdGxwYarRW0x4PRHs34cKWz1VYy50Y+NG2Ivai2WC/T12QSWom0UBZDL1/Zkw=="],
+    "@typescript/native-preview-darwin-arm64": ["@typescript/native-preview-darwin-arm64@7.0.0-dev.20260116.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-+HoFBoTy6GrdqpN2sBCmvNNVqKXndVqgKPojaTpc1OfiH2YAa1p2zXsHuw2+PtXcsGDBvIX4Fce4i8urHlF6mQ=="],
 
-    "@typescript/native-preview-darwin-x64": ["@typescript/native-preview-darwin-x64@7.0.0-dev.20260115.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-UtnRE4OPmlxAYE42HBtcqQH/TsDZcs/7ej6K11mCD9uzCLgxxAZveI+bW43VIyPLP9dZFmX/3Pvvv8arBBwGfw=="],
+    "@typescript/native-preview-darwin-x64": ["@typescript/native-preview-darwin-x64@7.0.0-dev.20260116.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-cKSm37T0rrCskKKjwr/i97+k9fIQydsOfYO8oUzOFWEHKYl83vQib0JdSyelbLGEfT5Xpt6Wm12ul6MS42e+xw=="],
 
-    "@typescript/native-preview-linux-arm": ["@typescript/native-preview-linux-arm@7.0.0-dev.20260115.1", "", { "os": "linux", "cpu": "arm" }, "sha512-/divCKJhdfq1s7UG3EO2NYHHJl1EqcEIylD/pl/GbAMeKRomaKGTwwgshxv9/PoTp4AVHEKrziPDdN6sIOnFQQ=="],
+    "@typescript/native-preview-linux-arm": ["@typescript/native-preview-linux-arm@7.0.0-dev.20260116.1", "", { "os": "linux", "cpu": "arm" }, "sha512-fCgBsrrbURMutyBdnYXa13OVDOGtlu1AWMCqq21jQFDv2hglUR2l7BOZmqobLgWY76DGHQS7zK+hXcEcOqR7hA=="],
 
-    "@typescript/native-preview-linux-arm64": ["@typescript/native-preview-linux-arm64@7.0.0-dev.20260115.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-sAU6b0Tlz3QahPpuNA0HOibGKruHvbFCANuuns6aR4OYd+zNi+diBBvCTyLWu0Do3ABjpCphrj4hCvs2rWfoQQ=="],
+    "@typescript/native-preview-linux-arm64": ["@typescript/native-preview-linux-arm64@7.0.0-dev.20260116.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-mF+y2V95kYJx6ELk3BaXd0lDRGq3ce8fCDxx3MRgCEuexm/SYXC9OnQfkdyEPqU366sYwYw98TFIYjf6ruhZ7Q=="],
 
-    "@typescript/native-preview-linux-x64": ["@typescript/native-preview-linux-x64@7.0.0-dev.20260115.1", "", { "os": "linux", "cpu": "x64" }, "sha512-KcjKJoUtqFh0VD2zGJJZ2PM+GLlK11bZFJvvdoJj/D9nf9WSRE4jWLGE+50gyy9boeaKVlZuRnTfxP6Rt3nnrw=="],
+    "@typescript/native-preview-linux-x64": ["@typescript/native-preview-linux-x64@7.0.0-dev.20260116.1", "", { "os": "linux", "cpu": "x64" }, "sha512-7lxKOVF0ph2+92ySc8HSUxKnBHkfoj7bm43QE482fb0z1YhNuUc/3R79NJGKywgmDP5IXEb1PY8piQbwoPYHwg=="],
 
-    "@typescript/native-preview-win32-arm64": ["@typescript/native-preview-win32-arm64@7.0.0-dev.20260115.1", "", { "os": "win32", "cpu": "arm64" }, "sha512-0TolySdSZ8w1adKNl4eEGht4lyAMJRTwwdsntbdcZ2sjDWVc4ikyu+GlYTYtkJM2M0w1Q7+iFMpWm6+M6hPHzg=="],
+    "@typescript/native-preview-win32-arm64": ["@typescript/native-preview-win32-arm64@7.0.0-dev.20260116.1", "", { "os": "win32", "cpu": "arm64" }, "sha512-VzS2LDsXqmC+6v+DEdjHxhadKzN5l/yMMQp3pVvq/ZM52NkUWzUtBpAU3nxB8n02L9Xr6625jEMduyZba0TVVg=="],
 
-    "@typescript/native-preview-win32-x64": ["@typescript/native-preview-win32-x64@7.0.0-dev.20260115.1", "", { "os": "win32", "cpu": "x64" }, "sha512-yhntwcToKN6aL4rcuslb60toB1SLArpzCwNmK9jnnwJ4JexViOldBu1caZxFhVXL5eQrUCvxfipGEU30MQxhtw=="],
+    "@typescript/native-preview-win32-x64": ["@typescript/native-preview-win32-x64@7.0.0-dev.20260116.1", "", { "os": "win32", "cpu": "x64" }, "sha512-OUmQLOIoknUmwaNz2iA0tkClIbbuzjHLrnFZNF4rlw1LlelNExGQlrMmx0szMRjTz9CFOh9qhYT23/3jOoOsqA=="],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@5.1.2", "", { "dependencies": { "@babel/core": "^7.28.5", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-beta.53", "@types/babel__core": "^7.20.5", "react-refresh": "^0.18.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-EcA07pHJouywpzsoTUqNh5NwGayl2PPVEJKUSinGGSxFGYn+shYbqMGBg6FXDqgXum9Ou/ecb+411ssw8HImJQ=="],
 
