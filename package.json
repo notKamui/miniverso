@@ -86,12 +86,11 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "npm:rolldown-vite@7.3.1",
-    "vite-tsconfig-paths": "^6.0.4"
+    "vite": "8.0.0-beta.8"
   },
   "overrides": {
     "react-is": "^19.2.3",
-    "vite": "npm:rolldown-vite@7.3.1"
+    "vite": "8.0.0-beta.8"
   },
   "engines": {
     "node": ">=25",

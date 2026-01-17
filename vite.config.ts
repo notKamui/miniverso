@@ -3,7 +3,6 @@ import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
 import pkg from './package.json'
 
 const manualChunks = {
@@ -22,15 +21,12 @@ const manualChunks = {
 } as const
 
 const config = defineConfig({
-  plugins: [
-    devtools(),
-    viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
-    tailwindcss(),
-    tanstackStart(),
-    react(),
-  ],
+  plugins: [devtools(), tailwindcss(), tanstackStart(), react()],
   define: {
     APP_VERSION: JSON.stringify(pkg.version),
+  },
+  resolve: {
+    tsconfigPaths: true,
   },
   optimizeDeps: {
     // TODO: remove this once better-auth fixes its virtual imports
