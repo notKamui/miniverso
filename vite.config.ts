@@ -28,17 +28,6 @@ const config = defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-  optimizeDeps: {
-    // TODO: remove this once better-auth fixes its virtual imports
-    // Exclude TanStack Start packages from Vite's dependency optimization
-    // to prevent issues with virtual imports (#tanstack-router-entry, etc.)
-    exclude: [
-      '@tanstack/start-server-core',
-      '@tanstack/react-start',
-      '@tanstack/react-start/client',
-      '@tanstack/react-start/server',
-    ],
-  },
   build: {
     rollupOptions: {
       output: {
