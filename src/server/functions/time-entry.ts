@@ -85,7 +85,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
     const { start: dayBegin, end: dayEnd } = range
 
-    return db
+    const entries = await db
       .select({
         id: timeEntry.id,
         userId: timeEntry.userId,
@@ -101,6 +101,8 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
           or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
         ),
       )
+
+    return entries.sort((a, b) => b.startedAt.compare(a.startedAt))
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
