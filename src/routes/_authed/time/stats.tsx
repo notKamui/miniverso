@@ -32,6 +32,7 @@ type Chart = (
   x: string
   y: string
   format: (value: any) => string
+  getDayKey: (dataItem: { dayKey: string }) => string | null
 }
 
 const DAYS = {
@@ -60,13 +61,27 @@ const MONTHS = {
 } as const
 
 const CHARTS: Record<string, Chart> = {
-  week: (stats) => {
+  week: (stats, time) => {
     const fullRange = Object.keys(DAYS).map(Number)
+    const [y, m, d] = [
+      time.getDate().getFullYear(),
+      time.getDate().getMonth(),
+      time.getDate().getDate(),
+    ]
+    const baseDate = new Date(y, m, d)
+    const weekday = baseDate.getDay() // 0..6 (Sun..Sat)
+    const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+    const mondayDate = new Date(y, m, d + diffToMonday)
+
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      const dayDate = new Date(mondayDate)
+      dayDate.setDate(mondayDate.getDate() + (dayOrMonth - 1))
       return {
         day: DAYS[dayOrMonth as keyof typeof DAYS],
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -74,6 +89,7 @@ const CHARTS: Record<string, Chart> = {
       x: 'day',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
   month: (stats, time) => {
@@ -81,11 +97,15 @@ const CHARTS: Record<string, Chart> = {
       ? 31
       : 30
     const fullRange = Collection.range(1, daysInMonth + 1)
+    const [y, m] = [time.getDate().getFullYear(), time.getDate().getMonth()]
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      const dayDate = new Date(y, m, dayOrMonth)
       return {
         day: dayOrMonth,
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -93,15 +113,21 @@ const CHARTS: Record<string, Chart> = {
       x: 'day',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
-  year: (stats) => {
+  year: (stats, time) => {
     const fullRange = Object.keys(MONTHS).map(Number)
+    const y = time.getDate().getFullYear()
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      // Navigate to the first day of the month
+      const dayDate = new Date(y, dayOrMonth - 1, 1)
       return {
         month: MONTHS[dayOrMonth as keyof typeof MONTHS],
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -109,6 +135,7 @@ const CHARTS: Record<string, Chart> = {
       x: 'month',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
 }
@@ -230,7 +257,22 @@ function RouteComponent() {
               />
             )}
           />
-          <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+          <Bar
+            dataKey="total"
+            fill="var(--color-total)"
+            radius={4}
+            onClick={(data) => {
+              const dayKey = chart.getDayKey(data)
+              if (dayKey) {
+                navigate({
+                  to: '/time/{-$day}',
+                  params: { day: dayKey },
+                  search: { tz },
+                })
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          />
         </BarChart>
       </ChartContainer>
     </div>
