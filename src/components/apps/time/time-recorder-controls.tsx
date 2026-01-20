@@ -24,11 +24,11 @@ import {
   $createTimeEntry,
   $createTimeEntryTag,
   $deleteTimeEntryTag,
+  $updateTimeEntry,
   getTimeEntryTagsQueryOptions,
   timeEntriesQueryKey,
   timeEntryTagsQueryKey,
   timeStatsQueryKey,
-  $updateTimeEntry,
 } from '@/server/functions/time-entry'
 
 export type TimeRecorderControlsProps = {
@@ -349,8 +349,8 @@ export function TimeRecorderControls({
                 </div>
                 {tags.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground text-sm">
-                    No tags saved yet. Type a description and click "Save as tag"
-                    to create one.
+                    No tags saved yet. Type a description and click "Save as
+                    tag" to create one.
                   </p>
                 ) : (
                   <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -361,7 +361,9 @@ export function TimeRecorderControls({
                         className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
                         onClick={() => onSelectTag(tag)}
                       >
-                        <span className="flex-1 truncate">{tag.description}</span>
+                        <span className="flex-1 truncate">
+                          {tag.description}
+                        </span>
                         <Button
                           type="button"
                           variant="ghost"
