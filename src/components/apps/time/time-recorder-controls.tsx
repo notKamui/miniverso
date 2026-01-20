@@ -161,15 +161,14 @@ export function TimeRecorderControls({
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
   const [description, setDescription] = useState<string>('')
+  const [isEditing, setIsEditing] = useState(false)
+  const entryKey = `${currentEntry?.id ?? 'none'}-${currentEntry?.description ?? ''}`
 
-  // Sync description with current entry when it's updated
   useEffect(() => {
-    if (currentEntry) {
-      setDescription(currentEntry.description ?? '')
-    } else {
-      setDescription('')
+    if (!isEditing) {
+      setDescription(currentEntry?.description ?? '')
     }
-  }, [currentEntry])
+  }, [currentEntry?.description, isEditing])
 
   const showCreating = useDebounce(isCreating, 300)
   const showUpdating = useDebounce(isUpdating, 300)
@@ -220,9 +219,14 @@ export function TimeRecorderControls({
         </AnimatePresence>
       </div>
       <Textarea
+        key={entryKey}
         className="grow resize-none"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => {
+          setDescription(e.target.value)
+          setIsEditing(true)
+        }}
+        onBlur={() => setIsEditing(false)}
         placeholder="Description"
         disabled={isPending}
       />
