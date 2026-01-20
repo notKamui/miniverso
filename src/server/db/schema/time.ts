@@ -30,3 +30,33 @@ export const timeEntryRelations = relations(timeEntry, ({ one }) => ({
     references: [user.id],
   }),
 }))
+
+export const timeEntryTag = pgTable(
+  'time_entry_tag',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    description: text('description').notNull(),
+  },
+  (table) => [
+    index('time_entry_tag_userId_idx').on(table.userId),
+    index('time_entry_tag_userId_description_idx').on(
+      table.userId,
+      table.description,
+    ),
+  ],
+)
+export type TimeEntryTag = InferSelectModel<typeof timeEntryTag>
+
+export const userRelations_timeEntryTag = relations(user, ({ many }) => ({
+  timeEntryTags: many(timeEntryTag),
+}))
+
+export const timeEntryTagRelations = relations(timeEntryTag, ({ one }) => ({
+  user: one(user, {
+    fields: [timeEntryTag.userId],
+    references: [user.id],
+  }),
+}))
