@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { TagIcon, Trash2Icon, XIcon } from 'lucide-react'
+import { SearchIcon, TagIcon, Trash2Icon, XIcon } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Popover,
   PopoverContent,
@@ -170,6 +171,7 @@ export function TimeRecorderControls({
 
   const [description, setDescription] = useState('')
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false)
+  const [tagSearchQuery, setTagSearchQuery] = useState('')
   const entryKey = `${currentEntry?.id ?? 'none'}-${currentEntry?.description ?? ''}`
 
   const { data: tags = [] } = useQuery(getTimeEntryTagsQueryOptions())
@@ -241,7 +243,12 @@ export function TimeRecorderControls({
   function onSelectTag(tag: TimeEntryTag) {
     setDescription(tag.description)
     setTagPopoverOpen(false)
+    setTagSearchQuery('')
   }
+
+  const filteredTags = tags.filter((tag) =>
+    tag.description.toLowerCase().includes(tagSearchQuery.toLowerCase()),
+  )
 
   function onDeleteTag(e: React.MouseEvent, tagId: string) {
     e.stopPropagation()
@@ -330,19 +337,36 @@ export function TimeRecorderControls({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => setTagPopoverOpen(false)}
+                  onClick={() => {
+                    setTagPopoverOpen(false)
+                    setTagSearchQuery('')
+                  }}
                 >
                   <XIcon className="size-4" />
                 </Button>
+              </div>
+              <div className="relative">
+                <SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search tags..."
+                  value={tagSearchQuery}
+                  onChange={(e) => setTagSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
               </div>
               {tags.length === 0 ? (
                 <p className="py-4 text-center text-muted-foreground text-sm">
                   No tags saved yet. Type a description and click "Save as tag"
                   to create one.
                 </p>
+              ) : filteredTags.length === 0 ? (
+                <p className="py-4 text-center text-muted-foreground text-sm">
+                  No tags match your search.
+                </p>
               ) : (
                 <div className="max-h-64 space-y-1 overflow-y-auto">
-                  {tags.map((tag) => (
+                  {filteredTags.map((tag) => (
                     <button
                       key={tag.id}
                       type="button"
