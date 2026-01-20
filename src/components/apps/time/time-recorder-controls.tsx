@@ -40,25 +40,22 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
 
   useEffect(() => {
     const currentId = currentEntryIdRef.current
+
     if (currentId) {
-      const updatedEntry = entries.find((e) => e.id === currentId)
-      if (updatedEntry) {
-        if (updatedEntry.endedAt) {
-          setCurrentEntry(null)
-          currentEntryIdRef.current = null
-        } else {
-          setCurrentEntry(updatedEntry)
-        }
-      } else {
+      const entry = entries.find((e) => e.id === currentId)
+      if (!entry || entry.endedAt) {
         setCurrentEntry(null)
         currentEntryIdRef.current = null
+      } else {
+        setCurrentEntry(entry)
       }
-    } else {
-      const lastEntry = entries[0]
-      if (lastEntry && !lastEntry.endedAt) {
-        setCurrentEntry(lastEntry)
-        currentEntryIdRef.current = lastEntry.id
-      }
+      return
+    }
+
+    const runningEntry = entries[0]
+    if (runningEntry && !runningEntry.endedAt) {
+      setCurrentEntry(runningEntry)
+      currentEntryIdRef.current = runningEntry.id
     }
   }, [entries])
 
@@ -160,11 +157,11 @@ export function TimeRecorderControls({
   const now = useNow()
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
-  const [description, setDescription] = useState<string>('')
+  const [description, setDescription] = useState('')
   const entryKey = `${currentEntry?.id ?? 'none'}-${currentEntry?.description ?? ''}`
 
   useEffect(() => {
-    if (!currentEntry) return
+    if (!currentEntry || !currentEntry.description) return
     setDescription(currentEntry.description)
   }, [currentEntry])
 

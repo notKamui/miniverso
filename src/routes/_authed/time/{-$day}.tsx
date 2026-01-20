@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { useMemo } from 'react'
 import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
@@ -57,8 +58,9 @@ function RouteComponent() {
     }),
   )
 
-  const sortedEntries = [...entries].sort((a, b) =>
-    b.startedAt.compare(a.startedAt),
+  const sortedEntries = useMemo(
+    () => [...entries].sort((a, b) => b.startedAt.compare(a.startedAt)),
+    [entries],
   )
 
   return (
