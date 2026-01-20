@@ -183,7 +183,6 @@ export function TimeRecorderControls({
   const showUpdating = useDebounce(isUpdating, 300)
 
   const trimmedDescription = description.trim()
-  const showSaveAsTag = trimmedDescription.length > 0 && !currentEntry
 
   const createTagMutation = useMutation({
     mutationFn: (description: string) =>
@@ -215,6 +214,15 @@ export function TimeRecorderControls({
       queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
     },
   })
+
+  const tagExists = tags.some(
+    (tag) => tag.description.trim() === trimmedDescription,
+  )
+  const isSaveAsTagDisabled =
+    trimmedDescription.length === 0 ||
+    !!currentEntry ||
+    tagExists ||
+    createTagMutation.isPending
 
   async function onStart() {
     await start()
@@ -287,109 +295,95 @@ export function TimeRecorderControls({
           placeholder="Description"
           disabled={isPending}
         />
-        <AnimatePresence>
-          {showSaveAsTag && (
-            <m.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSaveAsTag}
-                disabled={createTagMutation.isPending}
-                className="w-full"
-              >
-                <span className="flex items-center gap-2">
-                  <AnimatedSpinner show={createTagMutation.isPending} />
-                  Save as tag
-                </span>
-              </Button>
-            </m.div>
-          )}
-        </AnimatePresence>
-      </div>
-      {currentEntry ? (
-        <Button onClick={onEnd} disabled={isPending}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSaveAsTag}
+          disabled={isSaveAsTagDisabled}
+          className="w-full"
+        >
           <span className="flex items-center gap-2">
-            <AnimatedSpinner show={showUpdating} />
-            End
+            <AnimatedSpinner show={createTagMutation.isPending} />
+            Save as tag
           </span>
         </Button>
-      ) : (
-        <div className="flex gap-2">
-          <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                disabled={isPending}
-                aria-label="Select tag"
-              >
-                <TagIcon className="size-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="start">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm">Saved Tags</h4>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setTagPopoverOpen(false)}
-                  >
-                    <XIcon className="size-4" />
-                  </Button>
-                </div>
-                {tags.length === 0 ? (
-                  <p className="py-4 text-center text-muted-foreground text-sm">
-                    No tags saved yet. Type a description and click "Save as
-                    tag" to create one.
-                  </p>
-                ) : (
-                  <div className="max-h-64 space-y-1 overflow-y-auto">
-                    {tags.map((tag) => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
-                        onClick={() => onSelectTag(tag)}
-                      >
-                        <span className="flex-1 truncate">
-                          {tag.description}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                          onClick={(e) => onDeleteTag(e, tag.id)}
-                          disabled={deleteTagMutation.isPending}
-                          aria-label="Delete tag"
-                        >
-                          <Trash2Icon className="size-3.5 text-destructive" />
-                        </Button>
-                      </button>
-                    ))}
-                  </div>
-                )}
+      </div>
+      <div className="flex gap-2">
+        <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={isPending}
+              aria-label="Select tag"
+            >
+              <TagIcon className="size-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="start">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-sm">Saved Tags</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setTagPopoverOpen(false)}
+                >
+                  <XIcon className="size-4" />
+                </Button>
               </div>
-            </PopoverContent>
-          </Popover>
+              {tags.length === 0 ? (
+                <p className="py-4 text-center text-muted-foreground text-sm">
+                  No tags saved yet. Type a description and click "Save as tag"
+                  to create one.
+                </p>
+              ) : (
+                <div className="max-h-64 space-y-1 overflow-y-auto">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                      onClick={() => onSelectTag(tag)}
+                    >
+                      <span className="flex-1 truncate">{tag.description}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={(e) => onDeleteTag(e, tag.id)}
+                        disabled={deleteTagMutation.isPending}
+                        aria-label="Delete tag"
+                      >
+                        <Trash2Icon className="size-3.5 text-destructive" />
+                      </Button>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+        {currentEntry ? (
+          <Button onClick={onEnd} disabled={isPending} className="flex-1">
+            <span className="flex items-center gap-2">
+              <AnimatedSpinner show={showUpdating} />
+              End
+            </span>
+          </Button>
+        ) : (
           <Button onClick={onStart} disabled={isPending} className="flex-1">
             <span className="flex items-center gap-2">
               <AnimatedSpinner show={showCreating} />
               Start
             </span>
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

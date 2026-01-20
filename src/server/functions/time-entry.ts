@@ -291,7 +291,6 @@ export const $createTimeEntryTag = createServerFn({ method: 'POST' })
     ),
   )
   .handler(async ({ context: { user }, data: { description } }) => {
-    // Check if tag already exists for this user
     const existing = await db
       .select()
       .from(timeEntryTag)
