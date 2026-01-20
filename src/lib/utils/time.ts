@@ -14,7 +14,8 @@ export type ShiftType =
 
 export type RangeType = 'day' | 'week' | 'month' | 'year'
 
-type YMD = { y: number; m: number; d: number }
+export type YMD = { y: number; m: number; d: number }
+export type DayKey = `${string}-${string}-${string}`
 
 const CLASS_NAME = 'Time'
 export class Time {
@@ -181,7 +182,7 @@ export class Time {
     })
   }
 
-  formatDayKey(): string {
+  formatDayKey(): DayKey {
     const year = this.date.getFullYear()
     const month = String(this.date.getMonth() + 1).padStart(2, '0')
     const day = String(this.date.getDate()).padStart(2, '0')

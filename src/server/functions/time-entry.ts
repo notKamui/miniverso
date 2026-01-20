@@ -18,7 +18,7 @@ import { Time, UTCTime } from '@/lib/utils/time'
 import { tryAsync, tryInline } from '@/lib/utils/try'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
-import { timeEntry } from '@/server/db/schema/time'
+import { timeEntry, timeEntryTag } from '@/server/db/schema/time'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
@@ -28,6 +28,7 @@ function startedLocalExpr(tzOffsetMinutes: number) {
 
 export const timeEntriesQueryKey = ['time-entries'] as const
 export const timeStatsQueryKey = ['time-stats'] as const
+export const timeEntryTagsQueryKey = ['time-entry-tags'] as const
 
 export function getTimeEntriesByDayQueryOptions({
   dayKey,
@@ -85,7 +86,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
     const { start: dayBegin, end: dayEnd } = range
 
-    return db
+    const entries = await db
       .select({
         id: timeEntry.id,
         userId: timeEntry.userId,
@@ -101,6 +102,8 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
           or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
         ),
       )
+
+    return entries.sort((a, b) => b.startedAt.compare(a.startedAt))
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
@@ -252,4 +255,88 @@ export const $deleteTimeEntries = createServerFn({ method: 'POST' })
     if (!entry) throw notFound()
 
     return entry.map((e) => e.id)
+  })
+
+export function getTimeEntryTagsQueryOptions() {
+  return queryOptions({
+    queryKey: timeEntryTagsQueryKey,
+    queryFn: ({ signal }) => $getTimeEntryTags({ signal }),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+}
+
+export const $getTimeEntryTags = createServerFn({ method: 'GET' })
+  .middleware([$$auth])
+  .handler(async ({ context: { user } }) => {
+    const tags = await db
+      .select({
+        id: timeEntryTag.id,
+        userId: timeEntryTag.userId,
+        description: timeEntryTag.description,
+      })
+      .from(timeEntryTag)
+      .where(eq(timeEntryTag.userId, user.id))
+      .orderBy(timeEntryTag.description)
+
+    return tags
+  })
+
+export const $createTimeEntryTag = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(
+    validate(
+      z.object({
+        description: z.string().min(1).max(2000),
+      }),
+    ),
+  )
+  .handler(async ({ context: { user }, data: { description } }) => {
+    const existing = await db
+      .select()
+      .from(timeEntryTag)
+      .where(
+        and(
+          eq(timeEntryTag.userId, user.id),
+          eq(timeEntryTag.description, description.trim()),
+        ),
+      )
+      .then(takeUniqueOrNull)
+
+    if (existing) {
+      return existing
+    }
+
+    const tag = await db
+      .insert(timeEntryTag)
+      .values({
+        userId: user.id,
+        description: description.trim(),
+      })
+      .returning({
+        id: timeEntryTag.id,
+        userId: timeEntryTag.userId,
+        description: timeEntryTag.description,
+      })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
+    return tag
+  })
+
+export const $deleteTimeEntryTag = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(validate(z.object({ id: z.string() })))
+  .handler(async ({ context: { user }, data: { id } }) => {
+    const tag = await db
+      .delete(timeEntryTag)
+      .where(and(eq(timeEntryTag.id, id), eq(timeEntryTag.userId, user.id)))
+      .returning({ id: timeEntryTag.id })
+      .then(takeUniqueOrNull)
+
+    if (!tag) throw notFound()
+
+    return tag.id
   })

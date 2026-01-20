@@ -29,6 +29,13 @@
       "when": 1765902040427,
       "tag": "0003_add_user_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768948436300,
+      "tag": "0004_add_time_entry_tags",
+      "breakpoints": true
     }
   ]
 }

@@ -30,7 +30,7 @@ export function EditEntryDialog({
 }) {
   const defaultStartedAt = entry?.startedAt
     ? Time.from(entry.startedAt).formatTime({ short: true })
-    : undefined
+    : ''
   const defaultEndedAt = entry?.endedAt
     ? Time.from(entry.endedAt).formatTime({ short: true })
     : undefined
@@ -51,8 +51,10 @@ export function EditEntryDialog({
         ? Time.from(entry.startedAt).setTime(data.startedAt)
         : undefined
       const newEndedAt = data.endedAt
-        ? Time.from(entry.endedAt).setTime(data.endedAt)
-        : undefined
+        ? entry.endedAt
+          ? Time.from(entry.endedAt).setTime(data.endedAt)
+          : (newStartedAt ?? Time.from(entry.startedAt)).setTime(data.endedAt)
+        : null
 
       await onEdit({
         id: entry.id,

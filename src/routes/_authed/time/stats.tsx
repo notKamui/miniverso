@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Collection } from '@/lib/utils/collection'
-import { Time } from '@/lib/utils/time'
+import { type DayKey, Time } from '@/lib/utils/time'
 import { getTimeStatsQueryOptions } from '@/server/functions/time-entry'
 
 type Stats = {
@@ -32,6 +32,7 @@ type Chart = (
   x: string
   y: string
   format: (value: any) => string
+  getDayKey: (dataItem: { dayKey: DayKey }) => string | null
 }
 
 const DAYS = {
@@ -60,13 +61,27 @@ const MONTHS = {
 } as const
 
 const CHARTS: Record<string, Chart> = {
-  week: (stats) => {
+  week: (stats, time) => {
     const fullRange = Object.keys(DAYS).map(Number)
+    const [y, m, d] = [
+      time.getDate().getFullYear(),
+      time.getDate().getMonth(),
+      time.getDate().getDate(),
+    ]
+    const baseDate = new Date(y, m, d)
+    const weekday = baseDate.getDay() // 0..6 (Sun..Sat)
+    const diffToMonday = weekday === 0 ? -6 : 1 - weekday
+    const mondayDate = new Date(y, m, d + diffToMonday)
+
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      const dayDate = new Date(mondayDate)
+      dayDate.setDate(mondayDate.getDate() + (dayOrMonth - 1))
       return {
         day: DAYS[dayOrMonth as keyof typeof DAYS],
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -74,6 +89,7 @@ const CHARTS: Record<string, Chart> = {
       x: 'day',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
   month: (stats, time) => {
@@ -81,11 +97,15 @@ const CHARTS: Record<string, Chart> = {
       ? 31
       : 30
     const fullRange = Collection.range(1, daysInMonth + 1)
+    const [y, m] = [time.getDate().getFullYear(), time.getDate().getMonth()]
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      const dayDate = new Date(y, m, dayOrMonth)
       return {
         day: dayOrMonth,
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -93,15 +113,21 @@ const CHARTS: Record<string, Chart> = {
       x: 'day',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
-  year: (stats) => {
+  year: (stats, time) => {
     const fullRange = Object.keys(MONTHS).map(Number)
+    const y = time.getDate().getFullYear()
     const data = fullRange.map((dayOrMonth) => {
       const entry = stats.find((stat) => stat.dayOrMonth === dayOrMonth)
+      // Navigate to the first day of the month
+      const dayDate = new Date(y, dayOrMonth - 1, 1)
       return {
         month: MONTHS[dayOrMonth as keyof typeof MONTHS],
+        dayOrMonth,
         total: entry ? entry.total : 0,
+        dayKey: Time.from(dayDate).formatDayKey(),
       }
     })
     return {
@@ -109,6 +135,7 @@ const CHARTS: Record<string, Chart> = {
       x: 'month',
       y: 'total',
       format: (total: number) => Time.formatDuration(total * 1000),
+      getDayKey: (item) => item.dayKey,
     }
   },
 }
@@ -155,7 +182,6 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
 function RouteComponent() {
   const navigate = useNavigate()
-  //const { theme } = useTheme()
   const { stats, dayKey, type } = Route.useLoaderData({
     select: ({ stats, dayKey, type }) => ({ stats, dayKey, type }),
   })
@@ -173,9 +199,12 @@ function RouteComponent() {
     },
   } as const
 
+  const totalSeconds = stats.reduce((sum, stat) => sum + stat.total, 0)
+  const totalFormatted = Time.formatDuration(totalSeconds * 1000)
+
   return (
     <div className="flex size-full min-h-0 flex-col gap-4">
-      <div className="flex shrink-0 flex-row gap-4 max-lg:flex-col">
+      <div className="flex shrink-0 flex-row items-center gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
           onChange={(date) =>
@@ -204,6 +233,9 @@ function RouteComponent() {
             <SelectItem value="year">Year</SelectItem>
           </SelectContent>
         </Select>
+        <div className="ml-auto text-muted-foreground text-sm max-lg:ml-0 max-lg:w-full">
+          Total: <span className="font-medium">{totalFormatted}</span>
+        </div>
       </div>
       <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1">
         <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
@@ -225,7 +257,24 @@ function RouteComponent() {
               />
             )}
           />
-          <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+          <Bar
+            dataKey="total"
+            fill="var(--color-total)"
+            radius={4}
+            onClick={(data) => {
+              const dayKey = chart.getDayKey(
+                data as unknown as { dayKey: DayKey },
+              )
+              if (dayKey) {
+                navigate({
+                  to: '/time/{-$day}',
+                  params: { day: dayKey },
+                  search: { tz },
+                })
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          />
         </BarChart>
       </ChartContainer>
     </div>

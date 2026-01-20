@@ -57,14 +57,10 @@ function RouteComponent() {
     }),
   )
 
-  const sortedEntries = [...entries].sort((a, b) =>
-    b.startedAt.compare(a.startedAt),
-  )
-
   return (
     <div className="space-y-8">
       <h2 className={title({ h: 2 })}>Time recorder</h2>
-      <RecorderDisplay time={time} entries={sortedEntries} tzOffset={tz} />
+      <RecorderDisplay time={time} entries={entries} tzOffset={tz} />
     </div>
   )
 }
