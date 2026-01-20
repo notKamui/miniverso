@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -35,6 +35,36 @@ function useTimeTableControls(entries: TimeRecorderControlsProps['entries']) {
     if (lastEntry?.endedAt) return null
     return lastEntry ?? null
   })
+
+  const currentEntryIdRef = useRef<string | null>(currentEntry?.id ?? null)
+
+  useEffect(() => {
+    const currentId = currentEntryIdRef.current
+    if (currentId) {
+      const updatedEntry = entries.find((e) => e.id === currentId)
+      if (updatedEntry) {
+        if (updatedEntry.endedAt) {
+          setCurrentEntry(null)
+          currentEntryIdRef.current = null
+        } else {
+          setCurrentEntry(updatedEntry)
+        }
+      } else {
+        setCurrentEntry(null)
+        currentEntryIdRef.current = null
+      }
+    } else {
+      const lastEntry = entries[0]
+      if (lastEntry && !lastEntry.endedAt) {
+        setCurrentEntry(lastEntry)
+        currentEntryIdRef.current = lastEntry.id
+      }
+    }
+  }, [entries])
+
+  useEffect(() => {
+    currentEntryIdRef.current = currentEntry?.id ?? null
+  }, [currentEntry?.id])
 
   const helpers = createOptimisticMutationHelpers(
     queryClient,
