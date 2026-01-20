@@ -161,14 +161,12 @@ export function TimeRecorderControls({
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
   const [description, setDescription] = useState<string>('')
-  const [isEditing, setIsEditing] = useState(false)
   const entryKey = `${currentEntry?.id ?? 'none'}-${currentEntry?.description ?? ''}`
 
   useEffect(() => {
-    if (!isEditing) {
-      setDescription(currentEntry?.description ?? '')
-    }
-  }, [currentEntry?.description, isEditing])
+    if (!currentEntry) return
+    setDescription(currentEntry.description)
+  }, [currentEntry])
 
   const showCreating = useDebounce(isCreating, 300)
   const showUpdating = useDebounce(isUpdating, 300)
@@ -224,9 +222,7 @@ export function TimeRecorderControls({
         value={description}
         onChange={(e) => {
           setDescription(e.target.value)
-          setIsEditing(true)
         }}
-        onBlur={() => setIsEditing(false)}
         placeholder="Description"
         disabled={isPending}
       />
