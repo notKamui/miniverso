@@ -155,7 +155,6 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
 function RouteComponent() {
   const navigate = useNavigate()
-  //const { theme } = useTheme()
   const { stats, dayKey, type } = Route.useLoaderData({
     select: ({ stats, dayKey, type }) => ({ stats, dayKey, type }),
   })
@@ -173,9 +172,12 @@ function RouteComponent() {
     },
   } as const
 
+  const totalSeconds = stats.reduce((sum, stat) => sum + stat.total, 0)
+  const totalFormatted = Time.formatDuration(totalSeconds * 1000)
+
   return (
     <div className="flex size-full min-h-0 flex-col gap-4">
-      <div className="flex shrink-0 flex-row gap-4 max-lg:flex-col">
+      <div className="flex shrink-0 flex-row items-center gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
           onChange={(date) =>
@@ -204,6 +206,9 @@ function RouteComponent() {
             <SelectItem value="year">Year</SelectItem>
           </SelectContent>
         </Select>
+        <div className="ml-auto text-muted-foreground text-sm max-lg:ml-0 max-lg:w-full">
+          Total: <span className="font-medium">{totalFormatted}</span>
+        </div>
       </div>
       <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1">
         <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
