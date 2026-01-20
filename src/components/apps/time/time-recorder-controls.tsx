@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -131,6 +131,15 @@ export function TimeRecorderControls({
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
   const [description, setDescription] = useState<string>('')
+
+  // Sync description with current entry when it's updated
+  useEffect(() => {
+    if (currentEntry) {
+      setDescription(currentEntry.description ?? '')
+    } else {
+      setDescription('')
+    }
+  }, [currentEntry])
 
   const showCreating = useDebounce(isCreating, 300)
   const showUpdating = useDebounce(isUpdating, 300)

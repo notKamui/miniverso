@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Collection } from '@/lib/utils/collection'
-import { Time } from '@/lib/utils/time'
+import { type DayKey, Time } from '@/lib/utils/time'
 import { getTimeStatsQueryOptions } from '@/server/functions/time-entry'
 
 type Stats = {
@@ -32,7 +32,7 @@ type Chart = (
   x: string
   y: string
   format: (value: any) => string
-  getDayKey: (dataItem: { dayKey: string }) => string | null
+  getDayKey: (dataItem: { dayKey: DayKey }) => string | null
 }
 
 const DAYS = {
@@ -262,7 +262,9 @@ function RouteComponent() {
             fill="var(--color-total)"
             radius={4}
             onClick={(data) => {
-              const dayKey = chart.getDayKey(data)
+              const dayKey = chart.getDayKey(
+                data as unknown as { dayKey: DayKey },
+              )
               if (dayKey) {
                 navigate({
                   to: '/time/{-$day}',

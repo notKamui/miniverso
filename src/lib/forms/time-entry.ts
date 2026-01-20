@@ -9,11 +9,16 @@ export const EditTimeEntrySchema = z
         error: 'Started at must be a valid time',
       }),
     endedAt: z
-      .string()
-      // 00:00 to 23:59
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-        error: 'Ended at must be a valid time',
-      }),
+      .union([
+        z
+          .string()
+          // 00:00 to 23:59
+          .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+            error: 'Ended at must be a valid time',
+          }),
+        z.literal(''),
+      ])
+      .optional(),
     description: z.string().max(2000, {}),
   })
   .refine(
