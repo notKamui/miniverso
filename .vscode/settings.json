@@ -1,5 +1,5 @@
 {
-  "typescript.experimental.useTsgo": true,
+  // "typescript.experimental.useTsgo": true,
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
