@@ -68,15 +68,8 @@ describe('Collection.associateBy', () => {
       { name: 'Ada', age: 31 },
       { name: 'Grace', age: 40 },
     ]
-    const rec = Collection.associateBy(
-      arr,
-      (x) => `${x.name}:${x.age > 30 ? 'senior' : 'junior'}`,
-    )
-    expect(Object.keys(rec).sort()).toEqual([
-      'Ada:junior',
-      'Ada:senior',
-      'Grace:senior',
-    ])
+    const rec = Collection.associateBy(arr, (x) => `${x.name}:${x.age > 30 ? 'senior' : 'junior'}`)
+    expect(Object.keys(rec).toSorted()).toEqual(['Ada:junior', 'Ada:senior', 'Grace:senior'])
     expect(rec['Ada:junior']).toEqual({ name: 'Ada', age: 30 })
     expect(rec['Ada:senior']).toEqual({ name: 'Ada', age: 31 })
     expect(rec['Grace:senior']).toEqual({ name: 'Grace', age: 40 })

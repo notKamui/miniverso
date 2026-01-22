@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  APP_VERSION: ""
+  APP_VERSION: ''
 
 jobs:
   deploy:

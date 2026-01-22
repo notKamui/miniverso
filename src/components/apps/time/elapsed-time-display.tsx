@@ -33,11 +33,7 @@ export function ElapsedTimeDisplay({ startTime }: ElapsedTimeDisplayProps) {
             transition={{ duration: 0.15 }}
             className="inline-flex items-center"
           >
-            {now ? (
-              '00:00:00'
-            ) : (
-              <Skeleton className="inline-block h-4 w-16 translate-y-0.5" />
-            )}
+            {now ? '00:00:00' : <Skeleton className="inline-block h-4 w-16 translate-y-0.5" />}
           </m.span>
         )}
       </AnimatePresence>

@@ -1,11 +1,4 @@
-import {
-  count,
-  eq,
-  getTableColumns,
-  type InferSelectModel,
-  type SQL,
-  sql,
-} from 'drizzle-orm'
+import { count, eq, getTableColumns, type InferSelectModel, type SQL, sql } from 'drizzle-orm'
 import type { AnyPgTable, PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { db } from '@/server/db'
 
@@ -13,19 +6,16 @@ export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
   values: T,
 ) => T[number] | null
 
-export function takeUniqueOr<
-  T extends any[],
-  E extends T[number] | null | undefined = never,
->(or: () => E): (values: T) => [E] extends [never] ? T[number] : E | T[number] {
+export function takeUniqueOr<T extends any[], E extends T[number] | null | undefined = never>(
+  or: () => E,
+): (values: T) => [E] extends [never] ? T[number] : E | T[number] {
   return (values) => {
     if (values.length === 0) return or()
     return values[0]
   }
 }
 
-export async function paginated<
-  TTable extends AnyPgTable<{ columns: { id: PgColumn } }>,
->(options: {
+export async function paginated<TTable extends AnyPgTable<{ columns: { id: PgColumn } }>>(options: {
   table: TTable
   where: SQL | undefined
   orderBy: PgColumn | SQL | SQL.Aliased
@@ -56,7 +46,7 @@ export async function paginated<
       .as('subquery')
 
     const rowsQuery = tx
-      .select({ row: options.table as TTable })
+      .select({ row: options.table })
       .from(options.table as AnyPgTable)
       .innerJoin(subquery, eq(idColumn, subquery.id))
       .orderBy(options.orderBy)
@@ -76,10 +66,10 @@ export async function paginated<
   }
 }
 
-export function buildConflictUpdateColumns<
-  T extends PgTable,
-  Q extends keyof T['_']['columns'],
->(table: T, columns: Q[]) {
+export function buildConflictUpdateColumns<T extends PgTable, Q extends keyof T['_']['columns']>(
+  table: T,
+  columns: Q[],
+) {
   const tableColumns = getTableColumns(table)
   return columns.reduce(
     (acc, column) => {

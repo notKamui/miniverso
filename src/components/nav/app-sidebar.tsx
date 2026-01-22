@@ -1,16 +1,8 @@
 import { ClockIcon, HomeIcon, ShieldIcon, StarIcon } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
-import {
-  AppNavGroup,
-  type AppNavGroupProps,
-} from '@/components/nav/app-nav-group'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from '@/components/ui/sidebar'
+import { AppNavGroup, type AppNavGroupProps } from '@/components/nav/app-nav-group'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar'
 import { title } from '@/components/ui/typography'
 import { useSidebarState } from '@/lib/hooks/use-sidebar-state'
 import { Time } from '@/lib/utils/time'
@@ -95,11 +87,7 @@ function Header() {
         transition={{
           duration: 0.2,
         }}
-        initial={
-          open
-            ? { opacity: 1, x: 0, width: 'auto' }
-            : { opacity: 0, x: -100, width: 0 }
-        }
+        initial={open ? { opacity: 1, x: 0, width: 'auto' } : { opacity: 0, x: -100, width: 0 }}
       >
         Miniverso
       </m.h1>
@@ -122,9 +110,7 @@ function Footer() {
     <SidebarFooter className="overflow-hidden">
       <div
         className={`whitespace-nowrap px-2 text-muted-foreground text-xs transition-all duration-300 ease-out ${
-          open
-            ? 'w-auto translate-x-0 opacity-100'
-            : 'w-0 -translate-x-full opacity-0'
+          open ? 'w-auto translate-x-0 opacity-100' : 'w-0 -translate-x-full opacity-0'
         }`}
       >
         v{APP_VERSION} - {currentYear} ©{' '}

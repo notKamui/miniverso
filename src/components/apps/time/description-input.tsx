@@ -28,23 +28,17 @@ export function DescriptionInput({
   const { data: tags = [] } = useQuery(getTimeEntryTagsQueryOptions())
 
   const trimmedDescription = description.trim()
-  const tagExists = tags.some(
-    (tag) => tag.description.trim() === trimmedDescription,
-  )
+  const tagExists = tags.some((tag) => tag.description.trim() === trimmedDescription)
 
   const createTagMutation = useMutation({
-    mutationFn: (description: string) =>
-      $createTimeEntryTag({ data: { description } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
+    mutationFn: (description: string) => $createTimeEntryTag({ data: { description } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
     },
   })
 
   const isSaveAsTagDisabled =
-    trimmedDescription.length === 0 ||
-    !!currentEntry ||
-    tagExists ||
-    createTagMutation.isPending
+    trimmedDescription.length === 0 || !!currentEntry || tagExists || createTagMutation.isPending
 
   async function onSaveAsTag() {
     if (!trimmedDescription) return

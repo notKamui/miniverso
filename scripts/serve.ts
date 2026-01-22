@@ -108,9 +108,7 @@ const GZIP_TYPES = (
  */
 function globToRegExp(glob: string): RegExp {
   // Escape regex special chars except *, then replace * with .*
-  const escaped = glob
-    .replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&')
-    .replace(/\*/g, '.*')
+  const escaped = glob.replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&').replace(/\*/g, '.*')
   return new RegExp(`^${escaped}$`, 'i')
 }
 
@@ -152,9 +150,7 @@ function shouldInclude(relativePath: string): boolean {
 }
 
 function matchesCompressible(type: string) {
-  return GZIP_TYPES.some((t) =>
-    t.endsWith('/') ? type.startsWith(t) : type === t,
-  )
+  return GZIP_TYPES.some((t) => (t.endsWith('/') ? type.startsWith(t) : type === t))
 }
 
 interface InMemoryAsset {
@@ -176,9 +172,7 @@ function formatKB(bytes: number) {
   return kb < 100 ? kb.toFixed(2) : kb.toFixed(1)
 }
 
-function buildResponseFactory(
-  asset: InMemoryAsset,
-): (req: Request) => Response {
+function buildResponseFactory(asset: InMemoryAsset): (req: Request) => Response {
   return (req: Request) => {
     const headers: Record<string, string> = {
       'Content-Type': asset.type,
@@ -198,11 +192,7 @@ function buildResponseFactory(
       headers.ETag = asset.etag
     }
 
-    if (
-      ENABLE_GZIP &&
-      asset.gz &&
-      req.headers.get('accept-encoding')?.includes('gzip')
-    ) {
+    if (ENABLE_GZIP && asset.gz && req.headers.get('accept-encoding')?.includes('gzip')) {
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
       const gzCopy = new Uint8Array(asset.gz)
@@ -254,24 +244,17 @@ function buildCompositeGlob(): Bun.Glob {
  * Small files are loaded into memory, large files are served on-demand
  */
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
-  const routes: Record<string, (req: Request) => Response | Promise<Response>> =
-    {}
+  const routes: Record<string, (req: Request) => Response | Promise<Response>> = {}
   const loaded: AssetMetadata[] = []
   const skipped: AssetMetadata[] = []
 
   console.log(`📦 Loading static assets from ${clientDir}...`)
-  console.log(
-    `   Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`,
-  )
+  console.log(`   Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`)
   if (INCLUDE_PATTERNS.length > 0) {
-    console.log(
-      `   Include patterns: ${process.env.STATIC_PRELOAD_INCLUDE ?? ''}`,
-    )
+    console.log(`   Include patterns: ${process.env.STATIC_PRELOAD_INCLUDE ?? ''}`)
   }
   if (EXCLUDE_PATTERNS.length > 0) {
-    console.log(
-      `   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`,
-    )
+    console.log(`   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`)
   }
   console.log('   ETag generation:', ENABLE_ETAG ? 'enabled' : 'disabled')
   console.log('   Gzip precompression:', ENABLE_GZIP ? 'enabled' : 'disabled')
@@ -333,19 +316,14 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
     }
 
     if (loaded.length > 0 || skipped.length > 0) {
-      const allFiles = [...loaded, ...skipped].sort((a, b) =>
-        a.route.localeCompare(b.route),
-      )
+      const allFiles = [...loaded, ...skipped].toSorted((a, b) => a.route.localeCompare(b.route))
 
-      const maxPathLength = Math.min(
-        Math.max(...allFiles.map((f) => f.route.length)),
-        60,
-      )
+      const maxPathLength = Math.min(Math.max(...allFiles.map((f) => f.route.length)), 60)
 
       if (loaded.length > 0) {
         console.log('\n📁 Preloaded into memory:')
         loaded
-          .sort((a, b) => a.route.localeCompare(b.route))
+          .toSorted((a, b) => a.route.localeCompare(b.route))
           .forEach((file) => {
             const sizeStr = `${formatKB(file.size).padStart(7)} kB`
             const paddedPath = file.route.padEnd(maxPathLength)
@@ -362,7 +340,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
       if (skipped.length > 0) {
         console.log('\n💾 Served on-demand:')
         skipped
-          .sort((a, b) => a.route.localeCompare(b.route))
+          .toSorted((a, b) => a.route.localeCompare(b.route))
           .forEach((file) => {
             const sizeStr = `${formatKB(file.size).padStart(7)} kB`
             const paddedPath = file.route.padEnd(maxPathLength)
@@ -381,9 +359,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
               : !isPreloaded
                 ? ' (filtered)'
                 : ''
-          console.log(
-            `   ${status.padEnd(12)} ${file.route} - ${file.type}${reason}`,
-          )
+          console.log(`   ${status.padEnd(12)} ${file.route} - ${file.type}${reason}`)
         })
       }
     }
@@ -444,9 +420,7 @@ async function startServer() {
     },
   })
 
-  console.log(
-    `\n🚀 Server running at http://localhost:${String(server.port)}\n`,
-  )
+  console.log(`\n🚀 Server running at http://localhost:${String(server.port)}\n`)
 }
 
 async function main() {

@@ -5,10 +5,7 @@ import { captcha } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
-import {
-  sendResetPasswordEmail,
-  sendVerificationEmail,
-} from '@/lib/utils/email'
+import { sendResetPasswordEmail, sendVerificationEmail } from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as authSchema from '@/server/db/schema/auth'
 
@@ -53,11 +50,7 @@ export const auth = createServerOnlyFn(() =>
           imageUrl: user.image ?? undefined,
         })
         if (response.error) {
-          console.error(
-            'Error sending reset password email:',
-            response.error,
-            response.data,
-          )
+          console.error('Error sending reset password email:', response.error, response.data)
         }
       },
       requireEmailVerification: true,
@@ -72,11 +65,7 @@ export const auth = createServerOnlyFn(() =>
           imageUrl: user.image ?? undefined,
         })
         if (response.error) {
-          console.error(
-            'Error sending verification email:',
-            response.error,
-            response.data,
-          )
+          console.error('Error sending verification email:', response.error, response.data)
         }
       },
     },
@@ -92,9 +81,7 @@ export const auth = createServerOnlyFn(() =>
         google: {
           clientId: env.GOOGLE_OAUTH_CLIENT_ID,
           clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
-          enabled: Boolean(
-            env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
-          ),
+          enabled: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
         },
       },
     ),

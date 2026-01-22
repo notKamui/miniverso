@@ -3,11 +3,7 @@ import { SearchIcon, TagIcon, Trash2Icon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { TimeEntryTag } from '@/server/db/schema/time'
 import {
   $deleteTimeEntryTag,
@@ -20,10 +16,7 @@ type TagSelectorProps = {
   disabled?: boolean
 }
 
-export function TagSelector({
-  onSelectTag,
-  disabled = false,
-}: TagSelectorProps) {
+export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps) {
   const queryClient = useQueryClient()
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,9 +27,7 @@ export function TagSelector({
     mutationFn: (id: string) => $deleteTimeEntryTag({ data: { id } }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: timeEntryTagsQueryKey })
-      const previousTags = queryClient.getQueryData<TimeEntryTag[]>(
-        timeEntryTagsQueryKey,
-      )
+      const previousTags = queryClient.getQueryData<TimeEntryTag[]>(timeEntryTagsQueryKey)
       queryClient.setQueryData<TimeEntryTag[]>(
         timeEntryTagsQueryKey,
         (old) => old?.filter((tag) => tag.id !== id) ?? [],
@@ -48,8 +39,8 @@ export function TagSelector({
         queryClient.setQueryData(timeEntryTagsQueryKey, context.previousTags)
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
     },
   })
 
@@ -110,8 +101,7 @@ export function TagSelector({
           </div>
           {tags.length === 0 ? (
             <p className="py-4 text-center text-muted-foreground text-sm">
-              No tags saved yet. Type a description and click "Save as tag" to
-              create one.
+              No tags saved yet. Type a description and click "Save as tag" to create one.
             </p>
           ) : filteredTags.length === 0 ? (
             <p className="py-4 text-center text-muted-foreground text-sm">

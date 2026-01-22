@@ -44,8 +44,7 @@ export function useTimeEntryMutations({
 
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) =>
-          old ? [optimisticEntry, ...old] : [optimisticEntry],
+        (old: TimeEntry[] | undefined) => (old ? [optimisticEntry, ...old] : [optimisticEntry]),
       )
 
       setCurrentEntry(optimisticEntry)

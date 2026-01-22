@@ -6,7 +6,7 @@ export function setAuthSession(next: any) {
   currentSession = next
 }
 
-mock.module('@/lib/auth', () => ({
+await mock.module('@/lib/auth', () => ({
   auth: {
     api: {
       getSession: async (_args: any) => currentSession,

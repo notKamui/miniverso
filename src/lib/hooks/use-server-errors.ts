@@ -10,10 +10,7 @@ export class ServerErrorEvent extends CustomEvent<{ body: { error: string } }> {
     public options?: { sendToast?: boolean },
   ) {
     super(ServerErrorEvent.type, {
-      detail:
-        detail instanceof z.ZodError
-          ? { body: { error: z.prettifyError(detail) } }
-          : detail,
+      detail: detail instanceof z.ZodError ? { body: { error: z.prettifyError(detail) } } : detail,
     })
   }
 }

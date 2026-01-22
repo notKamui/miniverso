@@ -70,26 +70,19 @@ export function EditEntryDialog({
     <Dialog open={entry !== null} onOpenChange={(open) => !open && onClose?.()}>
       <DialogContent ref={ref}>
         <form
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
             event.stopPropagation()
-            form.handleSubmit()
+            await form.handleSubmit()
           }}
           className="space-y-4"
         >
           <DialogHeader>
             <DialogTitle>Edit entry</DialogTitle>
-            <DialogDescription className="sr-only">
-              Edit time entry dialog
-            </DialogDescription>
+            <DialogDescription className="sr-only">Edit time entry dialog</DialogDescription>
           </DialogHeader>
 
-          <FormInput
-            type="time"
-            form={form}
-            name="startedAt"
-            label="Started at"
-          />
+          <FormInput type="time" form={form} name="startedAt" label="Started at" />
 
           <FormInput type="time" form={form} name="endedAt" label="Ended at" />
 
@@ -103,22 +96,13 @@ export function EditEntryDialog({
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">
             <form.Subscribe selector={(state) => state.canSubmit}>
               {(canSubmit) => (
-                <Button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="max-sm:grow"
-                >
+                <Button type="submit" disabled={!canSubmit} className="max-sm:grow">
                   Save
                 </Button>
               )}
             </form.Subscribe>
             <DialogClose asChild>
-              <Button
-                type="button"
-                onClick={onClose}
-                className="max-sm:grow"
-                variant="destructive"
-              >
+              <Button type="button" onClick={onClose} className="max-sm:grow" variant="destructive">
                 Cancel
               </Button>
             </DialogClose>

@@ -13,17 +13,10 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
-import {
-  useSidebarState,
-  useUpdateSidebarState,
-} from '@/lib/hooks/use-sidebar-state'
+import { useSidebarState, useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()

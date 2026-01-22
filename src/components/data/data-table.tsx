@@ -56,10 +56,7 @@ export function DataTable<TData, TValue>({
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -97,9 +94,7 @@ function DataRow<TData>({
   onRowClick?: (row: TData) => void
   onRowDoubleClick?: (row: TData) => void
 }) {
-  const { onTouchStart, onTouchEnd } = useLongPress(() =>
-    onRowDoubleClick?.(row.original),
-  )
+  const { onTouchStart, onTouchEnd } = useLongPress(() => onRowDoubleClick?.(row.original))
 
   return (
     <TableRow
@@ -111,10 +106,7 @@ function DataRow<TData>({
       className={cn((onRowClick || onRowDoubleClick) && 'cursor-pointer')}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell
-          key={cell.id}
-          className="max-w-0 overflow-hidden whitespace-nowrap"
-        >
+        <TableCell key={cell.id} className="max-w-0 overflow-hidden whitespace-nowrap">
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}

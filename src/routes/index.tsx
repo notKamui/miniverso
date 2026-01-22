@@ -1,10 +1,7 @@
 import { authViewPaths } from '@daveyplate/better-auth-ui'
 import { createFileRoute, Link, type ToOptions } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
-import {
-  type GlobalContext,
-  useGlobalContext,
-} from '@/lib/hooks/use-global-context'
+import { type GlobalContext, useGlobalContext } from '@/lib/hooks/use-global-context'
 import { Time } from '@/lib/utils/time'
 
 export const Route = createFileRoute('/')({

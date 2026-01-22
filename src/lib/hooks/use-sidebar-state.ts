@@ -1,15 +1,6 @@
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { requestInfoQueryKey } from '@/server/functions/request-info'
-import {
-  $getSidebarState,
-  $setSidebarState,
-  type SidebarState,
-} from '@/server/functions/sidebar'
+import { $getSidebarState, $setSidebarState, type SidebarState } from '@/server/functions/sidebar'
 
 export const sidebarStateQueryKey = ['sidebarState'] as const
 
@@ -32,16 +23,12 @@ export function useUpdateSidebarState() {
     mutationFn: (state: SidebarState) => $setSidebarState({ data: state }),
     onMutate: async (state) => {
       await queryClient.cancelQueries({ queryKey: sidebarStateQueryKey })
-      const previousSidebarState =
-        queryClient.getQueryData(sidebarStateQueryKey)
+      const previousSidebarState = queryClient.getQueryData(sidebarStateQueryKey)
       queryClient.setQueryData(sidebarStateQueryKey, state)
       return { previousSidebarState }
     },
     onError: (_error, _variables, context) => {
-      queryClient.setQueryData(
-        sidebarStateQueryKey,
-        context?.previousSidebarState,
-      )
+      queryClient.setQueryData(sidebarStateQueryKey, context?.previousSidebarState)
     },
     onSettled: async () => {
       await Promise.all([

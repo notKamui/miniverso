@@ -159,9 +159,7 @@ export const Route = createFileRoute('/api/admin/export')({
                 format: 'miniverso.export.ndjson',
                 version: 1,
                 exportedAt,
-                filters: parsed.data.userEmail
-                  ? { userEmail: parsed.data.userEmail }
-                  : {},
+                filters: parsed.data.userEmail ? { userEmail: parsed.data.userEmail } : {},
                 apps,
               }
               controller.enqueue(encoder.encode(`${JSON.stringify(meta)}\n`))

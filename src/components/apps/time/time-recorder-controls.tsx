@@ -14,16 +14,12 @@ export type TimeRecorderControlsProps = {
   className?: string
 }
 
-export function TimeRecorderControls({
-  entries,
-  className,
-}: TimeRecorderControlsProps) {
+export function TimeRecorderControls({ entries, className }: TimeRecorderControlsProps) {
   const { currentEntry, setCurrentEntry } = useCurrentTimeEntry(entries)
-  const { start, end, isPending, isCreating, isUpdating } =
-    useTimeEntryMutations({
-      currentEntry,
-      setCurrentEntry,
-    })
+  const { start, end, isPending, isCreating, isUpdating } = useTimeEntryMutations({
+    currentEntry,
+    setCurrentEntry,
+  })
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
   const [description, setDescription] = useState('')
@@ -51,12 +47,7 @@ export function TimeRecorderControls({
   }
 
   return (
-    <div
-      className={cn(
-        'container flex flex-col gap-4 rounded-md border p-4',
-        className,
-      )}
-    >
+    <div className={cn('container flex flex-col gap-4 rounded-md border p-4', className)}>
       <ElapsedTimeDisplay startTime={currentStart} />
       <DescriptionInput
         description={description}

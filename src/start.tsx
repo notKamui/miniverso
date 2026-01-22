@@ -7,9 +7,6 @@ import { $$emitErrors } from '@/server/middlewares/emit-errors'
 export const startInstance = createStart(() => {
   return {
     functionMiddleware: [$$emitErrors, $$cors],
-    serializationAdapters: [
-      ...Object.values(serializationAdapters),
-      Time.serializationAdapter,
-    ],
+    serializationAdapters: [...Object.values(serializationAdapters), Time.serializationAdapter],
   }
 })

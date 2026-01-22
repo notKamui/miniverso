@@ -43,7 +43,7 @@ export async function adminFnGuard(args: {
             email: string
             emailVerified: boolean
             name: string
-            image?: string | null | undefined | undefined
+            image?: string | null | undefined
             role: string
           }
         },

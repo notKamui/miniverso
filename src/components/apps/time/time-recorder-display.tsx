@@ -56,8 +56,7 @@ const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
   {
     accessorKey: 'startedAt',
     header: 'Started at',
-    cell: ({ row }) =>
-      Time.from(row.original.startedAt).formatTime({ offsetMinutes: tzOffset }),
+    cell: ({ row }) => Time.from(row.original.startedAt).formatTime({ offsetMinutes: tzOffset }),
     size: 0, // force minimum width
   },
   {
@@ -80,16 +79,10 @@ const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
 
 const MotionDialog = m.create(EditEntryDialog)
 
-export function RecorderDisplay({
-  time,
-  entries,
-  tzOffset,
-}: RecorderDisplayProps) {
+export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>(
-    {},
-  )
+  const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>({})
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
 
   const helpers = createOptimisticMutationHelpers(
@@ -100,16 +93,13 @@ export function RecorderDisplay({
   )
 
   const updateMutation = useMutation({
-    mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) =>
-      $updateTimeEntry({ data: entry }),
+    mutationFn: (entry: PartialExcept<TimeEntry, 'id'>) => $updateTimeEntry({ data: entry }),
     onMutate: async (variables) => {
       const context = await helpers.onMutate()
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
         (old: TimeEntry[] | undefined) =>
-          old?.map((entry) =>
-            entry.id === variables.id ? { ...entry, ...variables } : entry,
-          ),
+          old?.map((entry) => (entry.id === variables.id ? { ...entry, ...variables } : entry)),
       )
       return context
     },
@@ -123,8 +113,7 @@ export function RecorderDisplay({
       const context = await helpers.onMutate()
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) =>
-          old?.filter((entry) => !ids.includes(entry.id)),
+        (old: TimeEntry[] | undefined) => old?.filter((entry) => !ids.includes(entry.id)),
       )
       setSelectedRows({})
       return context
@@ -138,8 +127,8 @@ export function RecorderDisplay({
   const dayAfter = time.shift('days', 1)
   const isToday = time.isToday()
 
-  function onDateChange(time: Time) {
-    router.navigate({
+  async function onDateChange(time: Time) {
+    await router.navigate({
       to: '/time/{-$day}',
       params: { day: time.isToday() ? undefined : time.formatDayKey() },
       search: { tz: time.getOffset() },
@@ -151,17 +140,14 @@ export function RecorderDisplay({
       id: 'select',
       header: () => {
         const checked =
-          (entries.length > 0 &&
-            entries.every((entry) => selectedRows[entry.id])) ||
+          (entries.length > 0 && entries.every((entry) => selectedRows[entry.id])) ||
           (Object.keys(selectedRows).length > 0 && 'indeterminate')
         return (
           <Checkbox
             checked={checked}
             onCheckedChange={(value) => {
               if (value) {
-                setSelectedRows(
-                  Collection.associateBy(entries, (entry) => entry.id),
-                )
+                setSelectedRows(Collection.associateBy(entries, (entry) => entry.id))
               } else {
                 setSelectedRows({})
               }
@@ -229,12 +215,7 @@ export function RecorderDisplay({
           />
           <h3 className="sr-only">{time.formatDay()}</h3>
           {!isToday && (
-            <Button
-              size="icon"
-              className={cn('h-9 rounded-l-none')}
-              disabled={isToday}
-              asChild
-            >
+            <Button size="icon" className={cn('h-9 rounded-l-none')} disabled={isToday} asChild>
               <Link
                 to="/time/{-$day}"
                 from="/"
@@ -269,9 +250,7 @@ export function RecorderDisplay({
                   disabled={deleteMutation.isPending}
                   className="min-w-20"
                 >
-                  <AnimatedButtonContent loading={showDeleting}>
-                    Delete
-                  </AnimatedButtonContent>
+                  <AnimatedButtonContent loading={showDeleting}>Delete</AnimatedButtonContent>
                 </Button>
               </m.div>
             )}
@@ -306,21 +285,11 @@ export function RecorderDisplay({
   )
 }
 
-function ActionsMenu({
-  onEdit,
-  onDelete,
-}: {
-  onEdit: () => void
-  onDelete: () => void
-}) {
+function ActionsMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          aria-label="Open action menu for row"
-          variant="ghost"
-          size="icon"
-        >
+        <Button aria-label="Open action menu for row" variant="ghost" size="icon">
           <MoreVerticalIcon />
         </Button>
       </DropdownMenuTrigger>
@@ -332,11 +301,7 @@ function ActionsMenu({
           </button>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <button
-            type="button"
-            className="w-full text-destructive"
-            onClick={onDelete}
-          >
+          <button type="button" className="w-full text-destructive" onClick={onDelete}>
             <Trash2Icon /> Delete
           </button>
         </DropdownMenuItem>
@@ -350,16 +315,10 @@ function TotalTime({ entries }: { entries: TimeEntry[] }) {
   const now = useNow()?.getMillis()
   const totalTime = entries
     .filter((entry) => entry.endedAt)
-    .reduce(
-      (acc, entry) =>
-        acc + entry.endedAt!.getMillis() - entry.startedAt.getMillis(),
-      0,
-    )
+    .reduce((acc, entry) => acc + entry.endedAt!.getMillis() - entry.startedAt.getMillis(), 0)
   const currentEntry = entries.find((entry) => !entry.endedAt)
   const currentElapsed =
-    currentEntry && now
-      ? Math.max(now - currentEntry.startedAt.getMillis(), 0)
-      : 0
+    currentEntry && now ? Math.max(now - currentEntry.startedAt.getMillis(), 0) : 0
 
   return (
     entries.length > 0 && (

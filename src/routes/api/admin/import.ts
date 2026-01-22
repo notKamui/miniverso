@@ -30,9 +30,7 @@ const TimeRecorderTimeEntryLineSchemaV1 = z.strictObject({
   description: z.string().nullable(),
 })
 
-type TimeRecorderTimeEntryLineV1 = z.infer<
-  typeof TimeRecorderTimeEntryLineSchemaV1
->
+type TimeRecorderTimeEntryLineV1 = z.infer<typeof TimeRecorderTimeEntryLineSchemaV1>
 
 type ImportSummaryV1 = {
   ok: true
@@ -136,9 +134,7 @@ export const Route = createFileRoute('/api/admin/import')({
           )
         }
 
-        const apps = parsedQuery.data.apps.length
-          ? parsedQuery.data.apps
-          : ['timeRecorder']
+        const apps = parsedQuery.data.apps.length ? parsedQuery.data.apps : ['timeRecorder']
 
         const includeTimeRecorder = apps.includes('timeRecorder')
 
@@ -155,13 +151,10 @@ export const Route = createFileRoute('/api/admin/import')({
         }
 
         if (!request.body) {
-          return new Response(
-            JSON.stringify({ error: 'Missing request body' }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
-          )
+          return new Response(JSON.stringify({ error: 'Missing request body' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          })
         }
 
         const userIdByEmail = new Map<string, string | null>()
@@ -244,8 +237,7 @@ export const Route = createFileRoute('/api/admin/import')({
               if (!meta.success) {
                 return new Response(
                   JSON.stringify({
-                    error:
-                      meta.error.issues[0]?.message ?? 'Invalid meta header',
+                    error: meta.error.issues[0]?.message ?? 'Invalid meta header',
                   }),
                   {
                     status: 400,
@@ -265,15 +257,12 @@ export const Route = createFileRoute('/api/admin/import')({
             ) {
               if (!includeTimeRecorder) continue
 
-              const parsedLine =
-                TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
+              const parsedLine = TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
 
               if (!parsedLine.success) {
                 return new Response(
                   JSON.stringify({
-                    error:
-                      parsedLine.error.issues[0]?.message ??
-                      'Invalid time entry line',
+                    error: parsedLine.error.issues[0]?.message ?? 'Invalid time entry line',
                     processedLines,
                   }),
                   {
@@ -313,13 +302,10 @@ export const Route = createFileRoute('/api/admin/import')({
 
           // If the file had no meta and no known records, return a helpful error.
           if (!sawMeta && processedLines === 0) {
-            return new Response(
-              JSON.stringify({ error: 'Empty import file' }),
-              {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-              },
-            )
+            return new Response(JSON.stringify({ error: 'Empty import file' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            })
           }
 
           return new Response(JSON.stringify(summary), {

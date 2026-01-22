@@ -1,9 +1,4 @@
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { useGlobalContext } from '@/lib/hooks/use-global-context'
 import { requestInfoQueryKey } from '@/server/functions/request-info'
 import { $getTheme, $setTheme, type Theme } from '@/server/functions/theme'
@@ -17,16 +12,14 @@ export function themeQueryOptions() {
   })
 }
 
+function getBrowserPreferredTheme() {
+  if (typeof window === 'undefined' || !window.matchMedia) return undefined
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 export function useTheme() {
   const { requestInfo } = useGlobalContext()
   const { data: theme } = useSuspenseQuery(themeQueryOptions())
-
-  function getBrowserPreferredTheme() {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light'
-  }
 
   return theme ?? requestInfo?.hints.theme ?? getBrowserPreferredTheme()
 }

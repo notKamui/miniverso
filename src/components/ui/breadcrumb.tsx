@@ -22,11 +22,7 @@ const BreadcrumbList = ({ ref, className, ...props }: ComponentProps<'ol'>) => (
 )
 
 const BreadcrumbItem = ({ ref, className, ...props }: ComponentProps<'li'>) => (
-  <li
-    ref={ref}
-    className={cn('inline-flex items-center gap-1.5', className)}
-    {...props}
-  />
+  <li ref={ref} className={cn('inline-flex items-center gap-1.5', className)} {...props} />
 )
 
 const BreadcrumbLink = ({
@@ -48,11 +44,7 @@ const BreadcrumbLink = ({
   )
 }
 
-const BreadcrumbPage = ({
-  ref,
-  className,
-  ...props
-}: ComponentProps<'span'>) => (
+const BreadcrumbPage = ({ ref, className, ...props }: ComponentProps<'span'>) => (
   <span
     tabIndex={-1}
     ref={ref}
@@ -63,11 +55,7 @@ const BreadcrumbPage = ({
   />
 )
 
-const BreadcrumbSeparator = ({
-  children,
-  className,
-  ...props
-}: ComponentProps<'li'>) => (
+const BreadcrumbSeparator = ({ children, className, ...props }: ComponentProps<'li'>) => (
   <li
     role="presentation"
     aria-hidden="true"
@@ -78,10 +66,7 @@ const BreadcrumbSeparator = ({
   </li>
 )
 
-const BreadcrumbEllipsis = ({
-  className,
-  ...props
-}: ComponentProps<'span'>) => (
+const BreadcrumbEllipsis = ({ className, ...props }: ComponentProps<'span'>) => (
   <span
     role="presentation"
     aria-hidden="true"

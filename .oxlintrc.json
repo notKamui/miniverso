@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "react", "react-perf", "jsx-a11y", "oxc", "unicorn"],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/bun.lock",
+    "**/src/routeTree.gen.ts",
+    "**/.drizzle/**",
+    "**/dist/**"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-array-index-key": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unsafe-type-assertion": "off",
+    "no-parameter-assign": "error",
+    "@typescript-eslint/prefer-as-const": "error",
+    "default-param-last": "error",
+    "@typescript-eslint/prefer-enum-initializers": "error",
+    "react/self-closing-comp": "error",
+    "react/react-in-jsx-scope": "off",
+    "one-var": "off",
+    "no-template-curly-in-string": "error",
+    "@typescript-eslint/prefer-number-starts-ends-with": "error",
+    "@typescript-eslint/no-inferrable-types": "error",
+    "no-else-return": "error",
+    "no-for-each": "off",
+    "jsx-a11y/alt-text": "off"
+  }
+}

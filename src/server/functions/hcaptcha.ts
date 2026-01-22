@@ -12,10 +12,8 @@ export function hcaptchaInfoQueryOptions() {
   })
 }
 
-export const $getHcaptchaInfo = createServerFn({ method: 'GET' }).handler(
-  () => {
-    return {
-      siteKey: env.HCAPTCHA_SITEKEY,
-    }
-  },
-)
+export const $getHcaptchaInfo = createServerFn({ method: 'GET' }).handler(() => {
+  return {
+    siteKey: env.HCAPTCHA_SITEKEY,
+  }
+})

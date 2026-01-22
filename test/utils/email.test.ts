@@ -5,7 +5,7 @@ const sendMock = mock(async (args: any) => ({ ok: true, args }))
 let constructedApiKey: string | undefined
 
 // Mock env module used by email.tsx
-mock.module('@/lib/env/server', () => ({
+await mock.module('@/lib/env/server', () => ({
   env: {
     RESEND_API_KEY: 'test-resend-key',
     RESEND_MAIL_DOMAIN: 'example.com',
@@ -14,7 +14,7 @@ mock.module('@/lib/env/server', () => ({
 }))
 
 // Mock Resend SDK
-mock.module('resend', () => ({
+await mock.module('resend', () => ({
   Resend: class Resend {
     emails = { send: sendMock }
     constructor(apiKey: string) {
@@ -24,7 +24,7 @@ mock.module('resend', () => ({
 }))
 
 // Mock EmailTemplate to a simple factory that exposes props for inspection
-mock.module('@daveyplate/better-auth-ui/server', () => ({
+await mock.module('@daveyplate/better-auth-ui/server', () => ({
   EmailTemplate: (props: any) => ({ __type: 'EmailTemplate', props }),
 }))
 
@@ -56,9 +56,7 @@ describe('email utils', () => {
     expect(call.react.props.action).toBe('Reset password')
     expect(call.react.props.heading).toBe('Reset your password')
     expect(call.react.props.url).toBe('https://app.example.com/reset?token=abc')
-    expect(call.react.props.imageUrl).toBe(
-      'https://app.example.com/logo512.png',
-    )
+    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
   })
 
   it('sendResetPasswordEmail respects provided imageUrl and name', async () => {
@@ -87,11 +85,7 @@ describe('email utils', () => {
     expect(call.react.__type).toBe('EmailTemplate')
     expect(call.react.props.action).toBe('Verify email')
     expect(call.react.props.heading).toBe('Verify your email address')
-    expect(call.react.props.url).toBe(
-      'https://app.example.com/verify?token=xyz',
-    )
-    expect(call.react.props.imageUrl).toBe(
-      'https://app.example.com/logo512.png',
-    )
+    expect(call.react.props.url).toBe('https://app.example.com/verify?token=xyz')
+    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
   })
 })

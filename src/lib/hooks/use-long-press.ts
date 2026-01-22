@@ -1,10 +1,4 @@
-import {
-  type MouseEvent,
-  type TouchEvent,
-  type UIEvent,
-  useMemo,
-  useRef,
-} from 'react'
+import { type MouseEvent, type TouchEvent, type UIEvent, useMemo, useRef } from 'react'
 import { isMouseEvent, isTouchEvent } from '@/lib/utils/events'
 
 export type LongPressOptions = {

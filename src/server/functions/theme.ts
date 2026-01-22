@@ -1,9 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import {
-  deleteCookie,
-  getCookie,
-  setCookie,
-} from '@tanstack/react-start/server'
+import { deleteCookie, getCookie, setCookie } from '@tanstack/react-start/server'
 import * as z from 'zod'
 import { env } from '@/lib/env/server'
 import { validate } from '@/lib/utils/validate'

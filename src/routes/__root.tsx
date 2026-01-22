@@ -1,10 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from '@tanstack/react-router'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
@@ -75,13 +70,7 @@ function RouteComponent() {
   )
 }
 
-function RootDocument({
-  children,
-  theme,
-}: {
-  children: ReactNode
-  theme: Theme
-}) {
+function RootDocument({ children, theme }: { children: ReactNode; theme: Theme }) {
   return (
     <html lang="en" className={cn(theme)} suppressHydrationWarning>
       <head>

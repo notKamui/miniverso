@@ -32,10 +32,7 @@ export function configureTransactionDb(next: any) {
   transactionDb = next
 }
 
-export function configureExport(next: {
-  pages: ExportRow[][]
-  throwOnQuery?: boolean
-}) {
+export function configureExport(next: { pages: ExportRow[][]; throwOnQuery?: boolean }) {
   exportCalls = 0
   exportPages = next.pages
   exportThrowOnQuery = Boolean(next.throwOnQuery)
@@ -72,7 +69,7 @@ function exportQueryBuilder() {
   }
 }
 
-mock.module('@/server/db', () => ({
+await mock.module('@/server/db', () => ({
   db: {
     select: (_shape: any) => ({
       from: (_table: any) => {

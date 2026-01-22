@@ -20,8 +20,7 @@ function RouteComponent() {
   const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const trimmedUserEmail = useMemo(() => userEmail.trim(), [userEmail])
-  const effectiveUserEmail =
-    trimmedUserEmail.length > 0 ? trimmedUserEmail : undefined
+  const effectiveUserEmail = trimmedUserEmail.length > 0 ? trimmedUserEmail : undefined
 
   const { isExporting, downloadExport } = useExportDownload({
     includeTimeRecorder,
@@ -48,9 +47,7 @@ function RouteComponent() {
           <Label className="flex items-center gap-2">
             <Checkbox
               checked={includeTimeRecorder}
-              onCheckedChange={(checked) =>
-                setIncludeTimeRecorder(checked === true)
-              }
+              onCheckedChange={(checked) => setIncludeTimeRecorder(checked === true)}
             />
             <span>Time recorder</span>
           </Label>
@@ -60,9 +57,7 @@ function RouteComponent() {
 
         <div className="flex flex-col gap-2">
           <h4 className={title({ h: 4 })}>User scope</h4>
-          <p className={text({ variant: 'muted' })}>
-            Leave empty to export data for all users.
-          </p>
+          <p className={text({ variant: 'muted' })}>Leave empty to export data for all users.</p>
           <div className="flex flex-col gap-2">
             <Label htmlFor="export-user-email">User email (optional)</Label>
             <Input
@@ -89,8 +84,7 @@ function RouteComponent() {
         <div className="flex flex-col gap-2">
           <h4 className={title({ h: 4 })}>Import</h4>
           <p className={text({ variant: 'muted' })}>
-            Upload a previous export file. Entries with unknown users are
-            ignored.
+            Upload a previous export file. Entries with unknown users are ignored.
           </p>
 
           <div className="flex flex-col gap-2">
@@ -155,10 +149,7 @@ function parseErrorMessage(text: string) {
   }
 }
 
-function useExportDownload(args: {
-  includeTimeRecorder: boolean
-  userEmail?: string
-}) {
+function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: string }) {
   const { includeTimeRecorder, userEmail } = args
   const [isExporting, setIsExporting] = useState(false)
 
@@ -189,10 +180,7 @@ function useExportDownload(args: {
   return { isExporting, downloadExport }
 }
 
-function useImportNdjson(args: {
-  includeTimeRecorder: boolean
-  importFile: File | null
-}) {
+function useImportNdjson(args: { includeTimeRecorder: boolean; importFile: File | null }) {
   const { includeTimeRecorder, importFile } = args
   const [isImporting, setIsImporting] = useState(false)
 

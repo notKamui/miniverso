@@ -14,15 +14,13 @@ export function requestInfoQueryOptions() {
   })
 }
 
-export const $getRequestInfo = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const request = getRequest()
-    return {
-      hints: getHints(request),
-      userPreferences: {
-        sidebar: await $getSidebarState(),
-        theme: await $getTheme(),
-      },
-    }
-  },
-)
+export const $getRequestInfo = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
+  return {
+    hints: getHints(request),
+    userPreferences: {
+      sidebar: await $getSidebarState(),
+      theme: await $getTheme(),
+    },
+  }
+})
