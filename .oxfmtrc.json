@@ -8,23 +8,15 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "lf",
-  // "experimentalSortImports": {
-  //   "groups": [
-  //     ["side-effect"],
-  //     ["builtin"],
-  //     ["external", "external-type"],
-  //     ["internal", "internal-type"],
-  //     ["parent", "parent-type"],
-  //     ["sibling", "sibling-type"],
-  //     ["index", "index-type"]
-  //   ]
-  // },
-  // "experimentalTailwindcss": {
-  //   "stylesheet": "./src/styles.css",
-  //   "attributes": ["classnames", "classNames", "className", "clsx", "class"],
-  //   "functions": ["clsx", "cn", "cva"],
-  //   "preserveWhitespace": true
-  // },
+  "experimentalSortImports": {
+    "newlinesBetween": false
+  },
+  "experimentalTailwindcss": {
+    "stylesheet": "./src/styles.css",
+    "attributes": ["classnames", "classNames", "className", "clsx", "class"],
+    "functions": ["clsx", "cn", "cva"],
+    "preserveWhitespace": true
+  },
   "ignorePatterns": [
     "**/node_modules/**",
     "**/bun.lock",

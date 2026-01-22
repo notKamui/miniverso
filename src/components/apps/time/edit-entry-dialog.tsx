@@ -1,5 +1,7 @@
-import { useForm } from '@tanstack/react-form'
 import type { MaybePromise } from 'bun'
+import { useForm } from '@tanstack/react-form'
+import type { PartialExcept } from '@/lib/utils/types'
+import type { TimeEntry } from '@/server/db/schema/time'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -14,8 +16,6 @@ import {
 } from '@/components/ui/dialog'
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
-import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/schema/time'
 
 export function EditEntryDialog({
   entry,
@@ -90,7 +90,7 @@ export function EditEntryDialog({
             form={form}
             name="description"
             label="Description"
-            className="wrap-break-word max-h-60 min-h-60 resize-none break-all"
+            className="max-h-60 min-h-60 resize-none wrap-break-word break-all"
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">

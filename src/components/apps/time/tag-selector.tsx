@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SearchIcon, TagIcon, Trash2Icon, XIcon } from 'lucide-react'
 import { useState } from 'react'
+import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { TimeEntryTag } from '@/server/db/schema/time'
 import {
   $deleteTimeEntryTag,
   getTimeEntryTagsQueryOptions,
@@ -75,7 +75,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
       <PopoverContent className="w-80" align="start">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">Saved Tags</h4>
+            <h4 className="text-sm font-medium">Saved Tags</h4>
             <Button
               type="button"
               variant="ghost"
@@ -100,11 +100,11 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
             />
           </div>
           {tags.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               No tags saved yet. Type a description and click "Save as tag" to create one.
             </p>
           ) : filteredTags.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               No tags match your search.
             </p>
           ) : (

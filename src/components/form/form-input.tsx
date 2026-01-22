@@ -1,7 +1,7 @@
+import type { ReactForm } from '@/lib/utils/types'
 import { FieldInfo } from '@/components/form/field-info'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ReactForm } from '@/lib/utils/types'
 
 export interface FormInputProps<F extends Record<string, any>> {
   type: React.HTMLInputTypeAttribute

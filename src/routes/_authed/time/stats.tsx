@@ -227,7 +227,7 @@ function RouteComponent() {
             <SelectItem value="year">Year</SelectItem>
           </SelectContent>
         </Select>
-        <div className="ml-auto text-muted-foreground text-sm max-lg:ml-0 max-lg:w-full">
+        <div className="ml-auto text-sm text-muted-foreground max-lg:ml-0 max-lg:w-full">
           Total: <span className="font-medium">{totalFormatted}</span>
         </div>
       </div>

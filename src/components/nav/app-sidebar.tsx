@@ -109,7 +109,7 @@ function Footer() {
   return (
     <SidebarFooter className="overflow-hidden">
       <div
-        className={`whitespace-nowrap px-2 text-muted-foreground text-xs transition-all duration-300 ease-out ${
+        className={`px-2 text-xs whitespace-nowrap text-muted-foreground transition-all duration-300 ease-out ${
           open ? 'w-auto translate-x-0 opacity-100' : 'w-0 -translate-x-full opacity-0'
         }`}
       >

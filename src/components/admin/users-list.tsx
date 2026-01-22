@@ -1,3 +1,4 @@
+import type { InferSelectModel } from 'drizzle-orm'
 import {
   type ColumnDef,
   flexRender,
@@ -8,9 +9,9 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table'
-import type { InferSelectModel } from 'drizzle-orm'
 import { ChevronDown, ChevronLeft, ChevronRight, MoreVerticalIcon, Trash2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import type { user } from '@/server/db/schema'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -39,7 +40,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useDebouncedEffect } from '@/lib/hooks/use-debounce'
 import { Time } from '@/lib/utils/time'
-import type { user } from '@/server/db/schema'
 
 function formatDate(date: string | Date) {
   return Time.from(date).formatDay({ short: true })
@@ -88,7 +88,7 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
               <div className="truncate font-medium">{u.name}</div>
               <Tooltip delayDuration={700}>
                 <TooltipTrigger asChild>
-                  <div className="truncate text-muted-foreground text-sm">
+                  <div className="truncate text-sm text-muted-foreground">
                     ID: {u.id.slice(0, 8)}...
                   </div>
                 </TooltipTrigger>
@@ -115,7 +115,7 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
         const u = row.original
         return (
           <span
-            className={`inline-flex items-center rounded-full px-2 py-1 font-medium text-xs ${
+            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
               u.role === 'admin'
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
@@ -135,7 +135,7 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
         const u = row.original
         return (
           <span
-            className={`inline-flex items-center rounded-full px-2 py-1 font-medium text-xs ${
+            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
               u.emailVerified
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                 : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
@@ -153,7 +153,7 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
       header: 'Joined',
       cell: ({ row }) => {
         const u = row.original
-        return <span className="text-muted-foreground text-sm">{formatDate(u.createdAt)}</span>
+        return <span className="text-sm text-muted-foreground">{formatDate(u.createdAt)}</span>
       },
     },
   ]
@@ -262,7 +262,7 @@ export function UsersList({
     <div className="w-full space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div>
-          <label htmlFor="users-search" className="mb-1 block font-medium text-sm">
+          <label htmlFor="users-search" className="mb-1 block text-sm font-medium">
             Search
           </label>
           <Input
@@ -275,7 +275,7 @@ export function UsersList({
         </div>
 
         <div>
-          <label htmlFor="users-role" className="mb-1 block font-medium text-sm">
+          <label htmlFor="users-role" className="mb-1 block text-sm font-medium">
             Role
           </label>
           <Select
@@ -382,7 +382,7 @@ export function UsersList({
           >
             <ChevronLeft />
           </Button>
-          <div className="text-muted-foreground text-sm">
+          <div className="text-sm text-muted-foreground">
             Page {page} / {Math.max(totalPages, 1)} • {total} users
           </div>
           <Button

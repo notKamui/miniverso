@@ -1,9 +1,9 @@
-import { createContext, useContext, useId, useMemo } from 'react'
-import * as RechartsPrimitive from 'recharts'
 import type { LegendPayload } from 'recharts/types/component/DefaultLegendContent'
 import type { NameType, Payload, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import type { Props as LegendProps } from 'recharts/types/component/Legend'
 import type { TooltipContentProps } from 'recharts/types/component/Tooltip'
+import { createContext, useContext, useId, useMemo } from 'react'
+import * as RechartsPrimitive from 'recharts'
 import { cn } from '@/lib/utils/cn'
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -84,7 +84,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex min-h-0 min-w-0 justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-hidden [&_.recharts-surface]:outline-hidden",
+          "flex min-h-0 min-w-0 justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className,
         )}
         {...props}
@@ -250,7 +250,7 @@ function ChartTooltipContent({
                       </span>
                     </div>
                     {item.value && (
-                      <span className="font-medium font-mono text-foreground tabular-nums">
+                      <span className="font-mono font-medium text-foreground tabular-nums">
                         {item.value.toLocaleString()}
                       </span>
                     )}

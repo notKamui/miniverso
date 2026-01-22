@@ -17,12 +17,7 @@
     "suspicious": "warn"
   },
   "rules": {
-    "typescript/consistent-type-imports": [
-      "warn",
-      {
-        "fixStyle": "inline-type-imports"
-      }
-    ],
+    "typescript/consistent-type-imports": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-array-index-key": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
@@ -38,6 +33,12 @@
     "@typescript-eslint/no-inferrable-types": "error",
     "no-else-return": "error",
     "no-for-each": "off",
-    "jsx-a11y/alt-text": "off"
+    "jsx-a11y/alt-text": "off",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ]
   }
 }

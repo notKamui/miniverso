@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
 import { UserButton } from '@daveyplate/better-auth-ui'
 import { Link, linkOptions, useRouteContext } from '@tanstack/react-router'
 import { ShieldIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import {
