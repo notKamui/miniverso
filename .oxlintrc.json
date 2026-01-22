@@ -29,12 +29,7 @@
     "no-else-return": "error",
     "unicorn/no-array-for-each": "warn",
     "jsx-a11y/alt-text": "off",
-    "import/no-unassigned-import": [
-      "warn",
-      {
-        "allow": ["**/*.css"]
-      }
-    ],
+    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
     "typescript/no-deprecated": "error"
   }
 }

@@ -8,9 +8,7 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "lf",
-  "experimentalSortImports": {
-    "newlinesBetween": false
-  },
+  "experimentalSortImports": { "newlinesBetween": false },
   "experimentalTailwindcss": {
     "stylesheet": "./src/styles.css",
     "attributes": ["classnames", "classNames", "className", "clsx", "class"],
