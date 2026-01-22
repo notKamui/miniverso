@@ -27,7 +27,6 @@
     "@typescript-eslint/prefer-enum-initializers": "error",
     "react/self-closing-comp": "error",
     "react/react-in-jsx-scope": "off",
-    "one-var": "off",
     "no-template-curly-in-string": "error",
     "@typescript-eslint/prefer-number-starts-ends-with": "error",
     "@typescript-eslint/no-inferrable-types": "error",
