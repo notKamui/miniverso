@@ -17,6 +17,12 @@
     "suspicious": "warn"
   },
   "rules": {
+    "typescript/consistent-type-imports": [
+      "warn",
+      {
+        "fixStyle": "inline-type-imports"
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-array-index-key": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
