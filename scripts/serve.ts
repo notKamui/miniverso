@@ -322,35 +322,31 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
 
       if (loaded.length > 0) {
         console.log('\n📁 Preloaded into memory:')
-        loaded
-          .toSorted((a, b) => a.route.localeCompare(b.route))
-          .forEach((file) => {
-            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
-            const paddedPath = file.route.padEnd(maxPathLength)
-            const gzSize = gzSizes[file.route]
-            if (gzSize) {
-              const gzStr = `${formatKB(gzSize).padStart(7)} kB`
-              console.log(`   ${paddedPath} ${sizeStr} │ gzip: ${gzStr}`)
-            } else {
-              console.log(`   ${paddedPath} ${sizeStr}`)
-            }
-          })
+        for (const file of loaded.toSorted((a, b) => a.route.localeCompare(b.route))) {
+          const sizeStr = `${formatKB(file.size).padStart(7)} kB`
+          const paddedPath = file.route.padEnd(maxPathLength)
+          const gzSize = gzSizes[file.route]
+          if (gzSize) {
+            const gzStr = `${formatKB(gzSize).padStart(7)} kB`
+            console.log(`   ${paddedPath} ${sizeStr} │ gzip: ${gzStr}`)
+          } else {
+            console.log(`   ${paddedPath} ${sizeStr}`)
+          }
+        }
       }
 
       if (skipped.length > 0) {
         console.log('\n💾 Served on-demand:')
-        skipped
-          .toSorted((a, b) => a.route.localeCompare(b.route))
-          .forEach((file) => {
-            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
-            const paddedPath = file.route.padEnd(maxPathLength)
-            console.log(`   ${paddedPath} ${sizeStr}`)
-          })
+        for (const file of skipped.toSorted((a, b) => a.route.localeCompare(b.route))) {
+          const sizeStr = `${formatKB(file.size).padStart(7)} kB`
+          const paddedPath = file.route.padEnd(maxPathLength)
+          console.log(`   ${paddedPath} ${sizeStr}`)
+        }
       }
 
       if (VERBOSE) {
         console.log('\n📊 Detailed file information:')
-        allFiles.forEach((file) => {
+        for (const file of allFiles) {
           const isPreloaded = loaded.includes(file)
           const status = isPreloaded ? '[MEMORY]' : '[ON-DEMAND]'
           const reason =
@@ -360,7 +356,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
                 ? ' (filtered)'
                 : ''
           console.log(`   ${status.padEnd(12)} ${file.route} - ${file.type}${reason}`)
-        })
+        }
       }
     }
 
