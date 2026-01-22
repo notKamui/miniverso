@@ -10,6 +10,27 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
+
+  "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.classAttributes": ["classnames", "classNames", "className", "clsx"],
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+
+  "prettier.enable": false,
+  "eslint.enable": false,
+  "biome.enabled": false,
+  "oxc.enable": true,
+  "oxc.typeAware": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
@@ -41,22 +62,5 @@
       "source.organizeImports": "never",
       "source.fixAll": "never"
     }
-  },
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit",
-    "source.fixAll": "explicit"
-  },
-  "oxc.typeAware": true,
-  "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
-  "tailwindCSS.emmetCompletions": true,
-  "tailwindCSS.classAttributes": ["classnames", "classNames", "className", "clsx"],
-  "tailwindCSS.experimental.classRegex": [
-    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ],
-  "prettier.enable": false,
-  "eslint.enable": false,
-  "biome.enabled": false,
-  "oxc.enable": true
+  }
 }
