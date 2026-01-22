@@ -24,7 +24,7 @@ const TimeRecorderTimeEntryLineSchemaV1 = z.strictObject({
   type: z.literal('timeRecorder.timeEntry'),
   version: z.literal(1),
   sourceId: z.string().min(1),
-  userEmail: z.string().trim().email(),
+  userEmail: z.email().trim(),
   startedAt: z.string().min(1),
   endedAt: z.string().min(1).nullable(),
   description: z.string().nullable(),

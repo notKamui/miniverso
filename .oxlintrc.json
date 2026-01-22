@@ -39,6 +39,7 @@
       {
         "allow": ["**/*.css"]
       }
-    ]
+    ],
+    "typescript/no-deprecated": "error"
   }
 }
