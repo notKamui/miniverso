@@ -1,6 +1,16 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "import", "react", "react-perf", "jsx-a11y", "oxc", "unicorn"],
+  "plugins": [
+    "eslint",
+    "typescript",
+    "import",
+    "react",
+    "react-perf",
+    "jsx-a11y",
+    "oxc",
+    "unicorn",
+    "promise"
+  ],
   "env": {
     "browser": true,
     "node": true
@@ -20,17 +30,49 @@
     "typescript/consistent-type-imports": "error",
     "typescript/no-explicit-any": "off",
     "typescript/no-unsafe-type-assertion": "off",
-    "no-parameter-assign": "error",
-    "default-param-last": "error",
+    "typescript/no-deprecated": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/prefer-enum-initializers": "warn",
+    "typescript/no-unnecessary-type-constraint": "warn",
+    "typescript/no-unnecessary-parameter-property-assignment": "error",
+    "typescript/no-inferrable-types": "error",
+
     "react/self-closing-comp": "error",
     "react/react-in-jsx-scope": "off",
-    "no-template-curly-in-string": "error",
-    "typescript/no-inferrable-types": "error",
-    "no-else-return": "error",
-    "unicorn/no-array-for-each": "warn",
-    "jsx-a11y/alt-text": "off",
+    "react/button-has-type": "error",
+    "react/rules-of-hooks": "error",
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-useless-fragment": "warn",
+    "react/jsx-props-no-spread-multi": "error",
+    "react/forward-ref-uses-ref": "warn",
+    "react/exhaustive-deps": "warn",
+
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
-    "typescript/no-deprecated": "error",
-    "react/button-has-type": "error"
+    "import/no-duplicates": "warn",
+
+    "eslint/no-param-reassign": "error",
+    "eslint/default-param-last": "error",
+    "eslint/no-template-curly-in-string": "error",
+    "eslint/no-else-return": "error",
+    "eslint/array-callback-return": "error",
+    "eslint/no-unused-private-class-members": "error",
+    "eslint/no-useless-constructor": "warn",
+    "eslint/no-throw-literal": "warn",
+
+    "unicorn/no-array-for-each": "warn",
+    "unicorn/no-useless-fallback-in-spread": "error",
+    "unicorn/no-unnecessary-await": "error",
+    "unicorn/prefer-string-starts-ends-with": "warn",
+    "unicorn/prefer-set-size": "error",
+    "unicorn/no-useless-rename": "error",
+    "unicorn/switch-case-braces": "warn",
+    "unicorn/prefer-optional-catch-binding": "warn",
+    "unicorn/require-array-join-separator": "warn",
+
+    "promise/always-return": "warn",
+    "promise/no-multiple-resolved": "warn",
+
+    "jsx-a11y/alt-text": "off"
   }
 }

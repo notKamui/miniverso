@@ -73,29 +73,37 @@ export class Time {
   shift(type: ShiftType, count: number): Time {
     const date = new Date(this.date)
     switch (type) {
-      case 'years':
+      case 'years': {
         date.setFullYear(date.getFullYear() + count)
         break
-      case 'months':
+      }
+      case 'months': {
         date.setMonth(date.getMonth() + count)
         break
-      case 'days':
+      }
+      case 'days': {
         date.setDate(date.getDate() + count)
         break
-      case 'hours':
+      }
+      case 'hours': {
         date.setHours(date.getHours() + count)
         break
-      case 'minutes':
+      }
+      case 'minutes': {
         date.setMinutes(date.getMinutes() + count)
         break
-      case 'seconds':
+      }
+      case 'seconds': {
         date.setSeconds(date.getSeconds() + count)
         break
-      case 'milliseconds':
+      }
+      case 'milliseconds': {
         date.setMilliseconds(date.getMilliseconds() + count)
         break
-      default:
+      }
+      default: {
         throw new Error('Unknown shift type')
+      }
     }
     return new Time(date)
   }
