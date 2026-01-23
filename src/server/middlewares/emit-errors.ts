@@ -17,6 +17,8 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
             { sendToast: true },
           ),
         )
+      } else if (error instanceof DOMException && error.name === 'AbortError') {
+        // Ignore abort errors
       } else if (
         !!error &&
         typeof error === 'object' &&
