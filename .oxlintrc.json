@@ -30,6 +30,7 @@
     "unicorn/no-array-for-each": "warn",
     "jsx-a11y/alt-text": "off",
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
-    "typescript/no-deprecated": "error"
+    "typescript/no-deprecated": "error",
+    "react/button-has-type": "error"
   }
 }
