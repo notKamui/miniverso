@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": [
-    "eslint",
     "typescript",
     "import",
     "react",
@@ -51,14 +50,14 @@
     "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
     "import/no-duplicates": "warn",
 
-    "eslint/no-param-reassign": "error",
-    "eslint/default-param-last": "error",
-    "eslint/no-template-curly-in-string": "error",
-    "eslint/no-else-return": "error",
-    "eslint/array-callback-return": "error",
-    "eslint/no-unused-private-class-members": "error",
-    "eslint/no-useless-constructor": "warn",
-    "eslint/no-throw-literal": "warn",
+    "no-param-reassign": "error",
+    "default-param-last": "error",
+    "no-template-curly-in-string": "error",
+    "no-else-return": "error",
+    "array-callback-return": "error",
+    "no-unused-private-class-members": "error",
+    "no-useless-constructor": "warn",
+    "no-throw-literal": "warn",
 
     "unicorn/no-array-for-each": "warn",
     "unicorn/no-useless-fallback-in-spread": "error",
