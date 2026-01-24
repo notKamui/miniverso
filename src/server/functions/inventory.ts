@@ -1,7 +1,22 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, count, desc, eq, gte, inArray, ilike, isNotNull, isNull, like, lte, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  ilike,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
@@ -552,9 +567,7 @@ const productCreateSchema = z.object({
   vatPercent: z.number().min(0).max(100),
   quantity: z.number().int().min(0),
   tagIds: z.array(z.uuid()).default([]),
-  productionCosts: z
-    .array(z.object({ labelId: z.uuid(), amount: z.number().min(0) }))
-    .default([]),
+  productionCosts: z.array(z.object({ labelId: z.uuid(), amount: z.number().min(0) })).default([]),
 })
 
 export const $createProduct = createServerFn({ method: 'POST' })
@@ -762,8 +775,7 @@ export const $getOrders = createServerFn({ method: 'GET' })
     }
     if (startDate) conditions.push(gte(order.createdAt, new Date(startDate)))
     if (endDate) {
-      const d =
-        endDate.length === 10 ? new Date(`${endDate}T23:59:59.999Z`) : new Date(endDate)
+      const d = endDate.length === 10 ? new Date(`${endDate}T23:59:59.999Z`) : new Date(endDate)
       conditions.push(lte(order.createdAt, d))
     }
     const where = and(...conditions)
@@ -792,10 +804,7 @@ export const $getOrders = createServerFn({ method: 'GET' })
     }
 
     const [ordersRows, totalsRows] = await Promise.all([
-      db
-        .select(orderListFields)
-        .from(order)
-        .where(inArray(order.id, ids)),
+      db.select(orderListFields).from(order).where(inArray(order.id, ids)),
       db
         .select({
           orderId: orderItem.orderId,

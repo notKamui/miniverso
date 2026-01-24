@@ -1,20 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 import {
   $createOrder,
+  $getNextOrderReference,
+  getOrderReferencePrefixesQueryOptions,
   getProductsQueryOptions,
   ordersQueryKey,
   priceTaxIncluded,
@@ -31,15 +35,31 @@ type CartItem = {
 export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: productsPage } = useQuery(
-    getProductsQueryOptions({ page: 1, size: 100, archived: 'active' }),
-  )
-  const products = productsPage?.items ?? []
-  const [reference, setReference] = useState('')
+  const { data: prefixes = [] } = useQuery(getOrderReferencePrefixesQueryOptions())
+  const [prefixId, setPrefixId] = useState('')
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])
   const [addProductId, setAddProductId] = useState('')
   const [addQty, setAddQty] = useState('1')
+  const [productSearch, setProductSearch] = useState('')
+  const debouncedProductSearch = useDebounce(productSearch, 300)
+
+  const productSearchParams = {
+    page: 1,
+    size: 50,
+    archived: 'active' as const,
+    ...(debouncedProductSearch.trim() && { search: debouncedProductSearch.trim() }),
+  }
+  const { data: productsPage, isFetching: productsLoading } = useQuery(
+    getProductsQueryOptions(productSearchParams),
+  )
+  const products = productsPage?.items ?? []
+
+  const { data: nextReference } = useQuery({
+    queryKey: ['next-order-ref', prefixId],
+    queryFn: () => $getNextOrderReference({ data: { prefixId } }),
+    enabled: Boolean(prefixId),
+  })
 
   const createMut = useMutation({
     mutationFn: $createOrder,
@@ -74,6 +94,7 @@ export function OrderCart() {
     }
     setAddProductId('')
     setAddQty('1')
+    setProductSearch('')
   }
 
   function removeItem(productId: string) {
@@ -86,9 +107,12 @@ export function OrderCart() {
     0,
   )
 
+  const hasPrefixes = prefixes.length > 0
+  const canCreate = hasPrefixes && items.length > 0 && prefixId
+
   function handleSubmit(status: 'prepared' | 'paid') {
-    if (!reference.trim()) {
-      toast.error('Reference is required')
+    if (!prefixId) {
+      toast.error('Select a reference prefix')
       return
     }
     if (items.length === 0) {
@@ -97,7 +121,7 @@ export function OrderCart() {
     }
     createMut.mutate({
       data: {
-        reference: reference.trim(),
+        prefixId,
         description: description.trim() || undefined,
         status,
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -105,18 +129,40 @@ export function OrderCart() {
     })
   }
 
+  if (!hasPrefixes) {
+    return (
+      <div className="flex max-w-2xl flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
+          Add at least one order reference prefix in Settings to create orders.
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/inventory/settings">Inventory Settings</Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex max-w-2xl flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="reference">Reference</Label>
-          <Input
-            id="reference"
-            value={reference}
-            onChange={(e) => setReference(e.target.value)}
-            placeholder="e.g. ORD-001"
-            required
-          />
+          <Label>Reference prefix</Label>
+          <Combobox value={prefixId || null} onValueChange={(v) => setPrefixId(v ?? '')}>
+            <ComboboxInput placeholder="Select prefix" />
+            <ComboboxContent>
+              <ComboboxList>
+                {prefixes.map((p) => (
+                  <ComboboxItem key={p.id} value={p.id}>
+                    {p.prefix}
+                  </ComboboxItem>
+                ))}
+                <ComboboxEmpty>No prefixes. Add one in Settings.</ComboboxEmpty>
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+          {nextReference && (
+            <p className="text-xs text-muted-foreground">Next reference: {nextReference}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description (optional)</Label>
@@ -131,18 +177,27 @@ export function OrderCart() {
       <div className="space-y-2">
         <Label>Add product</Label>
         <div className="flex gap-2">
-          <Select value={addProductId} onValueChange={setAddProductId}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Product" />
-            </SelectTrigger>
-            <SelectContent>
-              {products.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name} (stock: {p.quantity})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex-1">
+            <Combobox
+              value={addProductId || null}
+              onValueChange={(v) => setAddProductId(v ?? '')}
+              onInputValueChange={(v) => setProductSearch(v)}
+            >
+              <ComboboxInput placeholder="Search by name or SKU…" />
+              <ComboboxContent>
+                <ComboboxList>
+                  {products.map((p) => (
+                    <ComboboxItem key={p.id} value={p.id}>
+                      {p.name} ({p.sku ?? '—'}) · stock: {p.quantity}
+                    </ComboboxItem>
+                  ))}
+                  <ComboboxEmpty>
+                    {productsLoading ? 'Searching…' : 'No products. Try another search.'}
+                  </ComboboxEmpty>
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+          </div>
           <Input
             type="number"
             min="1"
@@ -197,14 +252,14 @@ export function OrderCart() {
       <div className="flex gap-2">
         <Button
           onClick={() => handleSubmit('prepared')}
-          disabled={createMut.isPending || items.length === 0}
+          disabled={createMut.isPending || !canCreate}
         >
           Create as prepared
         </Button>
         <Button
           variant="secondary"
           onClick={() => handleSubmit('paid')}
-          disabled={createMut.isPending || items.length === 0}
+          disabled={createMut.isPending || !canCreate}
         >
           Create and mark paid
         </Button>

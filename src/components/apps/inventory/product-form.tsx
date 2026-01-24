@@ -1,17 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PlusIcon, Trash2Icon } from 'lucide-react'
+import { ArchiveIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  useComboboxAnchor,
+} from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   $createInventoryTag,
@@ -54,6 +59,7 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
   const [initialized, setInitialized] = useState(false)
   const [newTagName, setNewTagName] = useState('')
   const [newLabelName, setNewLabelName] = useState('')
+  const chipsAnchorRef = useComboboxAnchor()
 
   useEffect(() => {
     if (isEdit && existing && !initialized) {
@@ -115,10 +121,6 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
   const priceExcl = Number.parseFloat(priceTaxFree) || 0
   const vat = Number.parseFloat(vatPercent) || 0
   const priceIncl = priceTaxIncluded(priceExcl, vat)
-
-  function toggleTag(id: string) {
-    setTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
-  }
 
   function addProductionCost() {
     const first = labels[0]?.id
@@ -241,22 +243,29 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
 
       <div className="space-y-2">
         <Label>Tags</Label>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => toggleTag(t.id)}
-              className={`rounded-full border px-3 py-1 text-sm ${
-                tagIds.includes(t.id)
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-input bg-background hover:bg-accent'
-              }`}
-            >
-              {t.name}
-            </button>
-          ))}
-        </div>
+        <Combobox
+          multiple
+          value={tagIds}
+          onValueChange={(v) => setTagIds(Array.isArray(v) ? v : [])}
+        >
+          <ComboboxChips ref={chipsAnchorRef}>
+            {tagIds.map((id) => {
+              const t = tags.find((x) => x.id === id)
+              return <ComboboxChip key={id}>{t?.name ?? id}</ComboboxChip>
+            })}
+            <ComboboxChipsInput placeholder="Add tag…" />
+          </ComboboxChips>
+          <ComboboxContent anchor={chipsAnchorRef}>
+            <ComboboxList>
+              {tags.map((t) => (
+                <ComboboxItem key={t.id} value={t.id}>
+                  {t.name}
+                </ComboboxItem>
+              ))}
+              <ComboboxEmpty>No tags. Add one below.</ComboboxEmpty>
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
         <div className="flex gap-2">
           <Input
             value={newTagName}
@@ -310,21 +319,24 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
         <div className="space-y-2">
           {productionCosts.map((row, i) => (
             <div key={i} className="flex gap-2">
-              <Select
-                value={row.labelId}
-                onValueChange={(v) => updateProductionCost(i, 'labelId', v)}
-              >
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Label" />
-                </SelectTrigger>
-                <SelectContent>
-                  {labels.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex-1">
+                <Combobox
+                  value={row.labelId || null}
+                  onValueChange={(v) => updateProductionCost(i, 'labelId', v ?? '')}
+                >
+                  <ComboboxInput placeholder="Label" />
+                  <ComboboxContent>
+                    <ComboboxList>
+                      {labels.map((l) => (
+                        <ComboboxItem key={l.id} value={l.id}>
+                          {l.name}
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No labels. Add one above.</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+              </div>
               <Input
                 type="number"
                 step="0.01"
@@ -348,13 +360,29 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={pending}>
           {isEdit ? 'Update' : 'Create'}
         </Button>
         <Button type="button" variant="outline" onClick={onSuccess}>
           Cancel
         </Button>
+        {isEdit && existing && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              updateMut.mutate({
+                data: { id: productId!, archivedAt: !existing.product.archivedAt },
+              })
+            }
+            disabled={updateMut.isPending}
+            className="gap-2"
+          >
+            <ArchiveIcon className="size-4" />
+            {existing.product.archivedAt ? 'Unarchive' : 'Archive'}
+          </Button>
+        )}
       </div>
     </form>
   )

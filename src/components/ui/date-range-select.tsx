@@ -58,9 +58,7 @@ export function DateRangeSelect({
   }
 
   const triggerLabel =
-    startDate && endDate
-      ? `${formatDate(startDate)} – ${formatDate(endDate)}`
-      : 'Select date range'
+    startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)}` : 'Select date range'
 
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>

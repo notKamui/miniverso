@@ -24,6 +24,7 @@ import { Route as ApiAdminExportRouteImport } from './routes/api/admin/export'
 import { Route as AuthedTimeChar123DayChar125RouteImport } from './routes/_authed/time/{-$day}'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
 import { Route as AuthedInventoryStatsRouteImport } from './routes/_authed/inventory/stats'
+import { Route as AuthedInventorySettingsRouteImport } from './routes/_authed/inventory/settings'
 import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
 import { Route as AuthedAdminExportRouteImport } from './routes/_authed/admin/export'
 import { Route as AuthedInventoryOrdersRouteRouteImport } from './routes/_authed/inventory/orders/route'
@@ -108,6 +109,11 @@ const AuthedInventoryStatsRoute = AuthedInventoryStatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => AuthedInventoryRouteRoute,
 } as any)
+const AuthedInventorySettingsRoute = AuthedInventorySettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
 const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
+  '/inventory/settings': typeof AuthedInventorySettingsRoute
   '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
   '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/auth/$pathname': typeof AuthPathnameRoute
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
+  '/inventory/settings': typeof AuthedInventorySettingsRoute
   '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
   '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/_authed/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/_authed/admin/export': typeof AuthedAdminExportRoute
   '/_authed/admin/users': typeof AuthedAdminUsersRoute
+  '/_authed/inventory/settings': typeof AuthedInventorySettingsRoute
   '/_authed/inventory/stats': typeof AuthedInventoryStatsRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
   '/_authed/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/inventory/orders'
     | '/admin/export'
     | '/admin/users'
+    | '/inventory/settings'
     | '/inventory/stats'
     | '/time/stats'
     | '/time/{-$day}'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/auth/$pathname'
     | '/admin/export'
     | '/admin/users'
+    | '/inventory/settings'
     | '/inventory/stats'
     | '/time/stats'
     | '/time/{-$day}'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authed/inventory/orders'
     | '/_authed/admin/export'
     | '/_authed/admin/users'
+    | '/_authed/inventory/settings'
     | '/_authed/inventory/stats'
     | '/_authed/time/stats'
     | '/_authed/time/{-$day}'
@@ -416,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedInventoryStatsRouteImport
       parentRoute: typeof AuthedInventoryRouteRoute
     }
+    '/_authed/inventory/settings': {
+      id: '/_authed/inventory/settings'
+      path: '/settings'
+      fullPath: '/inventory/settings'
+      preLoaderRoute: typeof AuthedInventorySettingsRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
     '/_authed/admin/users': {
       id: '/_authed/admin/users'
       path: '/users'
@@ -510,6 +529,7 @@ const AuthedInventoryOrdersRouteRouteWithChildren =
 
 interface AuthedInventoryRouteRouteChildren {
   AuthedInventoryOrdersRouteRoute: typeof AuthedInventoryOrdersRouteRouteWithChildren
+  AuthedInventorySettingsRoute: typeof AuthedInventorySettingsRoute
   AuthedInventoryStatsRoute: typeof AuthedInventoryStatsRoute
   AuthedInventoryIndexRoute: typeof AuthedInventoryIndexRoute
   AuthedInventoryProductsProductIdRoute: typeof AuthedInventoryProductsProductIdRoute
@@ -518,6 +538,7 @@ interface AuthedInventoryRouteRouteChildren {
 
 const AuthedInventoryRouteRouteChildren: AuthedInventoryRouteRouteChildren = {
   AuthedInventoryOrdersRouteRoute: AuthedInventoryOrdersRouteRouteWithChildren,
+  AuthedInventorySettingsRoute: AuthedInventorySettingsRoute,
   AuthedInventoryStatsRoute: AuthedInventoryStatsRoute,
   AuthedInventoryIndexRoute: AuthedInventoryIndexRoute,
   AuthedInventoryProductsProductIdRoute: AuthedInventoryProductsProductIdRoute,
