@@ -44,13 +44,13 @@ function AdminDashboard() {
   } = Route.useLoaderData({ select: ({ usersPage }) => ({ usersPage }) })
   const { q, role } = Route.useSearch()
 
-  function setSearch(next: {
+  async function setSearch(next: {
     q?: string | undefined
     role?: 'all' | 'admin' | 'user' | undefined
     page?: number | undefined
     size?: number | undefined
   }) {
-    navigate({
+    await navigate({
       to: '.',
       search: {
         q,

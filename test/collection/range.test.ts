@@ -12,12 +12,8 @@ describe('Collection.range', () => {
   })
 
   it('throws when lastExcluded < first', () => {
-    expect(() => Collection.range(5, 4)).toThrow(
-      'lastExcluded must be greater than first',
-    )
-    expect(() => Collection.range(1, -1)).toThrow(
-      'lastExcluded must be greater than first',
-    )
+    expect(() => Collection.range(5, 4)).toThrow('lastExcluded must be greater than first')
+    expect(() => Collection.range(1, -1)).toThrow('lastExcluded must be greater than first')
   })
 
   it('handles large ranges efficiently enough (spot check boundaries)', () => {

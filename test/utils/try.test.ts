@@ -37,17 +37,15 @@ describe('tryAsync', () => {
   })
 
   it('resolves to [error, null] when rejected error is catchable', async () => {
-    const [err, res] = await tryAsync(Promise.reject(new CustomError('bad')), [
-      CustomError,
-    ])
+    const [err, res] = await tryAsync(Promise.reject(new CustomError('bad')), [CustomError])
     expect(res).toBeNull()
     expect(err).toBeInstanceOf(CustomError)
     expect(err?.message).toBe('bad')
   })
 
-  it('rethrows when rejected error is not catchable', async () => {
-    await expect(() =>
-      tryAsync(Promise.reject(new OtherError('ouch')), [CustomError]),
+  it('rethrows when rejected error is not catchable', () => {
+    expect(
+      async () => await tryAsync(Promise.reject(new OtherError('ouch')), [CustomError]),
     ).toThrow()
   })
 })

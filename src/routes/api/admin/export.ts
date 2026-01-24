@@ -7,7 +7,7 @@ import { user } from '@/server/db/schema/auth'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
-const MAX_BUFFER_SIZE = 64000
+const MAX_BUFFER_SIZE = 64_000
 const CHUNK_SIZE = 1000
 
 const ExportQuerySchema = z.object({
@@ -71,7 +71,7 @@ async function exportTimeRecorderNdjsonV1(args: {
       })
       .from(timeEntry)
       .innerJoin(user, eq(timeEntry.userId, user.id))
-      .where(whereParts.length ? and(...whereParts) : undefined)
+      .where(whereParts.length > 0 ? and(...whereParts) : undefined)
       .orderBy(asc(timeEntry.startedAt), asc(timeEntry.id))
       .limit(CHUNK_SIZE)
 
@@ -99,7 +99,7 @@ async function exportTimeRecorderNdjsonV1(args: {
       lastId = row.id
     }
 
-    if (buffer.length) {
+    if (buffer.length > 0) {
       controller.enqueue(encoder.encode(buffer))
     }
   }
@@ -109,7 +109,7 @@ export const Route = createFileRoute('/api/admin/export')({
   server: {
     middleware: [$$adminApi],
     handlers: {
-      GET: async ({ request }) => {
+      GET: ({ request }) => {
         const url = new URL(request.url)
         const rawApps = url.searchParams
           .getAll('apps')
@@ -122,27 +122,17 @@ export const Route = createFileRoute('/api/admin/export')({
         })
 
         if (!parsed.success) {
-          return new Response(
-            JSON.stringify({
-              error: parsed.error.issues[0]?.message ?? 'Invalid input',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
+          return Response.json(
+            { error: parsed.error.issues[0]?.message ?? 'Invalid input' },
+            { status: 400 },
           )
         }
 
         const apps = parsed.data.apps
-        if (!apps.length) {
-          return new Response(
-            JSON.stringify({
-              error: 'Select at least one application to export',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
+        if (apps.length === 0) {
+          return Response.json(
+            { error: 'Select at least one application to export' },
+            { status: 400 },
           )
         }
 
@@ -159,9 +149,7 @@ export const Route = createFileRoute('/api/admin/export')({
                 format: 'miniverso.export.ndjson',
                 version: 1,
                 exportedAt,
-                filters: parsed.data.userEmail
-                  ? { userEmail: parsed.data.userEmail }
-                  : {},
+                filters: parsed.data.userEmail ? { userEmail: parsed.data.userEmail } : {},
                 apps,
               }
               controller.enqueue(encoder.encode(`${JSON.stringify(meta)}\n`))

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "singleQuote": true,
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "experimentalSortImports": { "newlinesBetween": false },
+  "experimentalTailwindcss": {
+    "stylesheet": "./src/styles.css",
+    "attributes": ["classnames", "classNames", "className", "clsx", "class"],
+    "functions": ["clsx", "cn", "cva"],
+    "preserveWhitespace": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/bun.lock",
+    "**/src/routeTree.gen.ts",
+    "**/.drizzle/**",
+    "**/dist/**"
+  ]
+}

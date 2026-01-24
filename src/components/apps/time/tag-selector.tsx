@@ -1,14 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SearchIcon, TagIcon, Trash2Icon, XIcon } from 'lucide-react'
 import { useState } from 'react'
+import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import type { TimeEntryTag } from '@/server/db/schema/time'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   $deleteTimeEntryTag,
   getTimeEntryTagsQueryOptions,
@@ -20,10 +16,7 @@ type TagSelectorProps = {
   disabled?: boolean
 }
 
-export function TagSelector({
-  onSelectTag,
-  disabled = false,
-}: TagSelectorProps) {
+export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps) {
   const queryClient = useQueryClient()
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,9 +27,7 @@ export function TagSelector({
     mutationFn: (id: string) => $deleteTimeEntryTag({ data: { id } }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: timeEntryTagsQueryKey })
-      const previousTags = queryClient.getQueryData<TimeEntryTag[]>(
-        timeEntryTagsQueryKey,
-      )
+      const previousTags = queryClient.getQueryData<TimeEntryTag[]>(timeEntryTagsQueryKey)
       queryClient.setQueryData<TimeEntryTag[]>(
         timeEntryTagsQueryKey,
         (old) => old?.filter((tag) => tag.id !== id) ?? [],
@@ -48,8 +39,8 @@ export function TagSelector({
         queryClient.setQueryData(timeEntryTagsQueryKey, context.previousTags)
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
     },
   })
 
@@ -84,7 +75,7 @@ export function TagSelector({
       <PopoverContent className="w-80" align="start">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">Saved Tags</h4>
+            <h4 className="text-sm font-medium">Saved Tags</h4>
             <Button
               type="button"
               variant="ghost"
@@ -109,22 +100,28 @@ export function TagSelector({
             />
           </div>
           {tags.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
-              No tags saved yet. Type a description and click "Save as tag" to
-              create one.
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
             </p>
           ) : filteredTags.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               No tags match your search.
             </p>
           ) : (
             <div className="max-h-64 space-y-1 overflow-y-auto">
               {filteredTags.map((tag) => (
-                <button
+                <div
                   key={tag.id}
-                  type="button"
-                  className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                  role="button"
+                  tabIndex={0}
+                  className="group flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
                   onClick={() => handleSelectTag(tag)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleSelectTag(tag)
+                    }
+                  }}
                 >
                   <span className="flex-1 truncate">{tag.description}</span>
                   <Button
@@ -138,7 +135,7 @@ export function TagSelector({
                   >
                     <Trash2Icon className="size-3.5 text-destructive" />
                   </Button>
-                </button>
+                </div>
               ))}
             </div>
           )}

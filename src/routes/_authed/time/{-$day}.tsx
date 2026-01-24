@@ -4,21 +4,14 @@ import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { Time } from '@/lib/utils/time'
-import {
-  $deleteTimeEntries,
-  getTimeEntriesByDayQueryOptions,
-} from '@/server/functions/time-entry'
+import { $deleteTimeEntries, getTimeEntriesByDayQueryOptions } from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
   validateSearch: z.object({
     tz: z.coerce.number().int().min(-840).max(840).optional(),
   }),
   loaderDeps: ({ search }) => ({ search }),
-  loader: async ({
-    params: { day },
-    deps: { search },
-    context: { queryClient },
-  }) => {
+  loader: async ({ params: { day }, deps: { search }, context: { queryClient } }) => {
     const date = Time.from(day)
     const tzOffsetMinutes = search.tz ?? 0
 

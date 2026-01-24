@@ -1,6 +1,6 @@
+import type { ComponentProps, ReactNode } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { ChevronRight, MoreHorizontal } from 'lucide-react'
-import type { ComponentProps, ReactNode } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 const Breadcrumb = ({
@@ -14,7 +14,7 @@ const BreadcrumbList = ({ ref, className, ...props }: ComponentProps<'ol'>) => (
   <ol
     ref={ref}
     className={cn(
-      'wrap-break-word flex flex-wrap items-center gap-1.5 text-muted-foreground text-sm sm:gap-2.5',
+      'flex flex-wrap items-center gap-1.5 text-sm wrap-break-word text-muted-foreground sm:gap-2.5',
       className,
     )}
     {...props}
@@ -22,11 +22,7 @@ const BreadcrumbList = ({ ref, className, ...props }: ComponentProps<'ol'>) => (
 )
 
 const BreadcrumbItem = ({ ref, className, ...props }: ComponentProps<'li'>) => (
-  <li
-    ref={ref}
-    className={cn('inline-flex items-center gap-1.5', className)}
-    {...props}
-  />
+  <li ref={ref} className={cn('inline-flex items-center gap-1.5', className)} {...props} />
 )
 
 const BreadcrumbLink = ({
@@ -48,11 +44,7 @@ const BreadcrumbLink = ({
   )
 }
 
-const BreadcrumbPage = ({
-  ref,
-  className,
-  ...props
-}: ComponentProps<'span'>) => (
+const BreadcrumbPage = ({ ref, className, ...props }: ComponentProps<'span'>) => (
   <span
     tabIndex={-1}
     ref={ref}
@@ -63,11 +55,7 @@ const BreadcrumbPage = ({
   />
 )
 
-const BreadcrumbSeparator = ({
-  children,
-  className,
-  ...props
-}: ComponentProps<'li'>) => (
+const BreadcrumbSeparator = ({ children, className, ...props }: ComponentProps<'li'>) => (
   <li
     role="presentation"
     aria-hidden="true"
@@ -78,10 +66,7 @@ const BreadcrumbSeparator = ({
   </li>
 )
 
-const BreadcrumbEllipsis = ({
-  className,
-  ...props
-}: ComponentProps<'span'>) => (
+const BreadcrumbEllipsis = ({ className, ...props }: ComponentProps<'span'>) => (
   <span
     role="presentation"
     aria-hidden="true"

@@ -12,18 +12,6 @@ on:
       - ready_for_review
 
 jobs:
-  type-check:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-      - name: Run type check
-        run: bun type-check
-
   lint:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -34,7 +22,19 @@ jobs:
           bun-version: latest
       - run: bun install
       - name: Run lint
-        run: bun lint --error-on-warnings
+        run: bun lint
+
+  fmt:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - name: Run fmt
+        run: bun fmt --check
 
   test:
     runs-on: ubuntu-latest

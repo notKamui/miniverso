@@ -2,11 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import * as z from 'zod'
 import { CalendarSelect } from '@/components/ui/calendar-select'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import {
   Select,
   SelectContent,
@@ -93,9 +89,7 @@ const CHARTS: Record<string, Chart> = {
     }
   },
   month: (stats, time) => {
-    const daysInMonth = [1, 3, 5, 7, 8, 10, 12].includes(time.getMonth())
-      ? 31
-      : 30
+    const daysInMonth = [1, 3, 5, 7, 8, 10, 12].includes(time.getMonth()) ? 31 : 30
     const fullRange = Collection.range(1, daysInMonth + 1)
     const [y, m] = [time.getDate().getFullYear(), time.getDate().getMonth()]
     const data = fullRange.map((dayOrMonth) => {
@@ -207,8 +201,8 @@ function RouteComponent() {
       <div className="flex shrink-0 flex-row items-center gap-4 max-lg:flex-col">
         <CalendarSelect
           value={time.getDate()}
-          onChange={(date) =>
-            navigate({
+          onChange={async (date) =>
+            await navigate({
               to: '.',
               search: { day: Time.from(date).formatDayKey(), type, tz },
             })
@@ -217,8 +211,8 @@ function RouteComponent() {
         />
         <Select
           value={type}
-          onValueChange={(type: 'week' | 'month' | 'year') =>
-            navigate({
+          onValueChange={async (type: 'week' | 'month' | 'year') =>
+            await navigate({
               to: '.',
               search: { day: time.formatDayKey(), type, tz },
             })
@@ -233,19 +227,14 @@ function RouteComponent() {
             <SelectItem value="year">Year</SelectItem>
           </SelectContent>
         </Select>
-        <div className="ml-auto text-muted-foreground text-sm max-lg:ml-0 max-lg:w-full">
+        <div className="ml-auto text-sm text-muted-foreground max-lg:ml-0 max-lg:w-full">
           Total: <span className="font-medium">{totalFormatted}</span>
         </div>
       </div>
       <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1">
         <BarChart accessibilityLayer data={chart.data} margin={{ left: 20 }}>
           <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey={chart.x}
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-          />
+          <XAxis dataKey={chart.x} tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis tickFormatter={chart.format} />
           <ChartTooltip
             cursor={false}
@@ -261,12 +250,10 @@ function RouteComponent() {
             dataKey="total"
             fill="var(--color-total)"
             radius={4}
-            onClick={(data) => {
-              const dayKey = chart.getDayKey(
-                data as unknown as { dayKey: DayKey },
-              )
+            onClick={async (data) => {
+              const dayKey = chart.getDayKey(data as unknown as { dayKey: DayKey })
               if (dayKey) {
-                navigate({
+                await navigate({
                   to: '/time/{-$day}',
                   params: { day: dayKey },
                   search: { tz },

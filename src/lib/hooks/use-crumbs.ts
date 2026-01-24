@@ -11,10 +11,11 @@ function hasCrumb<T extends { loaderData?: unknown }>(
   obj: T,
 ): obj is T & { loaderData: { crumb: string } } {
   return (
-    !!obj.loaderData &&
+    Boolean(obj.loaderData) &&
+    obj.loaderData !== null &&
     typeof obj.loaderData === 'object' &&
     'crumb' in obj.loaderData &&
-    !!obj.loaderData.crumb
+    Boolean(obj.loaderData.crumb)
   )
 }
 

@@ -24,15 +24,13 @@ const TimeRecorderTimeEntryLineSchemaV1 = z.strictObject({
   type: z.literal('timeRecorder.timeEntry'),
   version: z.literal(1),
   sourceId: z.string().min(1),
-  userEmail: z.string().trim().email(),
+  userEmail: z.email().trim(),
   startedAt: z.string().min(1),
   endedAt: z.string().min(1).nullable(),
   description: z.string().nullable(),
 })
 
-type TimeRecorderTimeEntryLineV1 = z.infer<
-  typeof TimeRecorderTimeEntryLineSchemaV1
->
+type TimeRecorderTimeEntryLineV1 = z.infer<typeof TimeRecorderTimeEntryLineSchemaV1>
 
 type ImportSummaryV1 = {
   ok: true
@@ -63,7 +61,7 @@ async function* readNdjsonLines(body: ReadableStream<Uint8Array>) {
   }
 
   buffer += decoder.decode()
-  if (buffer.length) {
+  if (buffer.length > 0) {
     yield buffer
   }
 }
@@ -93,7 +91,7 @@ async function importTimeRecorderBatchV1(args: {
     })
   }
 
-  if (values.length) {
+  if (values.length > 0) {
     await db
       .insert(timeEntry)
       .values(values)
@@ -125,43 +123,25 @@ export const Route = createFileRoute('/api/admin/import')({
         const parsedQuery = ImportQuerySchema.safeParse({ apps: rawApps })
 
         if (!parsedQuery.success) {
-          return new Response(
-            JSON.stringify({
-              error: parsedQuery.error.issues[0]?.message ?? 'Invalid input',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
+          return Response.json(
+            { error: parsedQuery.error.issues[0]?.message ?? 'Invalid input' },
+            { status: 400 },
           )
         }
 
-        const apps = parsedQuery.data.apps.length
-          ? parsedQuery.data.apps
-          : ['timeRecorder']
+        const apps = parsedQuery.data.apps.length > 0 ? parsedQuery.data.apps : ['timeRecorder']
 
         const includeTimeRecorder = apps.includes('timeRecorder')
 
         if (!includeTimeRecorder) {
-          return new Response(
-            JSON.stringify({
-              error: 'Select at least one application to import',
-            }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
+          return Response.json(
+            { error: 'Select at least one application to import' },
+            { status: 400 },
           )
         }
 
         if (!request.body) {
-          return new Response(
-            JSON.stringify({ error: 'Missing request body' }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json' },
-            },
-          )
+          return Response.json({ error: 'Missing request body' }, { status: 400 })
         }
 
         const userIdByEmail = new Map<string, string | null>()
@@ -176,7 +156,7 @@ export const Route = createFileRoute('/api/admin/import')({
         async function resolvePendingEmails() {
           if (pendingEmails.size === 0) return
 
-          const emailsToResolve = Array.from(pendingEmails)
+          const emailsToResolve = [...pendingEmails]
           pendingEmails.clear()
 
           const users = await db
@@ -222,16 +202,7 @@ export const Route = createFileRoute('/api/admin/import')({
             try {
               value = JSON.parse(line)
             } catch {
-              return new Response(
-                JSON.stringify({
-                  error: 'Invalid JSON line',
-                  processedLines,
-                }),
-                {
-                  status: 400,
-                  headers: { 'Content-Type': 'application/json' },
-                },
-              )
+              return Response.json({ error: 'Invalid JSON line', processedLines }, { status: 400 })
             }
 
             if (
@@ -242,15 +213,9 @@ export const Route = createFileRoute('/api/admin/import')({
             ) {
               const meta = MetaLineSchemaV1.safeParse(value)
               if (!meta.success) {
-                return new Response(
-                  JSON.stringify({
-                    error:
-                      meta.error.issues[0]?.message ?? 'Invalid meta header',
-                  }),
-                  {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                  },
+                return Response.json(
+                  { error: meta.error.issues[0]?.message ?? 'Invalid meta header' },
+                  { status: 400 },
                 )
               }
               sawMeta = true
@@ -265,21 +230,15 @@ export const Route = createFileRoute('/api/admin/import')({
             ) {
               if (!includeTimeRecorder) continue
 
-              const parsedLine =
-                TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
+              const parsedLine = TimeRecorderTimeEntryLineSchemaV1.safeParse(value)
 
               if (!parsedLine.success) {
-                return new Response(
-                  JSON.stringify({
-                    error:
-                      parsedLine.error.issues[0]?.message ??
-                      'Invalid time entry line',
-                    processedLines,
-                  }),
+                return Response.json(
                   {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
+                    error: parsedLine.error.issues[0]?.message ?? 'Invalid time entry line',
+                    processedLines,
                   },
+                  { status: 400 },
                 )
               }
 
@@ -313,27 +272,14 @@ export const Route = createFileRoute('/api/admin/import')({
 
           // If the file had no meta and no known records, return a helpful error.
           if (!sawMeta && processedLines === 0) {
-            return new Response(
-              JSON.stringify({ error: 'Empty import file' }),
-              {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-              },
-            )
+            return Response.json({ error: 'Empty import file' }, { status: 400 })
           }
 
-          return new Response(JSON.stringify(summary), {
-            headers: { 'Content-Type': 'application/json' },
-          })
+          return Response.json(summary)
         } catch (error) {
-          return new Response(
-            JSON.stringify({
-              error: error instanceof Error ? error.message : 'Import failed',
-            }),
-            {
-              status: 500,
-              headers: { 'Content-Type': 'application/json' },
-            },
+          return Response.json(
+            { error: error instanceof Error ? error.message : 'Import failed' },
+            { status: 500 },
           )
         }
       },

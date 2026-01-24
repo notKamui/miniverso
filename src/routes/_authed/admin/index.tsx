@@ -33,12 +33,7 @@ function RouteComponent() {
           <div key={panel.link.to} className="container rounded-md border p-4">
             <h4 className={title({ h: 4 })}>{panel.title}</h4>
             <p>{panel.description}</p>
-            <Link
-              to={panel.link.to}
-              params={panel.link.params}
-              from="/"
-              className={link()}
-            >
+            <Link to={panel.link.to} params={panel.link.params} from="/" className={link()}>
               Open
             </Link>
           </div>

@@ -42,10 +42,7 @@ export const timeEntryTag = pgTable(
   },
   (table) => [
     index('time_entry_tag_userId_idx').on(table.userId),
-    index('time_entry_tag_userId_description_idx').on(
-      table.userId,
-      table.description,
-    ),
+    index('time_entry_tag_userId_description_idx').on(table.userId, table.description),
   ],
 )
 export type TimeEntryTag = InferSelectModel<typeof timeEntryTag>

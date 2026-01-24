@@ -1,16 +1,9 @@
 import { setResponseStatus } from '@tanstack/react-start/server'
 import * as z from 'zod'
 
-export function validate<T>(
-  schema: z.ZodType<T>,
-  options?: { pretty?: boolean },
-) {
+export function validate<T>(schema: z.ZodType<T>, options?: { pretty?: boolean }) {
   return (data: T): T => {
-    const {
-      success,
-      error: zodError,
-      data: parsedData,
-    } = schema.safeParse(data)
+    const { success, error: zodError, data: parsedData } = schema.safeParse(data)
 
     if (!success) {
       setResponseStatus(400)

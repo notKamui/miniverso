@@ -73,29 +73,37 @@ export class Time {
   shift(type: ShiftType, count: number): Time {
     const date = new Date(this.date)
     switch (type) {
-      case 'years':
+      case 'years': {
         date.setFullYear(date.getFullYear() + count)
         break
-      case 'months':
+      }
+      case 'months': {
         date.setMonth(date.getMonth() + count)
         break
-      case 'days':
+      }
+      case 'days': {
         date.setDate(date.getDate() + count)
         break
-      case 'hours':
+      }
+      case 'hours': {
         date.setHours(date.getHours() + count)
         break
-      case 'minutes':
+      }
+      case 'minutes': {
         date.setMinutes(date.getMinutes() + count)
         break
-      case 'seconds':
+      }
+      case 'seconds': {
         date.setSeconds(date.getSeconds() + count)
         break
-      case 'milliseconds':
+      }
+      case 'milliseconds': {
         date.setMilliseconds(date.getMilliseconds() + count)
         break
-      default:
+      }
+      default: {
         throw new Error('Unknown shift type')
+      }
     }
     return new Time(date)
   }
@@ -199,9 +207,7 @@ export class Time {
       const minutes = String(localDate.getUTCMinutes()).padStart(2, '0')
       const seconds = String(localDate.getUTCSeconds()).padStart(2, '0')
 
-      return options.short
-        ? `${hours}:${minutes}`
-        : `${hours}:${minutes}:${seconds}`
+      return options.short ? `${hours}:${minutes}` : `${hours}:${minutes}:${seconds}`
     }
 
     return this.date.toLocaleTimeString(['en'], {
@@ -305,9 +311,7 @@ export namespace UTCTime {
     const offsetMs = tzOffsetMinutes * 60 * 1000
     return {
       start: Time.from(new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0) + offsetMs)),
-      end: Time.from(
-        new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs),
-      ),
+      end: Time.from(new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + offsetMs)),
     }
   }
 
@@ -319,15 +323,6 @@ export namespace UTCTime {
     const { y, m, d } = UTCTime.parseDayKey(dayKey)
     const DAY_MS = 24 * 60 * 60 * 1000
     const offsetMs = tzOffsetMinutes * 60 * 1000
-
-    const toYmd = (utcMs: number): YMD => {
-      const dt = new Date(utcMs)
-      return {
-        y: dt.getUTCFullYear(),
-        m: dt.getUTCMonth() + 1,
-        d: dt.getUTCDate(),
-      }
-    }
 
     let startYmd: YMD
     let endYmd: YMD
@@ -357,16 +352,10 @@ export namespace UTCTime {
 
     return {
       start: Time.from(
-        new Date(
-          Date.UTC(startYmd.y, startYmd.m - 1, startYmd.d, 0, 0, 0, 0) +
-            offsetMs,
-        ),
+        new Date(Date.UTC(startYmd.y, startYmd.m - 1, startYmd.d, 0, 0, 0, 0) + offsetMs),
       ),
       end: Time.from(
-        new Date(
-          Date.UTC(endYmd.y, endYmd.m - 1, endYmd.d, 23, 59, 59, 999) +
-            offsetMs,
-        ),
+        new Date(Date.UTC(endYmd.y, endYmd.m - 1, endYmd.d, 23, 59, 59, 999) + offsetMs),
       ),
     }
   }
@@ -386,10 +375,7 @@ const fallthroughEndOf = createFallthroughExec<ShiftType, Date>([
   ['years', (date) => date.setMonth(11)],
   [
     'months',
-    (date) =>
-      date.setDate(
-        new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
-      ),
+    (date) => date.setDate(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()),
   ],
   ['days', (date) => date.setHours(23)],
   ['hours', (date) => date.setMinutes(59)],
@@ -397,3 +383,12 @@ const fallthroughEndOf = createFallthroughExec<ShiftType, Date>([
   ['seconds', (date) => date.setMilliseconds(999)],
   ['milliseconds', () => {}],
 ])
+
+function toYmd(utcMs: number): YMD {
+  const dt = new Date(utcMs)
+  return {
+    y: dt.getUTCFullYear(),
+    m: dt.getUTCMonth() + 1,
+    d: dt.getUTCDate(),
+  }
+}

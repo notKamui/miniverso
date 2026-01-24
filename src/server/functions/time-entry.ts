@@ -1,17 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import {
-  and,
-  eq,
-  gte,
-  inArray,
-  isNotNull,
-  isNull,
-  lte,
-  or,
-  sql,
-} from 'drizzle-orm'
+import { and, eq, gte, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { Time, UTCTime } from '@/lib/utils/time'
@@ -39,8 +29,7 @@ export function getTimeEntriesByDayQueryOptions({
 }) {
   return queryOptions({
     queryKey: [...timeEntriesQueryKey, { dayKey, tzOffsetMinutes }] as const,
-    queryFn: ({ signal }) =>
-      $getTimeEntriesByDay({ signal, data: { dayKey, tzOffsetMinutes } }),
+    queryFn: ({ signal }) => $getTimeEntriesByDay({ signal, data: { dayKey, tzOffsetMinutes } }),
     staleTime: 1000 * 30, // 30 seconds
   })
 }
@@ -55,12 +44,8 @@ export function getTimeStatsQueryOptions({
   tzOffsetMinutes: number
 }) {
   return queryOptions({
-    queryKey: [
-      ...timeStatsQueryKey,
-      { dayKey, type, tzOffsetMinutes },
-    ] as const,
-    queryFn: ({ signal }) =>
-      $getTimeStatsBy({ signal, data: { dayKey, type, tzOffsetMinutes } }),
+    queryKey: [...timeStatsQueryKey, { dayKey, type, tzOffsetMinutes }] as const,
+    queryFn: ({ signal }) => $getTimeStatsBy({ signal, data: { dayKey, type, tzOffsetMinutes } }),
     staleTime: 1000 * 60 * 2, // 2 minutes
   })
 }
@@ -76,9 +61,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
     ),
   )
   .handler(async ({ context: { user }, data: { dayKey, tzOffsetMinutes } }) => {
-    const [error, range] = tryInline(() =>
-      UTCTime.localDayRange(dayKey, tzOffsetMinutes),
-    )
+    const [error, range] = tryInline(() => UTCTime.localDayRange(dayKey, tzOffsetMinutes))
 
     if (error) {
       badRequest('Invalid dayKey', 400)
@@ -103,7 +86,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
         ),
       )
 
-    return entries.sort((a, b) => b.startedAt.compare(a.startedAt))
+    return entries.toSorted((a, b) => b.startedAt.compare(a.startedAt))
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
@@ -117,56 +100,52 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
       }),
     ),
   )
-  .handler(
-    async ({ context: { user }, data: { dayKey, type, tzOffsetMinutes } }) => {
-      const [error, range] = tryInline(() =>
-        UTCTime.localPeriodRange(dayKey, type, tzOffsetMinutes),
+  .handler(async ({ context: { user }, data: { dayKey, type, tzOffsetMinutes } }) => {
+    const [error, range] = tryInline(() => UTCTime.localPeriodRange(dayKey, type, tzOffsetMinutes))
+
+    if (error) {
+      badRequest('Invalid dayKey', 400)
+    }
+
+    const { start: startDate, end: endDate } = range
+
+    const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
+    type GroupBy = typeof groupBy
+
+    const startedLocal = startedLocalExpr(tzOffsetMinutes)
+
+    const unitQuery = {
+      day: sql<GroupBy>`DATE_TRUNC('day', ${startedLocal})`,
+      month: sql<GroupBy>`DATE_TRUNC('month', ${startedLocal})`,
+    }[groupBy]
+
+    const dayOrMonthExpr = {
+      week: sql`EXTRACT(ISODOW FROM ${startedLocal})`,
+      month: sql`EXTRACT(DAY FROM ${startedLocal})`,
+      year: sql`EXTRACT(MONTH FROM ${startedLocal})`,
+    }[type]
+
+    const dayOrMonthQuery = dayOrMonthExpr.mapWith(Number)
+
+    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
+
+    return db
+      .select({
+        unit: unitQuery,
+        dayOrMonth: dayOrMonthQuery,
+        total: totalQuery.mapWith(Number),
+      })
+      .from(timeEntry)
+      .where(
+        and(
+          eq(timeEntry.userId, user.id),
+          isNotNull(timeEntry.endedAt),
+          gte(timeEntry.startedAt, startDate),
+          lte(timeEntry.endedAt, endDate),
+        ),
       )
-
-      if (error) {
-        badRequest('Invalid dayKey', 400)
-      }
-
-      const { start: startDate, end: endDate } = range
-
-      const groupBy = type === 'week' || type === 'month' ? 'day' : 'month'
-      type GroupBy = typeof groupBy
-
-      const startedLocal = startedLocalExpr(tzOffsetMinutes)
-
-      const unitQuery = {
-        day: sql<GroupBy>`DATE_TRUNC('day', ${startedLocal})`,
-        month: sql<GroupBy>`DATE_TRUNC('month', ${startedLocal})`,
-      }[groupBy]
-
-      const dayOrMonthExpr = {
-        week: sql`EXTRACT(ISODOW FROM ${startedLocal})`,
-        month: sql`EXTRACT(DAY FROM ${startedLocal})`,
-        year: sql`EXTRACT(MONTH FROM ${startedLocal})`,
-      }[type]
-
-      const dayOrMonthQuery = dayOrMonthExpr.mapWith(Number)
-
-      const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
-
-      return db
-        .select({
-          unit: unitQuery,
-          dayOrMonth: dayOrMonthQuery,
-          total: totalQuery.mapWith(Number),
-        })
-        .from(timeEntry)
-        .where(
-          and(
-            eq(timeEntry.userId, user.id),
-            isNotNull(timeEntry.endedAt),
-            gte(timeEntry.startedAt, startDate),
-            lte(timeEntry.endedAt, endDate),
-          ),
-        )
-        .groupBy(sql`1`, sql`2`)
-    },
-  )
+      .groupBy(sql`1`, sql`2`)
+  })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -204,44 +183,39 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
       }),
     ),
   )
-  .handler(
-    async ({
-      context: { user },
-      data: { id, startedAt, endedAt, description },
-    }) => {
-      const [error, entry] = await tryAsync(
-        db.transaction(async (tx) => {
-          const res = await tx
-            .update(timeEntry)
-            .set({
-              startedAt,
-              endedAt,
-              description,
-            })
-            .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
-            .returning({
-              id: timeEntry.id,
-              userId: timeEntry.userId,
-              startedAt: timeEntry.startedAt,
-              endedAt: timeEntry.endedAt,
-              description: timeEntry.description,
-            })
-            .then(takeUniqueOrNull)
+  .handler(async ({ context: { user }, data: { id, startedAt, endedAt, description } }) => {
+    const [error, entry] = await tryAsync(
+      db.transaction(async (tx) => {
+        const res = await tx
+          .update(timeEntry)
+          .set({
+            startedAt,
+            endedAt,
+            description,
+          })
+          .where(and(eq(timeEntry.id, id), eq(timeEntry.userId, user.id)))
+          .returning({
+            id: timeEntry.id,
+            userId: timeEntry.userId,
+            startedAt: timeEntry.startedAt,
+            endedAt: timeEntry.endedAt,
+            description: timeEntry.description,
+          })
+          .then(takeUniqueOrNull)
 
-          if (res && endedAt && endedAt.isBefore(res.startedAt)) {
-            tx.rollback()
-          }
+        if (res && endedAt && endedAt.isBefore(res.startedAt)) {
+          tx.rollback()
+        }
 
-          return res
-        }),
-      )
+        return res
+      }),
+    )
 
-      if (error) throw badRequest('End date must be after start date', 400)
-      if (!entry) throw notFound()
+    if (error) throw badRequest('End date must be after start date', 400)
+    if (!entry) throw notFound()
 
-      return entry
-    },
-  )
+    return entry
+  })
 
 export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -295,10 +269,7 @@ export const $createTimeEntryTag = createServerFn({ method: 'POST' })
       .select()
       .from(timeEntryTag)
       .where(
-        and(
-          eq(timeEntryTag.userId, user.id),
-          eq(timeEntryTag.description, description.trim()),
-        ),
+        and(eq(timeEntryTag.userId, user.id), eq(timeEntryTag.description, description.trim())),
       )
       .then(takeUniqueOrNull)
 

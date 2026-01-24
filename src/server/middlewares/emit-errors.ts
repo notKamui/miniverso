@@ -17,23 +17,21 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
             { sendToast: true },
           ),
         )
+      } else if (error instanceof DOMException && error.name === 'AbortError') {
+        // Ignore abort errors
       } else if (
-        !!error &&
+        Boolean(error) &&
+        error !== null &&
         typeof error === 'object' &&
         'message' in error &&
-        typeof error?.message === 'string'
+        typeof error.message === 'string'
       ) {
         try {
           const actualError = JSON.parse(error.message)
-          window?.dispatchEvent(
-            new ServerErrorEvent({ body: actualError }, { sendToast: true }),
-          )
+          window?.dispatchEvent(new ServerErrorEvent({ body: actualError }, { sendToast: true }))
         } catch {
           window?.dispatchEvent(
-            new ServerErrorEvent(
-              { body: { error: error.message } },
-              { sendToast: true },
-            ),
+            new ServerErrorEvent({ body: { error: error.message } }, { sendToast: true }),
           )
         }
       }

@@ -8,14 +8,8 @@ export function createOptimisticMutationHelpers(
 ) {
   return {
     onMutate: async () => {
-      await Promise.all(
-        queryKeys.map((key) => queryClient.cancelQueries({ queryKey: key })),
-      )
-
-      const previousData = queryKeys.flatMap((key) =>
-        queryClient.getQueriesData({ queryKey: key }),
-      )
-
+      await Promise.all(queryKeys.map((key) => queryClient.cancelQueries({ queryKey: key })))
+      const previousData = queryKeys.flatMap((key) => queryClient.getQueriesData({ queryKey: key }))
       return { previousData }
     },
     onError: (
@@ -31,9 +25,7 @@ export function createOptimisticMutationHelpers(
     },
     onSettled: async () => {
       await Promise.all([
-        ...queryKeys.map((key) =>
-          queryClient.invalidateQueries({ queryKey: key }),
-        ),
+        ...queryKeys.map((key) => queryClient.invalidateQueries({ queryKey: key })),
         router.invalidate(),
       ])
     },

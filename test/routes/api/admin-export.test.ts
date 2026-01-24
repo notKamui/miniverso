@@ -17,11 +17,12 @@ const exportedRows = Array.from({ length: 3 }, (_, i) => {
 })
 
 // Ensure admin middleware is importable without real env/auth.
-mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
+await mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
 
 const exportRouteMod = await import('@/routes/api/admin/export')
-const GET = (exportRouteMod.Route.options.server?.handlers as any)
-  ?.GET as (args: { request: Request }) => Promise<Response>
+const GET = (exportRouteMod.Route.options.server?.handlers as any)?.GET as (args: {
+  request: Request
+}) => Promise<Response>
 
 describe('/api/admin/export', () => {
   it('returns 400 when no apps are selected', async () => {
@@ -58,14 +59,14 @@ describe('/api/admin/export', () => {
       .map((l) => l.trim())
       .filter(Boolean)
 
-    const meta = JSON.parse(lines[0]!)
+    const meta = JSON.parse(lines[0])
     expect(meta.type).toBe('meta')
     expect(meta.format).toBe('miniverso.export.ndjson')
     expect(meta.version).toBe(1)
     expect(meta.filters.userEmail).toBe('alice@example.com')
     expect(meta.apps).toEqual(['timeRecorder'])
 
-    const firstEntry = JSON.parse(lines[1]!)
+    const firstEntry = JSON.parse(lines[1])
     expect(firstEntry.type).toBe('timeRecorder.timeEntry')
     expect(firstEntry.version).toBe(1)
     expect(firstEntry.sourceId).toBe('id-0')
@@ -101,7 +102,7 @@ describe('/api/admin/export', () => {
       .map((l) => l.trim())
       .filter(Boolean)
     expect(lines.length).toBe(1)
-    const meta = JSON.parse(lines[0]!)
+    const meta = JSON.parse(lines[0])
     expect(meta.apps).toEqual(['otherApp'])
     expect(dbMock.getExportCalls()).toBe(0)
   })
@@ -112,16 +113,14 @@ describe('/api/admin/export', () => {
     dbMock.configureExport({ pages: [page1, page2] })
 
     const res = await GET({
-      request: new Request(
-        'http://localhost/api/admin/export?apps=timeRecorder',
-        {
-          method: 'GET',
-        },
-      ),
+      request: new Request('http://localhost/api/admin/export?apps=timeRecorder', {
+        method: 'GET',
+      }),
     })
 
     expect(res.status).toBe(200)
-    const lines = (await res.text())
+    const text = await res.text()
+    const lines = text
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)

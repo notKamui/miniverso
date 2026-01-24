@@ -85,6 +85,7 @@ function makeFakeDb(args: { total: number; rows: any[] }) {
   }
 
   return {
+    // oxlint-disable-next-line typescript/no-unsafe-return
     transaction: async (fn: any) => fn(tx),
     __calls: calls,
   }

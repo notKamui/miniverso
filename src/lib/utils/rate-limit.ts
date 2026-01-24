@@ -3,10 +3,7 @@ export type TokenBucket = {
   refilledAt: number
 }
 
-export function createTokenBucketManager<Key>(
-  max: number,
-  refillRateSeconds: number,
-) {
+export function createTokenBucketManager<Key>(max: number, refillRateSeconds: number) {
   const storage = new Map<Key, TokenBucket>()
 
   function consume(key: Key, cost: number): boolean {
@@ -17,9 +14,7 @@ export function createTokenBucketManager<Key>(
       storage.set(key, bucket)
       return true
     }
-    const refill = Math.floor(
-      (now - bucket.refilledAt) / (refillRateSeconds * 1000),
-    )
+    const refill = Math.floor((now - bucket.refilledAt) / (refillRateSeconds * 1000))
     bucket.count = Math.min(max, bucket.count + refill)
     bucket.refilledAt = now
     if (bucket.count < cost) return false

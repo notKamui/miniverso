@@ -1,10 +1,4 @@
-import {
-  type MouseEvent,
-  type TouchEvent,
-  type UIEvent,
-  useMemo,
-  useRef,
-} from 'react'
+import { type MouseEvent, type TouchEvent, type UIEvent, useMemo, useRef } from 'react'
 import { isMouseEvent, isTouchEvent } from '@/lib/utils/events'
 
 export type LongPressOptions = {
@@ -33,7 +27,7 @@ export function useLongPress(
 
   return useMemo(() => {
     if (typeof callback !== 'function') {
-      throw new Error('Callback must be a function')
+      throw new TypeError('Callback must be a function')
     }
 
     function start(event: MouseEvent | TouchEvent) {

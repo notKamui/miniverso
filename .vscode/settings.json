@@ -10,29 +10,50 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
+
+  "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.classAttributes": ["classnames", "classNames", "className", "clsx"],
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+
+  "prettier.enable": false,
+  "eslint.enable": false,
+  "biome.enabled": false,
+  "oxc.enable": true,
+  "oxc.typeAware": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll.oxc": "always"
+  },
+  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[html]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[css]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[routeTree.gen.ts]": {
     "editor.formatOnSave": false,
@@ -41,25 +62,5 @@
       "source.organizeImports": "never",
       "source.fixAll": "never"
     }
-  },
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports.biome": "explicit",
-    "source.fixAll.biome": "explicit"
-  },
-  "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
-  "tailwindCSS.emmetCompletions": true,
-  "tailwindCSS.classAttributes": [
-    "classnames",
-    "classNames",
-    "className",
-    "clsx"
-  ],
-  "tailwindCSS.experimental.classRegex": [
-    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ],
-  "prettier.enable": false,
-  "eslint.enable": false,
-  "oxc.enable": false
+  }
 }

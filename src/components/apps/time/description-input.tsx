@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { TimeEntry } from '@/server/db/schema/time'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $createTimeEntryTag,
   getTimeEntryTagsQueryOptions,
@@ -28,21 +28,18 @@ export function DescriptionInput({
   const { data: tags = [] } = useQuery(getTimeEntryTagsQueryOptions())
 
   const trimmedDescription = description.trim()
-  const tagExists = tags.some(
-    (tag) => tag.description.trim() === trimmedDescription,
-  )
+  const tagExists = tags.some((tag) => tag.description.trim() === trimmedDescription)
 
   const createTagMutation = useMutation({
-    mutationFn: (description: string) =>
-      $createTimeEntryTag({ data: { description } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
+    mutationFn: (description: string) => $createTimeEntryTag({ data: { description } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: timeEntryTagsQueryKey })
     },
   })
 
   const isSaveAsTagDisabled =
     trimmedDescription.length === 0 ||
-    !!currentEntry ||
+    Boolean(currentEntry) ||
     tagExists ||
     createTagMutation.isPending
 
