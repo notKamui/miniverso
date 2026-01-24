@@ -14,6 +14,23 @@ import { user } from '@/server/db/schema/auth'
 
 const money = { precision: 10, scale: 2 } as const
 
+export const inventoryOrderReferencePrefix = pgTable(
+  'inventory_order_reference_prefix',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    prefix: text('prefix').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (table) => [
+    index('inventory_order_reference_prefix_userId_idx').on(table.userId),
+    unique().on(table.userId, table.prefix),
+  ],
+)
+export type InventoryOrderReferencePrefix = InferSelectModel<typeof inventoryOrderReferencePrefix>
+
 export const inventoryTag = pgTable(
   'inventory_tag',
   {
@@ -61,13 +78,17 @@ export const product = pgTable(
     priceTaxFree: numeric('price_tax_free', money).notNull(),
     vatPercent: numeric('vat_percent', { precision: 5, scale: 2 }).notNull(),
     quantity: integer('quantity').notNull().default(0),
+    archivedAt: timestamp('archived_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('product_userId_idx').on(table.userId)],
+  (table) => [
+    index('product_userId_idx').on(table.userId),
+    index('product_userId_archivedAt_idx').on(table.userId, table.archivedAt),
+  ],
 )
 export type Product = InferSelectModel<typeof product>
 
@@ -143,6 +164,20 @@ export const orderItem = pgTable(
   (table) => [index('order_item_orderId_idx').on(table.orderId)],
 )
 export type OrderItem = InferSelectModel<typeof orderItem>
+
+export const userRelations_inventoryOrderReferencePrefix = relations(user, ({ many }) => ({
+  orderReferencePrefixes: many(inventoryOrderReferencePrefix),
+}))
+
+export const inventoryOrderReferencePrefixRelations = relations(
+  inventoryOrderReferencePrefix,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [inventoryOrderReferencePrefix.userId],
+      references: [user.id],
+    }),
+  }),
+)
 
 export const userRelations_inventoryTag = relations(user, ({ many }) => ({
   inventoryTags: many(inventoryTag),

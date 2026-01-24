@@ -11,13 +11,17 @@ import { getProductsQueryOptions, priceTaxIncluded } from '@/server/functions/in
 const LOW_STOCK_THRESHOLD = 5
 
 export const Route = createFileRoute('/_authed/inventory/')({
-  loader: ({ context: { queryClient } }) => queryClient.fetchQuery(getProductsQueryOptions()),
+  loader: ({ context: { queryClient } }) =>
+    queryClient.fetchQuery(getProductsQueryOptions({ page: 1, size: 20, archived: 'all' })),
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const navigate = useNavigate()
-  const { data: products } = useSuspenseQuery(getProductsQueryOptions())
+  const { data: productsPage } = useSuspenseQuery(
+    getProductsQueryOptions({ page: 1, size: 20, archived: 'all' }),
+  )
+  const products = productsPage.items
   const total = products.length
   const lowStock = products.filter((p) => p.quantity < LOW_STOCK_THRESHOLD).length
 

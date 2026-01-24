@@ -140,7 +140,7 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
     const payload = {
       name: name.trim(),
       description: description.trim() || undefined,
-      sku: sku.trim() || undefined,
+      sku: sku.trim(),
       priceTaxFree: Number.parseFloat(priceTaxFree) || 0,
       vatPercent: Number.parseFloat(vatPercent) || 0,
       quantity: Math.max(0, Math.floor(Number.parseFloat(quantity) || 0)),
@@ -177,7 +177,8 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
             id="sku"
             value={sku}
             onChange={(e) => setSku(e.target.value)}
-            placeholder="Optional"
+            placeholder="e.g. SKU-001"
+            required
           />
         </div>
       </div>

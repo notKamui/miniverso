@@ -1,12 +1,13 @@
-import { queryOptions } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, ilike, isNotNull, isNull, like, lte, or, sql } from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
+import { db, paginated, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import {
+  inventoryOrderReferencePrefix,
   inventoryProductionCostLabel,
   inventoryTag,
   order,
@@ -104,7 +105,7 @@ export const $updateInventoryTag = createServerFn({ method: 'POST' })
   .inputValidator(
     validate(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         name: z.string().min(1).max(500).optional(),
         color: z.string().min(1).max(20).optional(),
       }),
@@ -132,7 +133,7 @@ export const $updateInventoryTag = createServerFn({ method: 'POST' })
 
 export const $deleteInventoryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.string().uuid() })))
+  .inputValidator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const tag = await db
       .delete(inventoryTag)
@@ -216,7 +217,7 @@ export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
   .inputValidator(
     validate(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         name: z.string().min(1).max(500).optional(),
         color: z.string().min(1).max(20).optional(),
       }),
@@ -249,7 +250,7 @@ export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
 
 export const $deleteProductionCostLabel = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.string().uuid() })))
+  .inputValidator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const label = await db
       .delete(inventoryProductionCostLabel)
@@ -266,6 +267,188 @@ export const $deleteProductionCostLabel = createServerFn({ method: 'POST' })
     return label.id
   })
 
+export const orderReferencePrefixesQueryKey = ['order-reference-prefixes'] as const
+
+export function getOrderReferencePrefixesQueryOptions() {
+  return queryOptions({
+    queryKey: orderReferencePrefixesQueryKey,
+    queryFn: ({ signal }) => $getOrderReferencePrefixes({ signal }),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export const $getOrderReferencePrefixes = createServerFn({ method: 'GET' })
+  .middleware([$$auth])
+  .handler(async ({ context: { user } }) =>
+    db
+      .select({
+        id: inventoryOrderReferencePrefix.id,
+        userId: inventoryOrderReferencePrefix.userId,
+        prefix: inventoryOrderReferencePrefix.prefix,
+        sortOrder: inventoryOrderReferencePrefix.sortOrder,
+      })
+      .from(inventoryOrderReferencePrefix)
+      .where(eq(inventoryOrderReferencePrefix.userId, user.id))
+      .orderBy(
+        asc(inventoryOrderReferencePrefix.sortOrder),
+        asc(inventoryOrderReferencePrefix.prefix),
+      ),
+  )
+
+const prefixSchema = z
+  .string()
+  .min(1)
+  .max(20)
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Prefix: alphanumeric, hyphen, underscore only')
+
+export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(
+    validate(
+      z.object({
+        prefix: prefixSchema,
+        sortOrder: z.number().int().min(0).optional(),
+      }),
+    ),
+  )
+  .handler(async ({ context: { user }, data: { prefix, sortOrder } }) => {
+    const p = prefix.trim()
+    const existing = await db
+      .select()
+      .from(inventoryOrderReferencePrefix)
+      .where(
+        and(
+          eq(inventoryOrderReferencePrefix.userId, user.id),
+          eq(inventoryOrderReferencePrefix.prefix, p),
+        ),
+      )
+      .then(takeUniqueOrNull)
+    if (existing) badRequest('Prefix already exists', 400)
+
+    return db
+      .insert(inventoryOrderReferencePrefix)
+      .values({ userId: user.id, prefix: p, sortOrder: sortOrder ?? 0 })
+      .returning({
+        id: inventoryOrderReferencePrefix.id,
+        userId: inventoryOrderReferencePrefix.userId,
+        prefix: inventoryOrderReferencePrefix.prefix,
+        sortOrder: inventoryOrderReferencePrefix.sortOrder,
+      })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+  })
+
+export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(
+    validate(
+      z.object({
+        id: z.uuid(),
+        prefix: prefixSchema.optional(),
+        sortOrder: z.number().int().min(0).optional(),
+      }),
+    ),
+  )
+  .handler(async ({ context: { user }, data: { id, prefix, sortOrder } }) => {
+    const set: Record<string, unknown> = {}
+    if (prefix !== undefined) set.prefix = prefix.trim()
+    if (sortOrder !== undefined) set.sortOrder = sortOrder
+    if (Object.keys(set).length === 0) {
+      const row = await db
+        .select()
+        .from(inventoryOrderReferencePrefix)
+        .where(
+          and(
+            eq(inventoryOrderReferencePrefix.id, id),
+            eq(inventoryOrderReferencePrefix.userId, user.id),
+          ),
+        )
+        .then(takeUniqueOrNull)
+      if (!row) throw notFound()
+      return row
+    }
+    const row = await db
+      .update(inventoryOrderReferencePrefix)
+      .set(set)
+      .where(
+        and(
+          eq(inventoryOrderReferencePrefix.id, id),
+          eq(inventoryOrderReferencePrefix.userId, user.id),
+        ),
+      )
+      .returning({
+        id: inventoryOrderReferencePrefix.id,
+        userId: inventoryOrderReferencePrefix.userId,
+        prefix: inventoryOrderReferencePrefix.prefix,
+        sortOrder: inventoryOrderReferencePrefix.sortOrder,
+      })
+      .then(takeUniqueOrNull)
+    if (!row) throw notFound()
+    return row
+  })
+
+export const $deleteOrderReferencePrefix = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .handler(async ({ context: { user }, data: { id } }) => {
+    const all = await db
+      .select({ id: inventoryOrderReferencePrefix.id })
+      .from(inventoryOrderReferencePrefix)
+      .where(eq(inventoryOrderReferencePrefix.userId, user.id))
+    if (all.length <= 1)
+      badRequest('Cannot delete the last prefix. At least one is required to create orders.', 400)
+
+    const row = await db
+      .delete(inventoryOrderReferencePrefix)
+      .where(
+        and(
+          eq(inventoryOrderReferencePrefix.id, id),
+          eq(inventoryOrderReferencePrefix.userId, user.id),
+        ),
+      )
+      .returning({ id: inventoryOrderReferencePrefix.id })
+      .then(takeUniqueOrNull)
+    if (!row) throw notFound()
+    return row.id
+  })
+
+export const $getNextOrderReference = createServerFn({ method: 'GET' })
+  .middleware([$$auth])
+  .inputValidator(validate(z.object({ prefixId: z.uuid() })))
+  .handler(async ({ context: { user }, data: { prefixId } }) => {
+    const p = await db
+      .select({ prefix: inventoryOrderReferencePrefix.prefix })
+      .from(inventoryOrderReferencePrefix)
+      .where(
+        and(
+          eq(inventoryOrderReferencePrefix.id, prefixId),
+          eq(inventoryOrderReferencePrefix.userId, user.id),
+        ),
+      )
+      .then(takeUniqueOrNull)
+    if (!p) throw notFound()
+
+    const [last] = await db
+      .select({ reference: order.reference })
+      .from(order)
+      .where(and(eq(order.userId, user.id), like(order.reference, `${p.prefix}-%`)))
+      .orderBy(desc(order.reference))
+      .limit(1)
+
+    const n = last
+      ? (() => {
+          const parts = last.reference.split('-')
+          const t = Number(parts.at(-1))
+          return Number.isNaN(t) ? 0 : t
+        })() + 1
+      : 1
+
+    return `${p.prefix}-${n}`
+  })
+
 export const productsQueryKey = ['products'] as const
 
 const productListFields = {
@@ -277,27 +460,47 @@ const productListFields = {
   priceTaxFree: product.priceTaxFree,
   vatPercent: product.vatPercent,
   quantity: product.quantity,
+  archivedAt: product.archivedAt,
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
 } as const
 
-export function getProductsQueryOptions() {
+const getProductsSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  size: z.number().int().min(1).max(100).default(20),
+  search: z.string().trim().min(1).max(500).optional(),
+  archived: z.enum(['all', 'active', 'archived']).default('all'),
+})
+
+export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema>) {
   return queryOptions({
-    queryKey: productsQueryKey,
-    queryFn: ({ signal }) => $getProducts({ signal }),
+    queryKey: [...productsQueryKey, params] as const,
+    queryFn: ({ signal }) => $getProducts({ signal, data: params }),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 30,
   })
 }
 
 export const $getProducts = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .handler(async ({ context: { user } }) =>
-    db
-      .select(productListFields)
-      .from(product)
-      .where(eq(product.userId, user.id))
-      .orderBy(asc(product.name)),
-  )
+  .inputValidator(validate(getProductsSchema))
+  .handler(async ({ context: { user }, data: { page, size, search, archived } }) => {
+    const conditions: Parameters<typeof and>[0][] = [eq(product.userId, user.id)]
+    if (search) {
+      const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
+      conditions.push(or(ilike(product.name, `%${pattern}%`), ilike(product.sku, `%${pattern}%`)))
+    }
+    if (archived === 'active') conditions.push(isNull(product.archivedAt))
+    else if (archived === 'archived') conditions.push(isNotNull(product.archivedAt))
+
+    return paginated({
+      table: product,
+      where: and(...conditions),
+      orderBy: asc(product.name),
+      page,
+      size,
+    })
+  })
 
 export function getProductQueryOptions(productId: string) {
   return queryOptions({
@@ -309,7 +512,7 @@ export function getProductQueryOptions(productId: string) {
 
 export const $getProduct = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ productId: z.string().uuid() })))
+  .inputValidator(validate(z.object({ productId: z.uuid() })))
   .handler(async ({ context: { user }, data: { productId } }) => {
     const p = await db
       .select(productListFields)
@@ -344,13 +547,13 @@ export const $getProduct = createServerFn({ method: 'GET' })
 const productCreateSchema = z.object({
   name: z.string().min(1).max(2000),
   description: z.string().max(10_000).optional(),
-  sku: z.string().max(200).optional(),
+  sku: z.string().min(1).max(200),
   priceTaxFree: z.number().min(0),
   vatPercent: z.number().min(0).max(100),
   quantity: z.number().int().min(0),
-  tagIds: z.array(z.string().uuid()).default([]),
+  tagIds: z.array(z.uuid()).default([]),
   productionCosts: z
-    .array(z.object({ labelId: z.string().uuid(), amount: z.number().min(0) }))
+    .array(z.object({ labelId: z.uuid(), amount: z.number().min(0) }))
     .default([]),
 })
 
@@ -385,7 +588,7 @@ export const $createProduct = createServerFn({ method: 'POST' })
         userId: user.id,
         name: data.name,
         description: data.description ?? null,
-        sku: data.sku ?? null,
+        sku: data.sku,
         priceTaxFree: String(data.priceTaxFree.toFixed(2)),
         vatPercent: String(data.vatPercent.toFixed(2)),
         quantity: data.quantity,
@@ -411,7 +614,8 @@ export const $createProduct = createServerFn({ method: 'POST' })
   })
 
 const productUpdateSchema = productCreateSchema.partial().extend({
-  id: z.string().uuid(),
+  id: z.uuid(),
+  archivedAt: z.boolean().optional(),
 })
 
 export const $updateProduct = createServerFn({ method: 'POST' })
@@ -421,8 +625,10 @@ export const $updateProduct = createServerFn({ method: 'POST' })
     const { id, ...rest } = data
     const tagIds = rest.tagIds
     const productionCosts = rest.productionCosts
+    const archivedAt = rest.archivedAt
     delete (rest as Record<string, unknown>).tagIds
     delete (rest as Record<string, unknown>).productionCosts
+    delete (rest as Record<string, unknown>).archivedAt
 
     const existing = await db
       .select({ id: product.id })
@@ -440,6 +646,9 @@ export const $updateProduct = createServerFn({ method: 'POST' })
     if (rest.quantity !== undefined) {
       if (rest.quantity < 0) badRequest('quantity must be >= 0', 400)
       set.quantity = rest.quantity
+    }
+    if (archivedAt !== undefined) {
+      set.archivedAt = archivedAt ? new Date() : null
     }
 
     if (Object.keys(set).length > 0) {
@@ -495,7 +704,7 @@ export const $updateProduct = createServerFn({ method: 'POST' })
 
 export const $deleteProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.string().uuid() })))
+  .inputValidator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const row = await db
       .delete(product)
@@ -518,42 +727,99 @@ const orderListFields = {
   paidAt: order.paidAt,
 } as const
 
-export function getOrdersQueryOptions() {
+const getOrdersSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  size: z.number().int().min(1).max(100).default(20),
+  reference: z.string().trim().min(1).max(500).optional(),
+  startDate: z.string().min(1).max(50).optional(),
+  endDate: z.string().min(1).max(50).optional(),
+})
+
+export function getOrdersQueryOptions(params: z.input<typeof getOrdersSchema> = {}) {
+  const data = {
+    page: params.page ?? 1,
+    size: params.size ?? 20,
+    reference: params.reference,
+    startDate: params.startDate,
+    endDate: params.endDate,
+  }
   return queryOptions({
-    queryKey: ordersQueryKey,
-    queryFn: ({ signal }) => $getOrders({ signal }),
+    queryKey: [...ordersQueryKey, params] as const,
+    queryFn: ({ signal }) => $getOrders({ signal, data }),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 30,
   })
 }
 
 export const $getOrders = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .handler(async ({ context: { user } }) => {
-    const orders = await db
-      .select(orderListFields)
-      .from(order)
-      .where(eq(order.userId, user.id))
-      .orderBy(desc(order.createdAt))
+  .inputValidator(validate(getOrdersSchema))
+  .handler(async ({ context: { user }, data: { page, size, reference, startDate, endDate } }) => {
+    const conditions: Parameters<typeof and>[0][] = [eq(order.userId, user.id)]
+    if (reference) {
+      const pattern = reference.replaceAll(/[%_]/g, String.raw`\$&`)
+      conditions.push(ilike(order.reference, `%${pattern}%`))
+    }
+    if (startDate) conditions.push(gte(order.createdAt, new Date(startDate)))
+    if (endDate) {
+      const d =
+        endDate.length === 10 ? new Date(`${endDate}T23:59:59.999Z`) : new Date(endDate)
+      conditions.push(lte(order.createdAt, d))
+    }
+    const where = and(...conditions)
 
-    if (orders.length === 0) return orders
+    const [totalRes, idRows] = await Promise.all([
+      db.select({ total: count() }).from(order).where(where),
+      db
+        .select({ id: order.id })
+        .from(order)
+        .where(where)
+        .orderBy(desc(order.createdAt))
+        .limit(size)
+        .offset((page - 1) * size),
+    ])
 
-    const totals = await db
-      .select({
-        orderId: orderItem.orderId,
-        totalTaxIncluded: sql<string>`SUM(${orderItem.quantity} * ${orderItem.unitPriceTaxIncluded})`,
-      })
-      .from(orderItem)
-      .where(
-        inArray(
-          orderItem.orderId,
-          orders.map((o) => o.id),
-        ),
-      )
-      .groupBy(orderItem.orderId)
+    const total = totalRes[0]?.total ?? 0
+    const ids = idRows.map((r) => r.id)
+    if (ids.length === 0) {
+      return {
+        items: [],
+        total: Number(total),
+        page,
+        size,
+        totalPages: Math.max(1, Math.ceil(Number(total) / size)),
+      }
+    }
 
-    const totalByOrder = new Map(totals.map((t) => [t.orderId, Number(t.totalTaxIncluded)]))
+    const [ordersRows, totalsRows] = await Promise.all([
+      db
+        .select(orderListFields)
+        .from(order)
+        .where(inArray(order.id, ids)),
+      db
+        .select({
+          orderId: orderItem.orderId,
+          totalTaxIncluded: sql<string>`SUM(${orderItem.quantity} * ${orderItem.unitPriceTaxIncluded})`,
+        })
+        .from(orderItem)
+        .where(inArray(orderItem.orderId, ids))
+        .groupBy(orderItem.orderId),
+    ])
 
-    return orders.map((o) => ({ ...o, totalTaxIncluded: totalByOrder.get(o.id) ?? 0 }))
+    const orderById = new Map(ordersRows.map((o) => [o.id, o]))
+    const totalByOrder = new Map(totalsRows.map((t) => [t.orderId, Number(t.totalTaxIncluded)]))
+    const items = ids
+      .map((id) => orderById.get(id))
+      .filter(Boolean)
+      .map((o) => ({ ...o!, totalTaxIncluded: totalByOrder.get(o!.id) ?? 0 }))
+
+    return {
+      items,
+      total: Number(total),
+      page,
+      size,
+      totalPages: Math.max(1, Math.ceil(Number(total) / size)),
+    }
   })
 
 export function getOrderQueryOptions(orderId: string) {
@@ -566,7 +832,7 @@ export function getOrderQueryOptions(orderId: string) {
 
 export const $getOrder = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ orderId: z.string().uuid() })))
+  .inputValidator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select(orderListFields)
@@ -629,10 +895,11 @@ export const $getOrder = createServerFn({ method: 'GET' })
   })
 
 const orderCreateSchema = z.object({
-  reference: z.string().min(1).max(500),
+  reference: z.string().min(1).max(500).optional(),
+  prefixId: z.uuid().optional(),
   description: z.string().max(2000).optional(),
   status: z.enum(['prepared', 'paid']),
-  items: z.array(z.object({ productId: z.string().uuid(), quantity: z.number().int().min(1) })),
+  items: z.array(z.object({ productId: z.uuid(), quantity: z.number().int().min(1) })),
 })
 
 export const $createOrder = createServerFn({ method: 'POST' })
@@ -640,6 +907,8 @@ export const $createOrder = createServerFn({ method: 'POST' })
   .inputValidator(validate(orderCreateSchema))
   .handler(async ({ context: { user }, data }) => {
     if (data.items.length === 0) badRequest('At least one item required', 400)
+    if (!data.reference && !data.prefixId)
+      badRequest('Either reference or prefixId is required', 400)
 
     const productIds = [...new Set(data.items.map((i) => i.productId))]
     const products = await db
@@ -650,65 +919,104 @@ export const $createOrder = createServerFn({ method: 'POST' })
         quantity: product.quantity,
       })
       .from(product)
-      .where(and(eq(product.userId, user.id), inArray(product.id, productIds)))
+      .where(
+        and(
+          eq(product.userId, user.id),
+          inArray(product.id, productIds),
+          isNull(product.archivedAt),
+        ),
+      )
 
     const productMap = new Map(products.map((p) => [p.id, p]))
     for (const i of data.items) {
       const p = productMap.get(i.productId)
-      if (!p) badRequest(`Product ${i.productId} not found or not owned`, 400)
+      if (!p) badRequest(`Product not found, not owned, or archived: ${i.productId}`, 400)
       if (data.status === 'paid' && p.quantity < i.quantity) {
         badRequest(`Insufficient stock for product ${i.productId}`, 400)
       }
     }
 
-    const existingRef = await db
-      .select({ id: order.id })
-      .from(order)
-      .where(and(eq(order.userId, user.id), eq(order.reference, data.reference)))
-      .then(takeUniqueOrNull)
-    if (existingRef) badRequest('Reference already exists', 400)
-
-    const [newOrder] = await db
-      .insert(order)
-      .values({
-        userId: user.id,
-        reference: data.reference,
-        status: data.status,
-        description: data.description ?? null,
-        ...(data.status === 'paid' && { paidAt: new Date() }),
-      })
-      .returning(orderListFields)
-
-    if (!newOrder) throw notFound()
-
-    for (const i of data.items) {
-      const p = productMap.get(i.productId)!
-      const unitPriceTaxFree = String(Number(p.priceTaxFree).toFixed(2))
-      const unitPriceTaxIncluded = String(priceTaxIncluded(p.priceTaxFree, p.vatPercent).toFixed(2))
-      await db.insert(orderItem).values({
-        orderId: newOrder.id,
-        productId: i.productId,
-        quantity: i.quantity,
-        unitPriceTaxFree,
-        unitPriceTaxIncluded,
-      })
-    }
-
-    if (data.status === 'paid') {
-      for (const i of data.items) {
-        await db
-          .update(product)
-          .set({ quantity: sql`${product.quantity} - ${i.quantity}` })
-          .where(eq(product.id, i.productId))
+    return await db.transaction(async (tx) => {
+      let ref: string
+      if (data.reference) {
+        const existing = await tx
+          .select({ id: order.id })
+          .from(order)
+          .where(and(eq(order.userId, user.id), eq(order.reference, data.reference)))
+          .limit(1)
+        if (existing.length > 0) badRequest('Reference already exists', 400)
+        ref = data.reference
+      } else {
+        const p = await tx
+          .select({ prefix: inventoryOrderReferencePrefix.prefix })
+          .from(inventoryOrderReferencePrefix)
+          .where(
+            and(
+              eq(inventoryOrderReferencePrefix.id, data.prefixId!),
+              eq(inventoryOrderReferencePrefix.userId, user.id),
+            ),
+          )
+          .then(takeUniqueOrNull)
+        if (!p) badRequest('Prefix not found', 400)
+        const [last] = await tx
+          .select({ reference: order.reference })
+          .from(order)
+          .where(and(eq(order.userId, user.id), like(order.reference, `${p.prefix}-%`)))
+          .orderBy(desc(order.reference))
+          .limit(1)
+        const n = last
+          ? (() => {
+              const t = Number(last.reference.split('-').at(-1))
+              return (Number.isNaN(t) ? 0 : t) + 1
+            })()
+          : 1
+        ref = `${p.prefix}-${n}`
       }
-    }
 
-    return newOrder
+      const [newOrder] = await tx
+        .insert(order)
+        .values({
+          userId: user.id,
+          reference: ref,
+          status: data.status,
+          description: data.description ?? null,
+          ...(data.status === 'paid' && { paidAt: new Date() }),
+        })
+        .returning(orderListFields)
+
+      if (!newOrder) throw notFound()
+
+      for (const i of data.items) {
+        const p = productMap.get(i.productId)!
+        const unitPriceTaxFree = String(Number(p.priceTaxFree).toFixed(2))
+        const unitPriceTaxIncluded = String(
+          priceTaxIncluded(p.priceTaxFree, p.vatPercent).toFixed(2),
+        )
+        await tx.insert(orderItem).values({
+          orderId: newOrder.id,
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPriceTaxFree,
+          unitPriceTaxIncluded,
+        })
+      }
+
+      if (data.status === 'paid') {
+        for (const i of data.items) {
+          await tx
+            .update(product)
+            .set({ quantity: sql`${product.quantity} - ${i.quantity}` })
+            .where(eq(product.id, i.productId))
+        }
+      }
+
+      return newOrder
+    })
   })
 
 export const $markOrderPaid = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ orderId: z.string().uuid() })))
+  .inputValidator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select({ id: order.id, status: order.status })
@@ -757,7 +1065,7 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
 
 export const $deleteOrder = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ orderId: z.string().uuid() })))
+  .inputValidator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select({ id: order.id, status: order.status })

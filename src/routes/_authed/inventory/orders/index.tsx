@@ -8,17 +8,16 @@ import { title } from '@/components/ui/typography'
 import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory'
 
 export const Route = createFileRoute('/_authed/inventory/orders/')({
-  loader: ({ context: { queryClient } }) => queryClient.fetchQuery(getOrdersQueryOptions()),
+  loader: ({ context: { queryClient } }) => queryClient.fetchQuery(getOrdersQueryOptions({})),
   component: RouteComponent,
 })
 
-type OrderRow = Awaited<ReturnType<typeof $getOrders>>[number] & {
-  totalTaxIncluded: number
-}
+type OrderRow = Awaited<ReturnType<typeof $getOrders>>['items'][number]
 
 function RouteComponent() {
   const navigate = useNavigate()
-  const { data: orders } = useSuspenseQuery(getOrdersQueryOptions())
+  const { data: ordersPage } = useSuspenseQuery(getOrdersQueryOptions({}))
+  const orders = ordersPage.items
 
   const columns: ColumnDef<OrderRow>[] = [
     {
@@ -81,7 +80,7 @@ function RouteComponent() {
 
       <DataTable
         columns={columns}
-        data={orders as OrderRow[]}
+        data={orders}
         emptyMessage="No orders yet."
         onRowClick={(row) =>
           navigate({ to: '/inventory/orders/$orderId', params: { orderId: row.id } })

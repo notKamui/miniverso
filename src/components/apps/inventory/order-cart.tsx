@@ -31,7 +31,10 @@ type CartItem = {
 export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: products = [] } = useQuery(getProductsQueryOptions())
+  const { data: productsPage } = useQuery(
+    getProductsQueryOptions({ page: 1, size: 100, archived: 'active' }),
+  )
+  const products = productsPage?.items ?? []
   const [reference, setReference] = useState('')
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])

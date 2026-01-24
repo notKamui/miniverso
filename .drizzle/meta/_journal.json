@@ -43,6 +43,13 @@
       "when": 1769263000165,
       "tag": "0005_add_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769271224733,
+      "tag": "0006_inventory_reference_prefix_archived",
+      "breakpoints": true
     }
   ]
 }
