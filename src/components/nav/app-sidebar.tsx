@@ -1,4 +1,4 @@
-import { ClockIcon, HomeIcon, ShieldIcon, StarIcon } from 'lucide-react'
+import { ClockIcon, HomeIcon, PackageIcon, ShieldIcon, StarIcon } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { AppNavGroup, type AppNavGroupProps } from '@/components/nav/app-nav-group'
@@ -35,6 +35,17 @@ const sections: AppNavGroupProps[] = [
               },
             },
           },
+        ],
+        condition: ({ user }) => Boolean(user),
+      },
+      {
+        title: 'Inventory',
+        link: { to: '/inventory' },
+        icon: PackageIcon,
+        items: [
+          { title: 'Overview', link: { to: '/inventory' } },
+          { title: 'Orders', link: { to: '/inventory/orders' } },
+          { title: 'Statistics', link: { to: '/inventory/stats' } },
         ],
         condition: ({ user }) => Boolean(user),
       },

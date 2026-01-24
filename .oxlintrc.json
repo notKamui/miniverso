@@ -217,7 +217,6 @@
     "unicorn/error-message": "error",
     "unicorn/escape-case": "error",
     "unicorn/explicit-length-check": "error",
-    "unicorn/filename-case": "error",
     "unicorn/new-for-builtins": "error",
     "unicorn/no-immediate-mutation": "error",
     "unicorn/no-unnecessary-array-splice-count": "error",
