@@ -1,4 +1,3 @@
-import type { RefObject } from 'react'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
@@ -16,56 +15,17 @@ import { Label } from '@/components/ui/label'
 
 type LabelOption = { id: string; name: string; color: string }
 
-type CreateLabelMutation = {
-  mutate: (opts: { data: { name: string; color: string } }) => void
-  isPending: boolean
-}
-
 type Props = {
   form: ReactForm<ProductFormValues>
   labels: LabelOption[]
-  newLabelName: string
-  setNewLabelName: (v: string) => void
-  createLabelMut: CreateLabelMutation
-  productionCostsSetRef: RefObject<((v: { labelId: string; amount: string }[]) => void) | null>
 }
 
-export function ProductFormProductionCosts({
-  form,
-  labels,
-  newLabelName,
-  setNewLabelName,
-  createLabelMut,
-  productionCostsSetRef,
-}: Props) {
+export function ProductFormProductionCosts({ form, labels }: Props) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label>Production costs</Label>
-        <div className="flex gap-2">
-          <Input
-            value={newLabelName}
-            onChange={(e) => setNewLabelName(e.target.value)}
-            placeholder="New label"
-            className="max-w-[140px]"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const n = newLabelName.trim()
-              if (n) createLabelMut.mutate({ data: { name: n, color: '#6b7280' } })
-            }}
-            disabled={!newLabelName.trim() || createLabelMut.isPending}
-          >
-            Create label
-          </Button>
-        </div>
-      </div>
+      <Label>Production costs</Label>
       <form.Field name="productionCosts" mode="array">
         {(field) => {
-          productionCostsSetRef.current = field.handleChange
           const rows = field.state.value ?? []
           return (
             <div className="space-y-2">
@@ -90,7 +50,7 @@ export function ProductFormProductionCosts({
                                   {l.name}
                                 </ComboboxItem>
                               ))}
-                              <ComboboxEmpty>No labels. Add one above.</ComboboxEmpty>
+                              <ComboboxEmpty>No labels.</ComboboxEmpty>
                             </ComboboxList>
                           </ComboboxContent>
                         </Combobox>

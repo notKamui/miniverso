@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useComboboxAnchor } from '@/components/ui/combobox'
 import { productFormSchema } from '@/lib/forms/product'
@@ -14,20 +13,12 @@ import { ProductFormPricing } from './product-form-pricing'
 import { ProductFormProductionCosts } from './product-form-production-costs'
 import { ProductFormTagIds } from './product-form-tag-ids'
 import { getProductFormDefaultValues, type ProductFormProps } from './types'
-import { useProductInlineMutations } from './use-product-inline-mutations'
 import { useProductMutations } from './use-product-mutations'
 
 export function ProductForm({ productId, existing: existingProp, onSuccess }: ProductFormProps) {
   const isEdit = Boolean(productId)
   const existing = existingProp
 
-  const tagIdsSetRef = useRef<((v: string[]) => void) | null>(null)
-  const productionCostsSetRef = useRef<((v: { labelId: string; amount: string }[]) => void) | null>(
-    null,
-  )
-
-  const [newTagName, setNewTagName] = useState('')
-  const [newLabelName, setNewLabelName] = useState('')
   const chipsAnchorRef = useComboboxAnchor()
 
   const { createMut, updateMut } = useProductMutations(productId, onSuccess)
@@ -53,12 +44,6 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
     },
   })
 
-  const { createTagMut, createLabelMut } = useProductInlineMutations(
-    form,
-    { tagIdsSetRef, productionCostsSetRef },
-    { setNewTagName, setNewLabelName },
-  )
-
   const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
@@ -73,23 +58,8 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
     >
       <ProductFormBasicFields form={form} />
       <ProductFormPricing form={form} />
-      <ProductFormTagIds
-        form={form}
-        tags={tags}
-        newTagName={newTagName}
-        setNewTagName={setNewTagName}
-        createTagMut={createTagMut}
-        tagIdsSetRef={tagIdsSetRef}
-        chipsAnchorRef={chipsAnchorRef}
-      />
-      <ProductFormProductionCosts
-        form={form}
-        labels={labels}
-        newLabelName={newLabelName}
-        setNewLabelName={setNewLabelName}
-        createLabelMut={createLabelMut}
-        productionCostsSetRef={productionCostsSetRef}
-      />
+      <ProductFormTagIds form={form} tags={tags} chipsAnchorRef={chipsAnchorRef} />
+      <ProductFormProductionCosts form={form} labels={labels} />
       <ProductFormActions
         form={form}
         isEdit={isEdit}
