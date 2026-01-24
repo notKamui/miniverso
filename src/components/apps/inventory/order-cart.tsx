@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
@@ -35,7 +35,7 @@ type CartItem = {
 export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: prefixes = [] } = useQuery(getOrderReferencePrefixesQueryOptions())
+  const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
   const [prefixId, setPrefixId] = useState('')
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])

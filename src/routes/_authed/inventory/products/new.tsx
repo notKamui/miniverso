@@ -1,9 +1,19 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ProductForm } from '@/components/apps/inventory/product-form'
 import { title } from '@/components/ui/typography'
+import {
+  getInventoryTagsQueryOptions,
+  getProductionCostLabelsQueryOptions,
+} from '@/server/functions/inventory'
 
 export const Route = createFileRoute('/_authed/inventory/products/new')({
-  loader: () => ({ crumb: 'New product' }),
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
+      queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
+    ])
+    return { crumb: 'New product' }
+  },
   component: RouteComponent,
 })
 

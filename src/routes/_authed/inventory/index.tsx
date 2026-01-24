@@ -31,15 +31,17 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/_authed/inventory/')({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ search }),
-  loader: ({ deps: { search }, context: { queryClient } }) =>
-    queryClient.fetchQuery(
+  loader: async ({ deps: { search }, context: { queryClient } }) => {
+    await queryClient.ensureQueryData(
       getProductsQueryOptions({
         page: search.page,
         size: search.size,
         search: search.q?.trim() || undefined,
         archived: search.archived,
       }),
-    ),
+    )
+    return {}
+  },
   component: RouteComponent,
 })
 

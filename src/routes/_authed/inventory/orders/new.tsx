@@ -1,9 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { OrderCart } from '@/components/apps/inventory/order-cart'
 import { title } from '@/components/ui/typography'
+import { getOrderReferencePrefixesQueryOptions } from '@/server/functions/inventory'
 
 export const Route = createFileRoute('/_authed/inventory/orders/new')({
-  loader: () => ({ crumb: 'New order' }),
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.ensureQueryData(getOrderReferencePrefixesQueryOptions())
+    return { crumb: 'New order' }
+  },
   component: RouteComponent,
 })
 

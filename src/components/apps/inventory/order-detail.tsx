@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { BanknoteIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
@@ -23,7 +23,7 @@ type OrderDetailProps = { orderId: string }
 export function OrderDetail({ orderId }: OrderDetailProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data } = useQuery(getOrderQueryOptions(orderId))
+  const { data } = useSuspenseQuery(getOrderQueryOptions(orderId))
   const markPaidMut = useMutation({
     mutationFn: $markOrderPaid,
     onSuccess: () => {
@@ -43,7 +43,6 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
     onError: (e: Error) => toast.error(e.message),
   })
 
-  if (!data) return null
   const { order, items, totalTaxFree, totalTaxIncluded, totalBenefit } = data
 
   return (

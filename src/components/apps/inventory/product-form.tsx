@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { ArchiveIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -22,31 +22,31 @@ import {
   $createInventoryTag,
   $createProduct,
   $createProductionCostLabel,
+  $getProduct,
   $updateProduct,
   getInventoryTagsQueryOptions,
   getProductionCostLabelsQueryOptions,
-  getProductQueryOptions,
   inventoryTagsQueryKey,
   priceTaxIncluded,
   productionCostLabelsQueryKey,
   productsQueryKey,
 } from '@/server/functions/inventory'
 
+type ProductFormExisting = Awaited<ReturnType<typeof $getProduct>>
+
 type ProductFormProps = {
   productId?: string
+  existing?: ProductFormExisting
   onSuccess?: () => void
 }
 
-export function ProductForm({ productId, onSuccess }: ProductFormProps) {
+export function ProductForm({ productId, existing: existingProp, onSuccess }: ProductFormProps) {
   const queryClient = useQueryClient()
   const isEdit = Boolean(productId)
+  const existing = existingProp
 
-  const { data: existing } = useQuery({
-    ...getProductQueryOptions(productId!),
-    enabled: isEdit,
-  })
-  const { data: tags = [] } = useQuery(getInventoryTagsQueryOptions())
-  const { data: labels = [] } = useQuery(getProductionCostLabelsQueryOptions())
+  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
+  const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')

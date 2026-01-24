@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
@@ -56,9 +56,9 @@ const DEFAULT_COLOR = '#6b7280'
 
 function RouteComponent() {
   const queryClient = useQueryClient()
-  const { data: prefixes = [] } = useQuery(getOrderReferencePrefixesQueryOptions())
-  const { data: tags = [] } = useQuery(getInventoryTagsQueryOptions())
-  const { data: labels = [] } = useQuery(getProductionCostLabelsQueryOptions())
+  const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
+  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
+  const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
   const [newPrefix, setNewPrefix] = useState('')
   const [newSortOrder, setNewSortOrder] = useState('')

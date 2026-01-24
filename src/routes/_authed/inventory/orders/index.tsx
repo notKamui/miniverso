@@ -23,8 +23,8 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/_authed/inventory/orders/')({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ search }),
-  loader: ({ deps: { search }, context: { queryClient } }) =>
-    queryClient.fetchQuery(
+  loader: async ({ deps: { search }, context: { queryClient } }) => {
+    await queryClient.ensureQueryData(
       getOrdersQueryOptions({
         page: search.page,
         size: search.size,
@@ -32,7 +32,9 @@ export const Route = createFileRoute('/_authed/inventory/orders/')({
         startDate: search.startDate?.trim() || undefined,
         endDate: search.endDate?.trim() || undefined,
       }),
-    ),
+    )
+    return {}
+  },
   component: RouteComponent,
 })
 
