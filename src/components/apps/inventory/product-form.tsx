@@ -323,6 +323,10 @@ export function ProductForm({ productId, onSuccess }: ProductFormProps) {
                 <Combobox
                   value={row.labelId || null}
                   onValueChange={(v) => updateProductionCost(i, 'labelId', v ?? '')}
+                  itemToStringLabel={(id) => {
+                    const l = labels.find((x) => x.id === id)
+                    return l ? l.name : String(id ?? '')
+                  }}
                 >
                   <ComboboxInput placeholder="Label" />
                   <ComboboxContent>

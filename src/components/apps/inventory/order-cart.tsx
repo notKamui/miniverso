@@ -40,6 +40,12 @@ export function OrderCart() {
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])
   const [addProductId, setAddProductId] = useState('')
+  const [addProduct, setAddProduct] = useState<{
+    id: string
+    name: string
+    priceTaxFree: number
+    vatPercent: number
+  } | null>(null)
   const [addQty, setAddQty] = useState('1')
   const [productSearch, setProductSearch] = useState('')
   const debouncedProductSearch = useDebounce(productSearch, 300)
@@ -72,13 +78,13 @@ export function OrderCart() {
   })
 
   function addItem() {
-    const p = products.find((x) => x.id === addProductId)
+    const p = addProduct
     if (!p) return
     const q = Math.max(1, Math.floor(Number.parseFloat(addQty) || 1))
-    const existing = items.find((i) => i.productId === addProductId)
+    const existing = items.find((i) => i.productId === p.id)
     if (existing) {
       setItems((prev) =>
-        prev.map((i) => (i.productId === addProductId ? { ...i, quantity: i.quantity + q } : i)),
+        prev.map((i) => (i.productId === p.id ? { ...i, quantity: i.quantity + q } : i)),
       )
     } else {
       setItems((prev) => [
@@ -93,6 +99,7 @@ export function OrderCart() {
       ])
     }
     setAddProductId('')
+    setAddProduct(null)
     setAddQty('1')
     setProductSearch('')
   }
@@ -147,7 +154,14 @@ export function OrderCart() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Reference prefix</Label>
-          <Combobox value={prefixId || null} onValueChange={(v) => setPrefixId(v ?? '')}>
+          <Combobox
+            value={prefixId || null}
+            onValueChange={(v) => setPrefixId(v ?? '')}
+            itemToStringLabel={(id) => {
+              const p = prefixes.find((x) => x.id === id)
+              return p ? p.prefix : String(id ?? '')
+            }}
+          >
             <ComboboxInput placeholder="Select prefix" />
             <ComboboxContent>
               <ComboboxList>
@@ -180,8 +194,25 @@ export function OrderCart() {
           <div className="flex-1">
             <Combobox
               value={addProductId || null}
-              onValueChange={(v) => setAddProductId(v ?? '')}
+              onValueChange={(v) => {
+                setAddProductId(v ?? '')
+                const p = products.find((x) => x.id === (v ?? ''))
+                setAddProduct(
+                  p
+                    ? {
+                        id: p.id,
+                        name: p.name,
+                        priceTaxFree: Number(p.priceTaxFree),
+                        vatPercent: Number(p.vatPercent),
+                      }
+                    : null,
+                )
+              }}
               onInputValueChange={(v) => setProductSearch(v)}
+              itemToStringLabel={(id) => {
+                const p = products.find((x) => x.id === id)
+                return p ? `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}` : String(id ?? '')
+              }}
             >
               <ComboboxInput placeholder="Search by name or SKU…" />
               <ComboboxContent>
@@ -205,7 +236,7 @@ export function OrderCart() {
             onChange={(e) => setAddQty(e.target.value)}
             className="w-24"
           />
-          <Button type="button" onClick={addItem} disabled={!addProductId}>
+          <Button type="button" onClick={addItem} disabled={!addProduct}>
             <PlusIcon className="size-4" />
           </Button>
         </div>
