@@ -175,7 +175,6 @@
     "react/no-unknown-property": "error",
     "react/no-unsafe": "error",
     "react/rules-of-hooks": "error",
-    "react-perf/jsx-no-jsx-as-prop": "error",
     "typescript/await-thenable": "error",
     "typescript/ban-ts-comment": "error",
     "typescript/no-floating-promises": "error",
