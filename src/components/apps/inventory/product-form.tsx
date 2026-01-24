@@ -1,7 +1,10 @@
+import { useForm } from '@tanstack/react-form'
 import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { ArchiveIcon, PlusIcon, Trash2Icon } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { FormInput } from '@/components/form/form-input'
+import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
 import {
   Combobox,
@@ -17,7 +20,7 @@ import {
 } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { productFormSchema, type ProductFormValues } from '@/lib/forms/product'
 import {
   $createInventoryTag,
   $createProduct,
@@ -40,38 +43,47 @@ type ProductFormProps = {
   onSuccess?: () => void
 }
 
+function getDefaultValues(existing?: ProductFormExisting): ProductFormValues {
+  if (existing == null) {
+    return {
+      name: '',
+      description: '',
+      sku: '',
+      priceTaxFree: '',
+      vatPercent: '20',
+      quantity: '0',
+      tagIds: [],
+      productionCosts: [],
+    }
+  }
+  return {
+    name: existing.product.name,
+    description: existing.product.description != null ? existing.product.description : '',
+    sku: existing.product.sku ?? '',
+    priceTaxFree: String(existing.product.priceTaxFree),
+    vatPercent: String(existing.product.vatPercent),
+    quantity: String(existing.product.quantity),
+    tagIds: existing.tags.map((t) => t.id),
+    productionCosts: existing.productionCosts.map((c) => ({
+      labelId: c.labelId,
+      amount: String(c.amount),
+    })),
+  }
+}
+
 export function ProductForm({ productId, existing: existingProp, onSuccess }: ProductFormProps) {
   const queryClient = useQueryClient()
   const isEdit = Boolean(productId)
   const existing = existingProp
 
+  const tagIdsSetRef = useRef<((v: string[]) => void) | null>(null)
+  const productionCostsSetRef = useRef<((v: { labelId: string; amount: string }[]) => void) | null>(
+    null,
+  )
+
   const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
-  const [name, setName] = useState(() => existing?.product.name ?? '')
-  const [description, setDescription] = useState(() => existing?.product.description ?? '')
-  const [sku, setSku] = useState(() => existing?.product.sku ?? '')
-  const [priceTaxFree, setPriceTaxFree] = useState(() =>
-    existing != null ? String(existing.product.priceTaxFree) : '',
-  )
-  const [vatPercent, setVatPercent] = useState(() =>
-    existing != null ? String(existing.product.vatPercent) : '20',
-  )
-  const [quantity, setQuantity] = useState(() =>
-    existing != null ? String(existing.product.quantity) : '0',
-  )
-  const [tagIds, setTagIds] = useState<string[]>(() =>
-    existing != null ? existing.tags.map((t) => t.id) : [],
-  )
-  const [productionCosts, setProductionCosts] = useState<{ labelId: string; amount: string }[]>(
-    () =>
-      existing != null
-        ? existing.productionCosts.map((c) => ({
-            labelId: c.labelId,
-            amount: String(c.amount),
-          }))
-        : [],
-  )
   const [newTagName, setNewTagName] = useState('')
   const [newLabelName, setNewLabelName] = useState('')
   const chipsAnchorRef = useComboboxAnchor()
@@ -82,24 +94,6 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
       void queryClient.invalidateQueries({ queryKey: productsQueryKey })
       toast.success('Product created')
       onSuccess?.()
-    },
-    onError: (e: Error) => toast.error(e.message),
-  })
-  const createTagMut = useMutation({
-    mutationFn: $createInventoryTag,
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
-      setTagIds((prev) => [...prev, data.id])
-      setNewTagName('')
-    },
-    onError: (e: Error) => toast.error(e.message),
-  })
-  const createLabelMut = useMutation({
-    mutationFn: $createProductionCostLabel,
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
-      setProductionCosts((prev) => [...prev, { labelId: data.id, amount: '0' }])
-      setNewLabelName('')
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -114,174 +108,177 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
     onError: (e: Error) => toast.error(e.message),
   })
 
-  const priceExcl = Number.parseFloat(priceTaxFree) || 0
-  const vat = Number.parseFloat(vatPercent) || 0
-  const priceIncl = priceTaxIncluded(priceExcl, vat)
+  const form = useForm({
+    defaultValues: getDefaultValues(existing),
+    onSubmit: async ({ value }) => {
+      const parsed = productFormSchema.safeParse(value)
+      if (!parsed.success) {
+        const first = parsed.error.flatten().formErrors[0] ?? parsed.error.issues[0]?.message
+        toast.error(typeof first === 'string' ? first : 'Invalid form')
+        return
+      }
+      const payload = {
+        ...parsed.data,
+        productionCosts: parsed.data.productionCosts.filter((r) => r.labelId),
+      }
+      if (isEdit) {
+        await updateMut.mutateAsync({ data: { ...payload, id: productId! } })
+      } else {
+        await createMut.mutateAsync({ data: payload })
+      }
+    },
+  })
 
-  function addProductionCost() {
-    const first = labels[0]?.id
-    setProductionCosts((prev) => [...prev, { labelId: first ?? '', amount: '0' }])
-  }
-
-  function removeProductionCost(i: number) {
-    setProductionCosts((prev) => prev.filter((_, idx) => idx !== i))
-  }
-
-  function updateProductionCost(i: number, field: 'labelId' | 'amount', value: string) {
-    setProductionCosts((prev) =>
-      prev.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)),
-    )
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const payload = {
-      name: name.trim(),
-      description: description.trim() || undefined,
-      sku: sku.trim(),
-      priceTaxFree: Number.parseFloat(priceTaxFree) || 0,
-      vatPercent: Number.parseFloat(vatPercent) || 0,
-      quantity: Math.max(0, Math.floor(Number.parseFloat(quantity) || 0)),
-      tagIds,
-      productionCosts: productionCosts
-        .filter((r) => r.labelId)
-        .map((r) => ({ labelId: r.labelId, amount: Number.parseFloat(r.amount) || 0 })),
-    }
-    if (isEdit) {
-      updateMut.mutate({ data: { ...payload, id: productId! } })
-    } else {
-      createMut.mutate({ data: payload })
-    }
-  }
-
-  const pending = createMut.isPending || updateMut.isPending
+  const createTagMut = useMutation({
+    mutationFn: $createInventoryTag,
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
+      const set = tagIdsSetRef.current
+      if (set) {
+        const current = form.state.values.tagIds ?? []
+        set([...current, data.id])
+      }
+      setNewTagName('')
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+  const createLabelMut = useMutation({
+    mutationFn: $createProductionCostLabel,
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
+      const set = productionCostsSetRef.current
+      if (set) {
+        const current = form.state.values.productionCosts ?? []
+        set([...current, { labelId: data.id, amount: '0' }])
+      }
+      setNewLabelName('')
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-xl flex-col gap-6">
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        await form.handleSubmit()
+      }}
+      className="flex max-w-xl flex-col gap-6"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="Product name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="sku">SKU</Label>
-          <Input
-            id="sku"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            placeholder="e.g. SKU-001"
-            required
-          />
-        </div>
+        <FormInput form={form} name="name" label="Name" required placeholder="Product name" />
+        <FormInput form={form} name="sku" label="SKU" required placeholder="e.g. SKU-001" />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder="Optional"
-        />
-      </div>
+      <TextInput
+        form={form}
+        name="description"
+        label="Description"
+        rows={2}
+        placeholder="Optional"
+      />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="priceTaxFree">Price (ex. tax) €</Label>
-          <Input
-            id="priceTaxFree"
-            type="number"
-            step="0.01"
-            min="0"
-            value={priceTaxFree}
-            onChange={(e) => setPriceTaxFree(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="vatPercent">VAT %</Label>
-          <Input
-            id="vatPercent"
-            type="number"
-            step="0.01"
-            min="0"
-            max="100"
-            value={vatPercent}
-            onChange={(e) => setVatPercent(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Price (incl. tax) €</Label>
-          <p className="flex h-9 items-center text-muted-foreground">{priceIncl.toFixed(2)}</p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="quantity">Quantity in stock</Label>
-        <Input
-          id="quantity"
+        <FormInput
+          form={form}
+          name="priceTaxFree"
+          label="Price (ex. tax) €"
           type="number"
-          min="0"
-          step="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
+          step="0.01"
+          min={0}
           required
         />
+        <FormInput
+          form={form}
+          name="vatPercent"
+          label="VAT %"
+          type="number"
+          step="0.01"
+          min={0}
+          max={100}
+          required
+        />
+        <form.Subscribe selector={(s) => [s.values.priceTaxFree, s.values.vatPercent]}>
+          {([ptf, vat]) => {
+            const priceExcl = Number.parseFloat(String(ptf ?? '')) || 0
+            const vatNum = Number.parseFloat(String(vat ?? '')) || 0
+            const priceIncl = priceTaxIncluded(priceExcl, vatNum)
+            return (
+              <div className="space-y-2">
+                <Label>Price (incl. tax) €</Label>
+                <p className="flex h-9 items-center text-muted-foreground">
+                  {priceIncl.toFixed(2)}
+                </p>
+              </div>
+            )
+          }}
+        </form.Subscribe>
       </div>
+
+      <FormInput
+        form={form}
+        name="quantity"
+        label="Quantity in stock"
+        type="number"
+        min={0}
+        step={1}
+        required
+      />
 
       <div className="space-y-2">
         <Label>Tags</Label>
-        <Combobox
-          multiple
-          value={tagIds}
-          onValueChange={(v) => setTagIds(Array.isArray(v) ? v : [])}
-        >
-          <ComboboxChips ref={chipsAnchorRef}>
-            {tagIds.map((id) => {
-              const t = tags.find((x) => x.id === id)
-              return <ComboboxChip key={id}>{t?.name ?? id}</ComboboxChip>
-            })}
-            <ComboboxChipsInput placeholder="Add tag…" />
-          </ComboboxChips>
-          <ComboboxContent anchor={chipsAnchorRef}>
-            <ComboboxList>
-              {tags.map((t) => (
-                <ComboboxItem key={t.id} value={t.id}>
-                  {t.name}
-                </ComboboxItem>
-              ))}
-              <ComboboxEmpty>No tags. Add one below.</ComboboxEmpty>
-            </ComboboxList>
-          </ComboboxContent>
-        </Combobox>
-        <div className="flex gap-2">
-          <Input
-            value={newTagName}
-            onChange={(e) => setNewTagName(e.target.value)}
-            placeholder="New tag name"
-            className="max-w-[200px]"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const n = newTagName.trim()
-              if (n) createTagMut.mutate({ data: { name: n, color: '#6b7280' } })
-            }}
-            disabled={!newTagName.trim() || createTagMut.isPending}
-          >
-            Create tag
-          </Button>
-        </div>
+        <form.Field name="tagIds">
+          {(field) => {
+            tagIdsSetRef.current = field.handleChange
+            return (
+              <>
+                <Combobox
+                  multiple
+                  value={field.state.value ?? []}
+                  onValueChange={(v) => field.handleChange(Array.isArray(v) ? v : [])}
+                >
+                  <ComboboxChips ref={chipsAnchorRef}>
+                    {(field.state.value ?? []).map((id) => {
+                      const t = tags.find((x) => x.id === id)
+                      return <ComboboxChip key={id}>{t?.name ?? id}</ComboboxChip>
+                    })}
+                    <ComboboxChipsInput placeholder="Add tag…" />
+                  </ComboboxChips>
+                  <ComboboxContent anchor={chipsAnchorRef}>
+                    <ComboboxList>
+                      {tags.map((t) => (
+                        <ComboboxItem key={t.id} value={t.id}>
+                          {t.name}
+                        </ComboboxItem>
+                      ))}
+                      <ComboboxEmpty>No tags. Add one below.</ComboboxEmpty>
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+                <div className="flex gap-2">
+                  <Input
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder="New tag name"
+                    className="max-w-[200px]"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const n = newTagName.trim()
+                      if (n) createTagMut.mutate({ data: { name: n, color: '#6b7280' } })
+                    }}
+                    disabled={!newTagName.trim() || createTagMut.isPending}
+                  >
+                    Create tag
+                  </Button>
+                </div>
+              </>
+            )
+          }}
+        </form.Field>
       </div>
 
       <div className="space-y-2">
@@ -306,64 +303,94 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
             >
               Create label
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={addProductionCost}>
-              <PlusIcon className="size-4" />
-              Add
-            </Button>
           </div>
         </div>
-        <div className="space-y-2">
-          {productionCosts.map((row, i) => (
-            <div key={i} className="flex gap-2">
-              <div className="flex-1">
-                <Combobox
-                  value={row.labelId || null}
-                  onValueChange={(v) => updateProductionCost(i, 'labelId', v ?? '')}
-                  itemToStringLabel={(id) => {
-                    const l = labels.find((x) => x.id === id)
-                    return l ? l.name : String(id ?? '')
+        <form.Field name="productionCosts" mode="array">
+          {(field) => {
+            productionCostsSetRef.current = field.handleChange
+            const rows = field.state.value ?? []
+            return (
+              <div className="space-y-2">
+                {rows.map((_, i) => (
+                  <div key={i} className="flex gap-2">
+                    <form.Field name={`productionCosts[${i}].labelId`}>
+                      {(lf) => (
+                        <div className="flex-1">
+                          <Combobox
+                            value={lf.state.value || null}
+                            onValueChange={(v) => lf.handleChange(v ?? '')}
+                            itemToStringLabel={(id) => {
+                              const l = labels.find((x) => x.id === id)
+                              return l ? l.name : String(id ?? '')
+                            }}
+                          >
+                            <ComboboxInput placeholder="Label" />
+                            <ComboboxContent>
+                              <ComboboxList>
+                                {labels.map((l) => (
+                                  <ComboboxItem key={l.id} value={l.id}>
+                                    {l.name}
+                                  </ComboboxItem>
+                                ))}
+                                <ComboboxEmpty>No labels. Add one above.</ComboboxEmpty>
+                              </ComboboxList>
+                            </ComboboxContent>
+                          </Combobox>
+                        </div>
+                      )}
+                    </form.Field>
+                    <form.Field name={`productionCosts[${i}].amount`}>
+                      {(af) => (
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          placeholder="Amount"
+                          value={af.state.value ?? ''}
+                          onChange={(e) => af.handleChange(e.target.value)}
+                          className="w-28"
+                        />
+                      )}
+                    </form.Field>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => field.handleChange(rows.filter((_, idx) => idx !== i))}
+                      aria-label="Remove"
+                    >
+                      <Trash2Icon className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    field.pushValue({
+                      labelId: labels[0]?.id ?? '',
+                      amount: '0',
+                    })
                   }}
                 >
-                  <ComboboxInput placeholder="Label" />
-                  <ComboboxContent>
-                    <ComboboxList>
-                      {labels.map((l) => (
-                        <ComboboxItem key={l.id} value={l.id}>
-                          {l.name}
-                        </ComboboxItem>
-                      ))}
-                      <ComboboxEmpty>No labels. Add one above.</ComboboxEmpty>
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
+                  <PlusIcon className="size-4" />
+                  Add
+                </Button>
               </div>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Amount"
-                value={row.amount}
-                onChange={(e) => updateProductionCost(i, 'amount', e.target.value)}
-                className="w-28"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeProductionCost(i)}
-                aria-label="Remove"
-              >
-                <Trash2Icon className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
+            )
+          }}
+        </form.Field>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={pending}>
-          {isEdit ? 'Update' : 'Create'}
-        </Button>
+        <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
+          {([canSubmit, isSubmitting]) => (
+            <Button type="submit" disabled={!canSubmit || isSubmitting}>
+              {isSubmitting ? '…' : isEdit ? 'Update' : 'Create'}
+            </Button>
+          )}
+        </form.Subscribe>
         <Button type="button" variant="outline" onClick={onSuccess}>
           Cancel
         </Button>
