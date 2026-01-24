@@ -110,11 +110,18 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
           ) : (
             <div className="max-h-64 space-y-1 overflow-y-auto">
               {filteredTags.map((tag) => (
-                <button
+                <div
                   key={tag.id}
-                  type="button"
-                  className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                  role="button"
+                  tabIndex={0}
+                  className="group flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
                   onClick={() => handleSelectTag(tag)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleSelectTag(tag)
+                    }
+                  }}
                 >
                   <span className="flex-1 truncate">{tag.description}</span>
                   <Button
@@ -128,7 +135,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
                   >
                     <Trash2Icon className="size-3.5 text-destructive" />
                   </Button>
-                </button>
+                </div>
               ))}
             </div>
           )}
