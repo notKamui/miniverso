@@ -211,7 +211,7 @@ export function UsersList({
   const [searchInput, setSearchInput] = useState(q ?? '')
   useDebouncedEffect(
     () => {
-      const next = searchInput.trim().length ? searchInput.trim() : undefined
+      const next = searchInput.trim().length > 0 ? searchInput.trim() : undefined
       if ((next ?? '') === (q ?? '')) return
       setSearch({ q: next, page: 1 })
     },
@@ -325,7 +325,7 @@ export function UsersList({
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value) => column.toggleVisibility(Boolean(value))}
                   >
                     {meta?.label ?? column.id}
                   </DropdownMenuCheckboxItem>
@@ -351,7 +351,7 @@ export function UsersList({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (

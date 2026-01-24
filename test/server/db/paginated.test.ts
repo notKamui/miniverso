@@ -25,7 +25,7 @@ function makeFakeDb(args: { total: number; rows: any[] }) {
         return {
           from: (_table: any) => ({
             where: (_where: any) => ({
-              execute: async () => [{ total: args.total }],
+              execute: () => [{ total: args.total }],
             }),
           }),
         }
@@ -71,7 +71,7 @@ function makeFakeDb(args: { total: number; rows: any[] }) {
                 orderBy: (orderBy: any) => {
                   calls.rowsOrderBy = orderBy
                   return {
-                    execute: async () => args.rows.map((r) => ({ row: r })),
+                    execute: () => args.rows.map((r) => ({ row: r })),
                   }
                 },
               }
@@ -85,7 +85,8 @@ function makeFakeDb(args: { total: number; rows: any[] }) {
   }
 
   return {
-    transaction: async (fn: any) => fn(tx),
+    // oxlint-disable-next-line typescript/no-unsafe-return
+    transaction: (fn: any) => fn(tx),
     __calls: calls,
   }
 }

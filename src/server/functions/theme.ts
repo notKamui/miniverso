@@ -16,7 +16,7 @@ export const $getTheme = createServerFn({ method: 'GET' }).handler(() => {
 
 export const $setTheme = createServerFn({ method: 'POST' })
   .inputValidator(validate(ThemeSchema))
-  .handler(async ({ data }) => {
+  .handler(({ data }) => {
     if (data === 'system') {
       deleteCookie(key)
       return

@@ -78,14 +78,14 @@ const INCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_INCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
-  .map(globToRegExp)
+  .map((s) => globToRegExp(s))
 
 // Parse comma-separated exclude patterns (no defaults)
 const EXCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_EXCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
-  .map(globToRegExp)
+  .map((s) => globToRegExp(s))
 
 // Verbose logging flag
 const VERBOSE = process.env.STATIC_PRELOAD_VERBOSE === 'true'
@@ -108,7 +108,7 @@ const GZIP_TYPES = (
  */
 function globToRegExp(glob: string): RegExp {
   // Escape regex special chars except *, then replace * with .*
-  const escaped = glob.replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&').replace(/\*/g, '.*')
+  const escaped = glob.replaceAll(/[-/\\^$+?.()|[\]{}]/g, String.raw`\$&`).replaceAll('*', '.*')
   return new RegExp(`^${escaped}$`, 'i')
 }
 
@@ -136,10 +136,8 @@ interface PreloadResult {
 function shouldInclude(relativePath: string): boolean {
   const fileName = relativePath.split(/[/\\]/).pop() ?? relativePath
 
-  if (INCLUDE_PATTERNS.length > 0) {
-    if (!INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
-      return false
-    }
+  if (INCLUDE_PATTERNS.length > 0 && !INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
+    return false
   }
 
   if (EXCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
@@ -205,10 +203,7 @@ function buildResponseFactory(asset: InMemoryAsset): (req: Request) => Response 
   }
 }
 
-async function gzipMaybe(
-  data: Uint8Array<ArrayBuffer>,
-  type: string,
-): Promise<Uint8Array | undefined> {
+function gzipMaybe(data: Uint8Array<ArrayBuffer>, type: string): Uint8Array | undefined {
   if (!ENABLE_GZIP) return undefined
   if (data.byteLength < GZIP_MIN_BYTES) return undefined
   if (!matchesCompressible(type)) return undefined
@@ -290,7 +285,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
 
         if (matchesPattern && withinSizeLimit) {
           const bytes = new Uint8Array(await file.arrayBuffer())
-          const gz = await gzipMaybe(bytes, metadata.type)
+          const gz = gzipMaybe(bytes, metadata.type)
           const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined
           const asset: InMemoryAsset = {
             raw: bytes,
@@ -397,6 +392,7 @@ async function startServer() {
 
   if (error) {
     console.error('❌ Failed to load server module:', error)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 
@@ -423,12 +419,14 @@ async function main() {
   const [migrationError] = await tryAsync(runDatabaseMigrations())
   if (migrationError) {
     console.error('❌ Failed to run database migrations:', migrationError)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 
   const [serverError] = await tryAsync(startServer())
   if (serverError) {
     console.error('❌ Failed to start server:', serverError)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 }

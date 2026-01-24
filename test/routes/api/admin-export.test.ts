@@ -119,7 +119,8 @@ describe('/api/admin/export', () => {
     })
 
     expect(res.status).toBe(200)
-    const lines = (await res.text())
+    const text = await res.text()
+    const lines = text
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean)

@@ -24,7 +24,7 @@ export const Route = createRootRouteWithContext<{
   head: () => ({
     meta: [
       {
-        charSet: 'utf-8',
+        charSet: 'utf8',
       },
       {
         name: 'viewport',
@@ -53,7 +53,7 @@ export const Route = createRootRouteWithContext<{
 
     return { user, requestInfo, socialOAuth, hcaptchaInfo }
   },
-  loader: async () => ({ crumb: 'Home' }),
+  loader: () => ({ crumb: 'Home' }),
   component: RouteComponent,
 })
 

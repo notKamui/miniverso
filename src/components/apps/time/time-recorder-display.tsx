@@ -160,7 +160,7 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
         const entry = row.original
         return (
           <Checkbox
-            checked={!!selectedRows[entry.id]}
+            checked={Boolean(selectedRows[entry.id])}
             onCheckedChange={(value) => {
               if (value) {
                 setSelectedRows((prev) => ({ ...prev, [entry.id]: entry }))

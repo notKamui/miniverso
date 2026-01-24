@@ -6,7 +6,7 @@ import { text } from '@/components/ui/typography'
 export function FieldInfo({ field }: { field: ReactFormField }) {
   return (
     <AnimatePresence>
-      {field.state.meta.isTouched && field.state.meta.errors.length && (
+      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <m.p
           key={`${field.name}Errors`}
           exit={{ height: 0, opacity: 0 }}
@@ -14,7 +14,7 @@ export function FieldInfo({ field }: { field: ReactFormField }) {
           animate={{ height: 'auto', opacity: 1 }}
           className={text({ variant: 'small', color: 'error' })}
         >
-          {field.state.meta.errors.map(({ message }) => message).join(',')}
+          {field.state.meta.errors.map(({ message }) => message as string).join(',')}
         </m.p>
       )}
     </AnimatePresence>

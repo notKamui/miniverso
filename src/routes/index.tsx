@@ -10,7 +10,7 @@ export const Route = createFileRoute('/')({
 })
 
 function RouteComponent() {
-  const isLoggedIn = Route.useLoaderData({ select: ({ user }) => !!user })
+  const isLoggedIn = Route.useLoaderData({ select: ({ user }) => Boolean(user) })
 
   return (
     <>

@@ -153,7 +153,7 @@ function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: str
   const { includeTimeRecorder, userEmail } = args
   const [isExporting, setIsExporting] = useState(false)
 
-  async function downloadExport() {
+  function downloadExport() {
     if (!includeTimeRecorder) {
       toast.error('Select at least one application to export')
       return
@@ -161,13 +161,13 @@ function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: str
 
     setIsExporting(true)
     try {
-      const url = new URL('/api/admin/export', window.location.origin)
+      const url = new URL('/api/admin/export', location.origin)
       if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
       if (userEmail) url.searchParams.set('userEmail', userEmail)
 
       const a = document.createElement('a')
       a.href = url.toString()
-      document.body.appendChild(a)
+      document.body.append(a)
       a.click()
       a.remove()
 
@@ -196,7 +196,7 @@ function useImportNdjson(args: { includeTimeRecorder: boolean; importFile: File 
 
     setIsImporting(true)
     try {
-      const url = new URL('/api/admin/import', window.location.origin)
+      const url = new URL('/api/admin/import', location.origin)
       if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
 
       const res = await fetch(url.toString(), {

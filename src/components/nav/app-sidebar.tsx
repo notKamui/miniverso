@@ -36,7 +36,7 @@ const sections: AppNavGroupProps[] = [
             },
           },
         ],
-        condition: ({ user }) => !!user,
+        condition: ({ user }) => Boolean(user),
       },
       {
         title: 'Admin Dashboard',

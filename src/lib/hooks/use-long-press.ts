@@ -27,7 +27,7 @@ export function useLongPress(
 
   return useMemo(() => {
     if (typeof callback !== 'function') {
-      throw new Error('Callback must be a function')
+      throw new TypeError('Callback must be a function')
     }
 
     function start(event: MouseEvent | TouchEvent) {

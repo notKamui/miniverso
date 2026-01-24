@@ -11,6 +11,7 @@ export function takeUniqueOr<T extends any[], E extends T[number] | null | undef
 ): (values: T) => [E] extends [never] ? T[number] : E | T[number] {
   return (values) => {
     if (values.length === 0) return or()
+    // oxlint-disable-next-line typescript/no-unsafe-return
     return values[0]
   }
 }

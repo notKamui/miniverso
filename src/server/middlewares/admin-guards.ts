@@ -11,16 +11,10 @@ export async function adminApiGuard(args: {
 }) {
   const session = await args.getSession(args.headers)
   if (!session) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
   if (session.user.role !== 'admin') {
-    return new Response(JSON.stringify({ error: 'Admin access required' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return Response.json({ error: 'Admin access required' }, { status: 403 })
   }
 
   return await args.next({ context: { user: session.user } })

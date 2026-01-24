@@ -101,7 +101,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
           </div>
           {tags.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              No tags saved yet. Type a description and click "Save as tag" to create one.
+              No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
             </p>
           ) : filteredTags.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">

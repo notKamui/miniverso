@@ -38,7 +38,10 @@ export function DescriptionInput({
   })
 
   const isSaveAsTagDisabled =
-    trimmedDescription.length === 0 || !!currentEntry || tagExists || createTagMutation.isPending
+    trimmedDescription.length === 0 ||
+    Boolean(currentEntry) ||
+    tagExists ||
+    createTagMutation.isPending
 
   async function onSaveAsTag() {
     if (!trimmedDescription) return

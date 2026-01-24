@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from 'bun:test'
 
 // Prepare mocks before importing the module under test
-const sendMock = mock(async (args: any) => ({ ok: true, args }))
+const sendMock = mock((args: any) => ({ ok: true, args }))
 let constructedApiKey: string | undefined
 
 // Mock env module used by email.tsx
@@ -32,7 +32,7 @@ await mock.module('@daveyplate/better-auth-ui/server', () => ({
 const emailMod = await import('@/lib/utils/email')
 
 describe('email utils', () => {
-  it('initializes Resend with API key from env', async () => {
+  it('initializes Resend with API key from env', () => {
     expect(constructedApiKey).toBe('test-resend-key')
     // resend instance is created at module load; ensure it exists
     expect(emailMod.resend).toBeDefined()

@@ -32,7 +32,7 @@ export const $getUsers = createServerFn({ method: 'GET' })
   .handler(async ({ data: { page, size, search, role } }) => {
     const conditions = [] as (SQL | undefined)[]
     if (search) {
-      const pattern = search.replace(/[%_]/g, '\\$&')
+      const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
       conditions.push(or(ilike(user.name, `%${pattern}%`), ilike(user.email, `%${pattern}%`)))
     }
     if (role) {

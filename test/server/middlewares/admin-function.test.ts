@@ -7,14 +7,15 @@ describe('$$admin', () => {
       try {
         await adminFnGuard({
           user: undefined,
+          // oxlint-disable-next-line typescript/no-unsafe-return
           next: () => new Response('ok') as any,
           deny: (message, status) => {
             throw new Error(`${status}:${message}`)
           },
         })
         return null
-      } catch (e) {
-        return e as Error
+      } catch (error) {
+        return error as Error
       }
     })()
 
@@ -22,7 +23,7 @@ describe('$$admin', () => {
     expect(err?.message).toBe('403:Admin access required')
   })
 
-  it('denies when user is not admin', async () => {
+  it('denies when user is not admin', () => {
     let nextCalled = false
 
     expect(
@@ -30,6 +31,7 @@ describe('$$admin', () => {
         user: { role: 'user' },
         next: () => {
           nextCalled = true
+          // oxlint-disable-next-line typescript/no-unsafe-return
           return new Response('ok') as any
         },
         deny: (message, status) => {
@@ -44,6 +46,7 @@ describe('$$admin', () => {
   it('allows when user is admin', async () => {
     const res = await adminFnGuard({
       user: { role: 'admin' },
+      // oxlint-disable-next-line typescript/no-unsafe-return
       next: () => new Response('ok', { status: 200 }) as any,
       deny: () => new Response('nope', { status: 403 }),
     })

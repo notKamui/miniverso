@@ -20,6 +20,7 @@ describe('Time', () => {
 
   it('from(null|undefined) yields current-time-based instance without throwing', () => {
     const t1 = Time.from(null)
+    // oxlint-disable-next-line unicorn/no-useless-undefined
     const t2 = Time.from(undefined)
     expect(t1).toBeInstanceOf(Time)
     expect(t2).toBeInstanceOf(Time)

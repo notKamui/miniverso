@@ -47,7 +47,7 @@ describe('Collection.associateBy', () => {
 
   it('does not mutate input array', () => {
     const arr = [{ id: 1 }, { id: 2 }]
-    const snapshot = JSON.parse(JSON.stringify(arr))
+    const snapshot = structuredClone(arr)
     Collection.associateBy(arr, (x) => x.id)
     expect(arr).toEqual(snapshot)
   })

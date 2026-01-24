@@ -58,7 +58,7 @@ export function getImportState() {
 function exportQueryBuilder() {
   return {
     orderBy: (_a: any, _b?: any) => ({
-      limit: async (_n: number) => {
+      limit: (_n: number) => {
         if (exportThrowOnQuery) {
           throw new Error('DB should not be called')
         }
@@ -77,15 +77,15 @@ await mock.module('@/server/db', () => ({
           innerJoin: (_table2: any, _on: any) => ({
             where: (_where: any) => exportQueryBuilder(),
           }),
-          where: async (_where: any) => {
-            return Array.from(usersByEmail.values())
+          where: (_where: any) => {
+            return [...usersByEmail.values()]
           },
         }
       },
     }),
     insert: (_table: any) => ({
       values: (values: any[]) => ({
-        onConflictDoUpdate: async (_cfg: any) => {
+        onConflictDoUpdate: (_cfg: any) => {
           insertCalls.push(values as InsertedTimeEntry[])
           for (const v of values as InsertedTimeEntry[]) {
             timeEntriesById.set(v.id, v)
@@ -98,6 +98,7 @@ await mock.module('@/server/db', () => ({
       if (!transactionDb) {
         throw new Error('Transaction mock not configured')
       }
+      // oxlint-disable-next-line typescript/no-unsafe-return
       return await transactionDb.transaction(fn)
     },
   },

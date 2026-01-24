@@ -20,10 +20,11 @@ export const $$emitErrors = createMiddleware({ type: 'function' })
       } else if (error instanceof DOMException && error.name === 'AbortError') {
         // Ignore abort errors
       } else if (
-        !!error &&
+        Boolean(error) &&
+        error !== null &&
         typeof error === 'object' &&
         'message' in error &&
-        typeof error?.message === 'string'
+        typeof error.message === 'string'
       ) {
         try {
           const actualError = JSON.parse(error.message)
