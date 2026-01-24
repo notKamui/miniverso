@@ -1,6 +1,6 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { ArchiveIcon, PlusIcon, Trash2Icon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,37 +48,33 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
   const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [sku, setSku] = useState('')
-  const [priceTaxFree, setPriceTaxFree] = useState('')
-  const [vatPercent, setVatPercent] = useState('20')
-  const [quantity, setQuantity] = useState('0')
-  const [tagIds, setTagIds] = useState<string[]>([])
-  const [productionCosts, setProductionCosts] = useState<{ labelId: string; amount: string }[]>([])
-  const [initialized, setInitialized] = useState(false)
+  const [name, setName] = useState(() => existing?.product.name ?? '')
+  const [description, setDescription] = useState(() => existing?.product.description ?? '')
+  const [sku, setSku] = useState(() => existing?.product.sku ?? '')
+  const [priceTaxFree, setPriceTaxFree] = useState(() =>
+    existing != null ? String(existing.product.priceTaxFree) : '',
+  )
+  const [vatPercent, setVatPercent] = useState(() =>
+    existing != null ? String(existing.product.vatPercent) : '20',
+  )
+  const [quantity, setQuantity] = useState(() =>
+    existing != null ? String(existing.product.quantity) : '0',
+  )
+  const [tagIds, setTagIds] = useState<string[]>(() =>
+    existing != null ? existing.tags.map((t) => t.id) : [],
+  )
+  const [productionCosts, setProductionCosts] = useState<{ labelId: string; amount: string }[]>(
+    () =>
+      existing != null
+        ? existing.productionCosts.map((c) => ({
+            labelId: c.labelId,
+            amount: String(c.amount),
+          }))
+        : [],
+  )
   const [newTagName, setNewTagName] = useState('')
   const [newLabelName, setNewLabelName] = useState('')
   const chipsAnchorRef = useComboboxAnchor()
-
-  useEffect(() => {
-    if (isEdit && existing && !initialized) {
-      setName(existing.product.name)
-      setDescription(existing.product.description ?? '')
-      setSku(existing.product.sku ?? '')
-      setPriceTaxFree(String(existing.product.priceTaxFree))
-      setVatPercent(String(existing.product.vatPercent))
-      setQuantity(String(existing.product.quantity))
-      setTagIds(existing.tags.map((t) => t.id))
-      setProductionCosts(
-        existing.productionCosts.map((c) => ({
-          labelId: c.labelId,
-          amount: String(c.amount),
-        })),
-      )
-      setInitialized(true)
-    }
-  }, [isEdit, existing, initialized])
 
   const createMut = useMutation({
     mutationFn: $createProduct,

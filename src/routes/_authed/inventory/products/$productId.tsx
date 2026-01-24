@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ProductForm } from '@/components/apps/inventory/product-form'
 import { title } from '@/components/ui/typography'
@@ -15,7 +14,7 @@ export const Route = createFileRoute('/_authed/inventory/products/$productId')({
       queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
       queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
     ])
-    return { crumb: productData.product.name }
+    return { crumb: productData.product.name, productData }
   },
   component: RouteComponent,
 })
@@ -23,13 +22,13 @@ export const Route = createFileRoute('/_authed/inventory/products/$productId')({
 function RouteComponent() {
   const navigate = useNavigate()
   const { productId } = Route.useParams()
-  const { data } = useSuspenseQuery(getProductQueryOptions(productId))
+  const { productData } = Route.useLoaderData()
   return (
     <div className="flex flex-col gap-6">
-      <h2 className={title({ h: 2 })}>{data.product.name}</h2>
+      <h2 className={title({ h: 2 })}>{productData.product.name}</h2>
       <ProductForm
         productId={productId}
-        existing={data}
+        existing={productData}
         onSuccess={() => navigate({ to: '/inventory' })}
       />
     </div>

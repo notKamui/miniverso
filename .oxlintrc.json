@@ -25,7 +25,7 @@
     "eslint/constructor-super": "error",
     "eslint/default-case-last": "error",
     "eslint/default-param-last": "error",
-    "eslint/eqeqeq": "error",
+    "eslint/eqeqeq": ["error", "always", { "null": "ignore" }],
     "eslint/for-direction": "error",
     "eslint/no-implicit-coercion": "error",
     "eslint/no-unassigned-vars": "error",
