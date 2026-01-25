@@ -56,9 +56,9 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
   }
 
   return (
-    <Combobox<TimeEntryTag>
+    <Combobox
       items={tags}
-      value={null}
+      value={null as TimeEntryTag | null}
       onValueChange={(v) => {
         if (v) handleSelectTag(v)
       }}
