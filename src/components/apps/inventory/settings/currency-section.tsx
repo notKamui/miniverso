@@ -16,8 +16,8 @@ export function CurrencySection() {
 
   const setMut = useMutation({
     mutationFn: $setInventoryCurrency,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryCurrencyQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryCurrencyQueryKey })
     },
     onError: (e: Error) => toast.error(e.message),
   })

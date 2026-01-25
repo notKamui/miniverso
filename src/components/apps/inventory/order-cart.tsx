@@ -66,14 +66,15 @@ export function OrderCart() {
 
   const createMut = useMutation({
     mutationFn: $createOrder,
-    onSuccess: (newOrder) => {
-      void queryClient.invalidateQueries({ queryKey: ordersQueryKey })
+    onSuccess: async (newOrder) => {
+      let invalidations = [queryClient.invalidateQueries({ queryKey: ordersQueryKey })]
       if (newOrder.status === 'paid') {
-        void queryClient.invalidateQueries({ queryKey: productsQueryKey })
-        void queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey })
+        invalidations.push(queryClient.invalidateQueries({ queryKey: productsQueryKey }))
+        invalidations.push(queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }))
       }
+      await Promise.all(invalidations)
       toast.success('Order created')
-      void navigate({ to: '/inventory/orders' })
+      await navigate({ to: '/inventory/orders' })
     },
     onError: (e: Error) => toast.error(e.message),
   })

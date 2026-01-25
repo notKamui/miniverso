@@ -44,10 +44,15 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   })
   const deleteMut = useMutation({
     mutationFn: $deleteOrder,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ordersQueryKey })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
+        queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] }),
+        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }),
+      ])
       toast.success('Order deleted')
-      void navigate({ to: '/inventory/orders' })
+      await navigate({ to: '/inventory/orders' })
     },
     onError: (e: Error) => toast.error(e.message),
   })

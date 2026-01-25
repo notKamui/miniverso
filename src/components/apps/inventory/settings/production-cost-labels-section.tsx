@@ -44,8 +44,8 @@ export function ProductionCostLabelsSection() {
 
   const createLabelMut = useMutation({
     mutationFn: $createProductionCostLabel,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
       setNewLabelName('')
       setNewLabelColor(DEFAULT_COLOR)
       toast.success('Label added')
@@ -55,8 +55,8 @@ export function ProductionCostLabelsSection() {
 
   const updateLabelMut = useMutation({
     mutationFn: $updateProductionCostLabel,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
       setEditingLabelId(null)
       toast.success('Label updated')
     },
@@ -65,8 +65,8 @@ export function ProductionCostLabelsSection() {
 
   const deleteLabelMut = useMutation({
     mutationFn: $deleteProductionCostLabel,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
       toast.success('Label deleted')
     },
     onError: (e: Error) => toast.error(e.message),

@@ -58,8 +58,8 @@ export function ProductTable({
   const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const updateMut = useMutation({
     mutationFn: $updateProduct,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: productsQueryKey })
       toast.success('Product updated')
     },
     onError: (e: Error) => toast.error(e.message),

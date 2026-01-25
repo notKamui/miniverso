@@ -39,8 +39,8 @@ export function OrderReferencePrefixesSection() {
 
   const createMut = useMutation({
     mutationFn: $createOrderReferencePrefix,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
       setNewPrefix('')
       toast.success('Prefix added')
     },
@@ -49,8 +49,8 @@ export function OrderReferencePrefixesSection() {
 
   const updateMut = useMutation({
     mutationFn: $updateOrderReferencePrefix,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
       setEditingId(null)
       toast.success('Prefix updated')
     },
@@ -59,8 +59,8 @@ export function OrderReferencePrefixesSection() {
 
   const deleteMut = useMutation({
     mutationFn: $deleteOrderReferencePrefix,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
       toast.success('Prefix deleted')
     },
     onError: (e: Error) => toast.error(e.message),

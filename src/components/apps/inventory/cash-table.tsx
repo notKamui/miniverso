@@ -30,8 +30,8 @@ export function CashTable() {
 
   const createMut = useMutation({
     mutationFn: $createCash,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
       toast.success('Row added')
     },
     onError: (e: Error) => toast.error(e.message),
@@ -39,16 +39,16 @@ export function CashTable() {
 
   const updateMut = useMutation({
     mutationFn: $updateCash,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
     },
     onError: (e: Error) => toast.error(e.message),
   })
 
   const deleteMut = useMutation({
     mutationFn: $deleteCash,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
       toast.success('Row deleted')
     },
     onError: (e: Error) => toast.error(e.message),
@@ -56,8 +56,8 @@ export function CashTable() {
 
   const reorderMut = useMutation({
     mutationFn: $reorderCashRow,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
     },
     onError: (e: Error) => toast.error(e.message),
   })

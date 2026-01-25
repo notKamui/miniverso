@@ -44,8 +44,8 @@ export function ProductTagsSection() {
 
   const createTagMut = useMutation({
     mutationFn: $createInventoryTag,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
       setNewTagName('')
       setNewTagColor(DEFAULT_COLOR)
       toast.success('Tag added')
@@ -55,8 +55,8 @@ export function ProductTagsSection() {
 
   const updateTagMut = useMutation({
     mutationFn: $updateInventoryTag,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
       setEditingTagId(null)
       toast.success('Tag updated')
     },
@@ -65,8 +65,8 @@ export function ProductTagsSection() {
 
   const deleteTagMut = useMutation({
     mutationFn: $deleteInventoryTag,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
       toast.success('Tag deleted')
     },
     onError: (e: Error) => toast.error(e.message),

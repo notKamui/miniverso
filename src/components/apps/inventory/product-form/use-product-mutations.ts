@@ -11,8 +11,11 @@ export function useProductMutations(productId: string | undefined, onSuccess?: (
 
   const createMut = useMutation({
     mutationFn: $createProduct,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productsQueryKey })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] }),
+      ])
       toast.success('Product created')
       onSuccess?.()
     },
@@ -21,11 +24,11 @@ export function useProductMutations(productId: string | undefined, onSuccess?: (
 
   const updateMut = useMutation({
     mutationFn: $updateProduct,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: productsQueryKey })
-      if (productId) {
-        void queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] })
-      }
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] }),
+      ])
       toast.success('Product updated')
       onSuccess?.()
     },
