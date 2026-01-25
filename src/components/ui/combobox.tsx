@@ -116,14 +116,7 @@ function ComboboxContent({
   )
 }
 
-export interface ComboboxListProps<Item = unknown> extends Omit<
-  ComboboxPrimitive.List.Props,
-  'children'
-> {
-  children?: React.ReactNode | ((item: Item, index: number) => React.ReactNode)
-}
-
-function ComboboxList<Item = unknown>({ className, children, ...props }: ComboboxListProps<Item>) {
+function ComboboxList({ className, children, ...props }: ComboboxPrimitive.List.Props) {
   return (
     <ComboboxPrimitive.List
       data-slot="combobox-list"

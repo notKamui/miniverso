@@ -42,7 +42,7 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                         >
                           <ComboboxInput placeholder="Label" />
                           <ComboboxContent>
-                            <ComboboxList<LabelOption>>
+                            <ComboboxList>
                               {(l) => (
                                 <ComboboxItem key={l.id} value={l}>
                                   <span className="flex items-center gap-1.5">

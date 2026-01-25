@@ -66,7 +66,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
     >
       <ComboboxInput placeholder="Select tag…" disabled={disabled} />
       <ComboboxContent>
-        <ComboboxList<TimeEntryTag>>
+        <ComboboxList>
           {(tag) => (
             <ComboboxItem key={tag.id} value={tag} className="flex items-center gap-2">
               <span className="flex-1 truncate">{tag.description}</span>
