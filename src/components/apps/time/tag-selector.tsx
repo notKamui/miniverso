@@ -56,13 +56,13 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
   }
 
   return (
-    <Combobox
+    <Combobox<TimeEntryTag>
       items={tags}
       value={null}
       onValueChange={(v) => {
         if (v) handleSelectTag(v)
       }}
-      itemToStringLabel={(t: TimeEntryTag | null) => (t ? t.description : '')}
+      itemToStringLabel={(t) => (t ? t.description : '')}
     >
       <ComboboxInput placeholder="Select tag…" disabled={disabled} />
       <ComboboxContent>

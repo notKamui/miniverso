@@ -193,7 +193,11 @@ export function OrderCart() {
         <div className="flex gap-2">
           <div className="flex-1">
             <Combobox
-              items={products}
+              items={
+                addProduct && !products.some((p) => p.id === addProduct.id)
+                  ? [addProduct, ...products]
+                  : products
+              }
               value={addProduct}
               onValueChange={(v) => setAddProduct(v ?? null)}
               onInputValueChange={(v) => setProductSearch(v)}
