@@ -8,6 +8,7 @@ import * as z from 'zod'
 import { DataTable } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createCombobox } from '@/components/ui/combobox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ import { useDebounce } from '@/lib/hooks/use-debounce'
 import { contrastTextForHex } from '@/lib/utils/color'
 import {
   $updateProduct,
+  getInventoryTagsQueryOptions,
   getProductsQueryOptions,
   priceTaxIncluded,
   productsQueryKey,
@@ -34,26 +36,33 @@ import {
 
 const LOW_STOCK_THRESHOLD = 5
 
+type InventoryTag = { id: string; name: string; color: string }
+const TagCombobox = createCombobox<InventoryTag, true>()
+
 const searchSchema = z.object({
   page: z.number().int().min(1).default(1),
   size: z.number().int().min(1).max(100).default(20),
   q: z.string().optional(),
   archived: z.enum(['all', 'active', 'archived']).default('all'),
+  tagIds: z.array(z.uuid()).optional(),
 })
 
 export const Route = createFileRoute('/_authed/inventory/')({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps: { search }, context: { queryClient } }) => {
-    await queryClient.ensureQueryData(
-      getProductsQueryOptions({
-        page: search.page,
-        size: search.size,
-        search: search.q?.trim() || undefined,
-        archived: search.archived,
-      }),
-    )
-    return {}
+    await Promise.all([
+      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
+      queryClient.ensureQueryData(
+        getProductsQueryOptions({
+          page: search.page,
+          size: search.size,
+          search: search.q?.trim() || undefined,
+          archived: search.archived,
+          tagIds: search.tagIds,
+        }),
+      ),
+    ])
   },
   component: RouteComponent,
 })
@@ -64,6 +73,7 @@ function RouteComponent() {
   const search = Route.useSearch()
   const [qInput, setQInput] = useState(search.q ?? '')
   const debouncedQ = useDebounce(qInput, 300)
+  const tagFilterAnchorRef = TagCombobox.useAnchor()
 
   const updateMut = useMutation({
     mutationFn: $updateProduct,
@@ -74,12 +84,14 @@ function RouteComponent() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: productsPage } = useSuspenseQuery(
     getProductsQueryOptions({
       page: search.page,
       size: search.size,
       search: search.q?.trim() || undefined,
       archived: search.archived,
+      tagIds: search.tagIds,
     }),
   )
 
@@ -223,7 +235,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className={title({ h: 2 })}>Overview</h2>
+        <h2 className={title({ h: 2 })}>Products</h2>
         <Button asChild>
           <Link to="/inventory/products/new">
             <Plus className="size-4" />
@@ -257,6 +269,46 @@ function RouteComponent() {
             <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
+        <TagCombobox.Root
+          multiple
+          items={tags}
+          value={tags.filter((t) => (search.tagIds ?? []).includes(t.id))}
+          onValueChange={(v) =>
+            navigate({
+              to: '.',
+              search: { ...search, tagIds: v.length > 0 ? v.map((t) => t.id) : undefined, page: 1 },
+            })
+          }
+          itemToStringLabel={(t) => t.name}
+        >
+          <TagCombobox.Chips ref={tagFilterAnchorRef} className="max-w-64 min-w-32">
+            {tags
+              .filter((t) => (search.tagIds ?? []).includes(t.id))
+              .map((t) => (
+                <TagCombobox.Chip
+                  key={t.id}
+                  style={
+                    t.color
+                      ? { backgroundColor: t.color, color: contrastTextForHex(t.color) }
+                      : undefined
+                  }
+                >
+                  {t.name}
+                </TagCombobox.Chip>
+              ))}
+            <TagCombobox.ChipsInput placeholder="Filter by tag…" />
+          </TagCombobox.Chips>
+          <TagCombobox.Content anchor={tagFilterAnchorRef}>
+            <TagCombobox.List>
+              {(t) => (
+                <TagCombobox.Item key={t.id} value={t}>
+                  {t.name}
+                </TagCombobox.Item>
+              )}
+            </TagCombobox.List>
+            <TagCombobox.Empty>No tags.</TagCombobox.Empty>
+          </TagCombobox.Content>
+        </TagCombobox.Root>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

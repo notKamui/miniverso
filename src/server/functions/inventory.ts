@@ -7,6 +7,7 @@ import {
   count,
   desc,
   eq,
+  exists,
   gte,
   inArray,
   ilike,
@@ -485,6 +486,7 @@ const getProductsSchema = z.object({
   size: z.number().int().min(1).max(100).default(20),
   search: z.string().trim().min(1).max(500).optional(),
   archived: z.enum(['all', 'active', 'archived']).default('all'),
+  tagIds: z.array(z.uuid()).optional(),
 })
 
 export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema>) {
@@ -499,7 +501,7 @@ export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema
 export const $getProducts = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(validate(getProductsSchema))
-  .handler(async ({ context: { user }, data: { page, size, search, archived } }) => {
+  .handler(async ({ context: { user }, data: { page, size, search, archived, tagIds } }) => {
     const conditions: Parameters<typeof and>[0][] = [eq(product.userId, user.id)]
     if (search) {
       const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
@@ -507,6 +509,16 @@ export const $getProducts = createServerFn({ method: 'GET' })
     }
     if (archived === 'active') conditions.push(isNull(product.archivedAt))
     else if (archived === 'archived') conditions.push(isNotNull(product.archivedAt))
+    if (tagIds?.length) {
+      conditions.push(
+        exists(
+          db
+            .select()
+            .from(productTag)
+            .where(and(eq(productTag.productId, product.id), inArray(productTag.tagId, tagIds))),
+        ),
+      )
+    }
 
     const pageResult = await paginated({
       table: product,
