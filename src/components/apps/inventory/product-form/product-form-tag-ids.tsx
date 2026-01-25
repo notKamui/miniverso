@@ -12,6 +12,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox'
 import { Label } from '@/components/ui/label'
+import { contrastTextForHex } from '@/lib/utils/color'
 
 type Tag = { id: string; name: string; color: string }
 
@@ -35,7 +36,21 @@ export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
             <ComboboxChips ref={chipsAnchorRef}>
               {(field.state.value ?? []).map((id) => {
                 const t = tags.find((x) => x.id === id)
-                return <ComboboxChip key={id}>{t?.name ?? id}</ComboboxChip>
+                return (
+                  <ComboboxChip
+                    key={id}
+                    style={
+                      t?.color
+                        ? {
+                            backgroundColor: t.color,
+                            color: contrastTextForHex(t.color),
+                          }
+                        : undefined
+                    }
+                  >
+                    {t?.name ?? id}
+                  </ComboboxChip>
+                )
               })}
               <ComboboxChipsInput placeholder="Add tag…" />
             </ComboboxChips>

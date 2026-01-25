@@ -47,7 +47,14 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                             <ComboboxList>
                               {labels.map((l) => (
                                 <ComboboxItem key={l.id} value={l.id}>
-                                  {l.name}
+                                  <span className="flex items-center gap-1.5">
+                                    <span
+                                      className="size-2 shrink-0 rounded-sm"
+                                      style={{ backgroundColor: l.color }}
+                                      aria-hidden
+                                    />
+                                    {l.name}
+                                  </span>
                                 </ComboboxItem>
                               ))}
                               <ComboboxEmpty>No labels.</ComboboxEmpty>

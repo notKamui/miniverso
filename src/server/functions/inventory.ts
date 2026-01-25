@@ -508,13 +508,57 @@ export const $getProducts = createServerFn({ method: 'GET' })
     if (archived === 'active') conditions.push(isNull(product.archivedAt))
     else if (archived === 'archived') conditions.push(isNotNull(product.archivedAt))
 
-    return paginated({
+    const pageResult = await paginated({
       table: product,
       where: and(...conditions),
       orderBy: asc(product.name),
       page,
       size,
     })
+
+    const productIds = pageResult.items.map((p) => p.id)
+    if (productIds.length === 0) {
+      return { ...pageResult, items: pageResult.items.map((p) => ({ ...p, tags: [], totalProductionCost: 0 })) }
+    }
+
+    const [tagsRows, costsRows] = await Promise.all([
+      db
+        .select({
+          productId: productTag.productId,
+          id: inventoryTag.id,
+          name: inventoryTag.name,
+          color: inventoryTag.color,
+        })
+        .from(productTag)
+        .innerJoin(inventoryTag, eq(productTag.tagId, inventoryTag.id))
+        .where(inArray(productTag.productId, productIds)),
+      db
+        .select({
+          productId: productProductionCost.productId,
+          amount: productProductionCost.amount,
+        })
+        .from(productProductionCost)
+        .where(inArray(productProductionCost.productId, productIds)),
+    ])
+
+    const tagsByProduct: Record<string, { id: string; name: string; color: string }[]> = {}
+    for (const r of tagsRows) {
+      if (!tagsByProduct[r.productId]) tagsByProduct[r.productId] = []
+      tagsByProduct[r.productId].push({ id: r.id, name: r.name, color: r.color })
+    }
+
+    const costByProduct: Record<string, number> = {}
+    for (const r of costsRows) {
+      costByProduct[r.productId] = (costByProduct[r.productId] ?? 0) + Number(r.amount)
+    }
+
+    const items = pageResult.items.map((p) => ({
+      ...p,
+      tags: tagsByProduct[p.id] ?? [],
+      totalProductionCost: costByProduct[p.id] ?? 0,
+    }))
+
+    return { ...pageResult, items }
   })
 
 export function getProductQueryOptions(productId: string) {

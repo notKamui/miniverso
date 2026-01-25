@@ -1,12 +1,19 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { PackageIcon, PlusIcon } from 'lucide-react'
+import { Archive, ArchiveRestore, MoreVertical, Package, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import * as z from 'zod'
 import { DataTable } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -17,7 +24,13 @@ import {
 } from '@/components/ui/select'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
-import { getProductsQueryOptions, priceTaxIncluded } from '@/server/functions/inventory'
+import { contrastTextForHex } from '@/lib/utils/color'
+import {
+  $updateProduct,
+  getProductsQueryOptions,
+  priceTaxIncluded,
+  productsQueryKey,
+} from '@/server/functions/inventory'
 
 const LOW_STOCK_THRESHOLD = 5
 
@@ -47,9 +60,19 @@ export const Route = createFileRoute('/_authed/inventory/')({
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const search = Route.useSearch()
   const [qInput, setQInput] = useState(search.q ?? '')
   const debouncedQ = useDebounce(qInput, 300)
+
+  const updateMut = useMutation({
+    mutationFn: $updateProduct,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: productsQueryKey })
+      toast.success('Product updated')
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
 
   const { data: productsPage } = useSuspenseQuery(
     getProductsQueryOptions({
@@ -121,6 +144,77 @@ function RouteComponent() {
         )
       },
     },
+    {
+      accessorKey: 'tags',
+      header: 'Tags',
+      cell: ({ row }) => {
+        const tags = row.original.tags
+        if (!tags?.length) return '—'
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((t) => (
+              <span
+                key={t.id}
+                className="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: t.color,
+                  color: contrastTextForHex(t.color),
+                }}
+              >
+                {t.name}
+              </span>
+            ))}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'totalProductionCost',
+      header: 'Prod. cost',
+      cell: ({ row }) => {
+        const c = row.original.totalProductionCost ?? 0
+        return `${Number(c).toFixed(2)} €`
+      },
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => {
+        const p = row.original
+        const isArchived = Boolean(p.archivedAt)
+        return (
+          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    updateMut.mutate({ data: { id: p.id, archivedAt: !isArchived } })
+                  }
+                  disabled={updateMut.isPending}
+                >
+                  {isArchived ? (
+                    <>
+                      <ArchiveRestore className="size-4" />
+                      Unarchive
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="size-4" />
+                      Archive
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )
+      },
+    },
   ]
 
   return (
@@ -129,7 +223,7 @@ function RouteComponent() {
         <h2 className={title({ h: 2 })}>Overview</h2>
         <Button asChild>
           <Link to="/inventory/products/new">
-            <PlusIcon className="size-4" />
+            <Plus className="size-4" />
             Add product
           </Link>
         </Button>
@@ -166,7 +260,7 @@ function RouteComponent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <PackageIcon className="size-4 text-muted-foreground" />
+            <Package className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{total}</p>
