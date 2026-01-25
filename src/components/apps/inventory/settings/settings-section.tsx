@@ -19,7 +19,7 @@ export function SettingsSection({
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-md py-2 text-left transition-colors hover:bg-muted/50"
+          className="flex w-full items-center justify-between rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/50"
         >
           <div>
             <h3 className="text-base font-medium">{title}</h3>
