@@ -43,7 +43,7 @@ const sections: AppNavGroupProps[] = [
         link: { to: '/inventory' },
         icon: PackageIcon,
         items: [
-          { title: 'Overview', link: { to: '/inventory' } },
+          { title: 'Products', link: { to: '/inventory' } },
           { title: 'Orders', link: { to: '/inventory/orders' } },
           { title: 'Statistics', link: { to: '/inventory/stats' } },
           { title: 'Settings', link: { to: '/inventory/settings' } },
