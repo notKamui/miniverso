@@ -28,14 +28,10 @@ export const $getOrderReferencePrefixes = createServerFn({ method: 'GET' })
         id: inventoryOrderReferencePrefix.id,
         userId: inventoryOrderReferencePrefix.userId,
         prefix: inventoryOrderReferencePrefix.prefix,
-        sortOrder: inventoryOrderReferencePrefix.sortOrder,
       })
       .from(inventoryOrderReferencePrefix)
       .where(eq(inventoryOrderReferencePrefix.userId, user.id))
-      .orderBy(
-        asc(inventoryOrderReferencePrefix.sortOrder),
-        asc(inventoryOrderReferencePrefix.prefix),
-      ),
+      .orderBy(asc(inventoryOrderReferencePrefix.prefix)),
   )
 
 const prefixSchema = z
@@ -46,15 +42,8 @@ const prefixSchema = z
 
 export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
-    validate(
-      z.object({
-        prefix: prefixSchema,
-        sortOrder: z.number().int().min(0).optional(),
-      }),
-    ),
-  )
-  .handler(async ({ context: { user }, data: { prefix, sortOrder } }) => {
+  .inputValidator(validate(z.object({ prefix: prefixSchema })))
+  .handler(async ({ context: { user }, data: { prefix } }) => {
     const p = prefix.trim()
     const existing = await db
       .select()
@@ -70,12 +59,11 @@ export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
 
     return db
       .insert(inventoryOrderReferencePrefix)
-      .values({ userId: user.id, prefix: p, sortOrder: sortOrder ?? 0 })
+      .values({ userId: user.id, prefix: p })
       .returning({
         id: inventoryOrderReferencePrefix.id,
         userId: inventoryOrderReferencePrefix.userId,
         prefix: inventoryOrderReferencePrefix.prefix,
-        sortOrder: inventoryOrderReferencePrefix.sortOrder,
       })
       .then(
         takeUniqueOr(() => {
@@ -86,19 +74,10 @@ export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
 
 export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
-    validate(
-      z.object({
-        id: z.uuid(),
-        prefix: prefixSchema.optional(),
-        sortOrder: z.number().int().min(0).optional(),
-      }),
-    ),
-  )
-  .handler(async ({ context: { user }, data: { id, prefix, sortOrder } }) => {
+  .inputValidator(validate(z.object({ id: z.uuid(), prefix: prefixSchema.optional() })))
+  .handler(async ({ context: { user }, data: { id, prefix } }) => {
     const set: Record<string, unknown> = {}
     if (prefix !== undefined) set.prefix = prefix.trim()
-    if (sortOrder !== undefined) set.sortOrder = sortOrder
     if (Object.keys(set).length === 0) {
       const row = await db
         .select()
@@ -126,7 +105,6 @@ export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
         id: inventoryOrderReferencePrefix.id,
         userId: inventoryOrderReferencePrefix.userId,
         prefix: inventoryOrderReferencePrefix.prefix,
-        sortOrder: inventoryOrderReferencePrefix.sortOrder,
       })
       .then(takeUniqueOrNull)
     if (!row) throw notFound()

@@ -1,4 +1,7 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatMoney } from '@/lib/utils/format-money'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { Section } from '../section'
 
 type TopByRevenue = { productId: string; productName: string | null; revenue: number }
@@ -40,6 +43,7 @@ export function TopProductsSection({
   topByBenefit,
   topByQuantitySold,
 }: TopProductsSectionProps) {
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   return (
     <Section
       title="Top products (date range)"
@@ -51,7 +55,7 @@ export function TopProductsSection({
             <CardTitle className="text-base">Top by revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <TopList items={topByRevenue} valueToString={(t) => `${t.revenue.toFixed(2)} €`} />
+            <TopList items={topByRevenue} valueToString={(t) => formatMoney(t.revenue, currency)} />
           </CardContent>
         </Card>
         <Card>
@@ -59,7 +63,7 @@ export function TopProductsSection({
             <CardTitle className="text-base">Top by benefit</CardTitle>
           </CardHeader>
           <CardContent>
-            <TopList items={topByBenefit} valueToString={(t) => `${t.benefit.toFixed(2)} €`} />
+            <TopList items={topByBenefit} valueToString={(t) => formatMoney(t.benefit, currency)} />
           </CardContent>
         </Card>
         <Card>

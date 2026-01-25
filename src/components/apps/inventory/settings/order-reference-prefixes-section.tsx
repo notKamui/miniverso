@@ -34,17 +34,14 @@ export function OrderReferencePrefixesSection() {
   const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
 
   const [newPrefix, setNewPrefix] = useState('')
-  const [newSortOrder, setNewSortOrder] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editPrefix, setEditPrefix] = useState('')
-  const [editSortOrder, setEditSortOrder] = useState('')
 
   const createMut = useMutation({
     mutationFn: $createOrderReferencePrefix,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
       setNewPrefix('')
-      setNewSortOrder('')
       toast.success('Prefix added')
     },
     onError: (e: Error) => toast.error(e.message),
@@ -74,20 +71,13 @@ export function OrderReferencePrefixesSection() {
   function openEdit(p: (typeof prefixes)[0]) {
     setEditingId(p.id)
     setEditPrefix(p.prefix)
-    setEditSortOrder(String(p.sortOrder))
   }
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     const p = newPrefix.trim()
     if (!p) return
-    createMut.mutate({
-      data: {
-        prefix: p,
-        sortOrder:
-          newSortOrder !== '' ? Math.max(0, Number.parseInt(newSortOrder, 10) || 0) : undefined,
-      },
-    })
+    createMut.mutate({ data: { prefix: p } })
   }
 
   function handleUpdate(e: React.FormEvent) {
@@ -95,14 +85,7 @@ export function OrderReferencePrefixesSection() {
     if (!editingId) return
     const p = editPrefix.trim()
     if (!p) return
-    updateMut.mutate({
-      data: {
-        id: editingId,
-        prefix: p,
-        sortOrder:
-          editSortOrder !== '' ? Math.max(0, Number.parseInt(editSortOrder, 10) || 0) : undefined,
-      },
-    })
+    updateMut.mutate({ data: { id: editingId, prefix: p } })
   }
 
   return (
@@ -127,18 +110,6 @@ export function OrderReferencePrefixesSection() {
             maxLength={20}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="new-sort">Sort order (optional)</Label>
-          <Input
-            id="new-sort"
-            type="number"
-            min={0}
-            value={newSortOrder}
-            onChange={(e) => setNewSortOrder(e.target.value)}
-            placeholder="0"
-            className="w-24"
-          />
-        </div>
         <Button type="submit" disabled={!newPrefix.trim() || createMut.isPending}>
           <PlusIcon className="size-4" />
           Add
@@ -149,14 +120,13 @@ export function OrderReferencePrefixesSection() {
         <TableHeader>
           <TableRow>
             <TableHead>Prefix</TableHead>
-            <TableHead>Sort order</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {prefixes.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground">
+              <TableCell colSpan={2} className="text-center text-muted-foreground">
                 No prefixes. Add one above.
               </TableCell>
             </TableRow>
@@ -164,7 +134,6 @@ export function OrderReferencePrefixesSection() {
             prefixes.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>{p.prefix}</TableCell>
-                <TableCell>{p.sortOrder}</TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button
@@ -208,17 +177,6 @@ export function OrderReferencePrefixesSection() {
                   value={editPrefix}
                   onChange={(e) => setEditPrefix(e.target.value)}
                   maxLength={20}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-sort">Sort order</Label>
-                <Input
-                  id="edit-sort"
-                  type="number"
-                  min={0}
-                  value={editSortOrder}
-                  onChange={(e) => setEditSortOrder(e.target.value)}
-                  className="w-24"
                 />
               </div>
               <DialogFooter>

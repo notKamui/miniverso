@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Archive, ArchiveRestore, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { contrastTextForHex } from '@/lib/utils/color'
+import { formatMoney } from '@/lib/utils/format-money'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { $updateProduct, productsQueryKey } from '@/server/functions/inventory/products'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
@@ -53,6 +55,7 @@ export function ProductTable({
   emptyMessage = 'No products yet. Add one to get started.',
 }: ProductTableProps) {
   const queryClient = useQueryClient()
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const updateMut = useMutation({
     mutationFn: $updateProduct,
     onSuccess: () => {
@@ -89,7 +92,7 @@ export function ProductTable({
       header: 'Price (ex. tax)',
       cell: ({ row }) => {
         const p = row.original
-        return `${Number(p.priceTaxFree).toFixed(2)} €`
+        return formatMoney(Number(p.priceTaxFree), currency)
       },
     },
     {
@@ -97,7 +100,7 @@ export function ProductTable({
       header: 'With tax',
       cell: ({ row }) => {
         const p = row.original
-        return `${priceTaxIncluded(p.priceTaxFree, p.vatPercent).toFixed(2)} €`
+        return formatMoney(priceTaxIncluded(p.priceTaxFree, p.vatPercent), currency)
       },
     },
     {
@@ -139,7 +142,7 @@ export function ProductTable({
       header: 'Prod. cost',
       cell: ({ row }) => {
         const c = row.original.totalProductionCost ?? 0
-        return `${Number(c).toFixed(2)} €`
+        return formatMoney(Number(c), currency)
       },
     },
     {

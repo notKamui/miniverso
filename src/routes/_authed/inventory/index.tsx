@@ -36,6 +36,7 @@ export const Route = createFileRoute('/_authed/inventory/')({
         }),
       ),
     ])
+    return { crumb: 'Products' }
   },
   component: RouteComponent,
 })

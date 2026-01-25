@@ -126,6 +126,42 @@ export const $updateCash = createServerFn({ method: 'POST' })
     return row
   })
 
+export const $reorderCashRow = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(validate(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) })))
+  .handler(async ({ context: { user }, data: { id, direction } }) => {
+    const row = await db
+      .select({ id: inventoryCash.id, sortOrder: inventoryCash.sortOrder })
+      .from(inventoryCash)
+      .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
+      .then(takeUniqueOrNull)
+    if (!row) throw notFound()
+
+    const list = await db
+      .select({ id: inventoryCash.id, sortOrder: inventoryCash.sortOrder })
+      .from(inventoryCash)
+      .where(eq(inventoryCash.userId, user.id))
+      .orderBy(asc(inventoryCash.sortOrder), asc(inventoryCash.id))
+
+    const i = list.findIndex((r) => r.id === id)
+    if (i === -1) return
+    const neighbourIdx = direction === 'up' ? i - 1 : i + 1
+    if (neighbourIdx < 0 || neighbourIdx >= list.length) return
+
+    const neighbour = list[neighbourIdx]
+    const currSort = Number(row.sortOrder)
+    const otherSort = Number(neighbour.sortOrder)
+
+    await db
+      .update(inventoryCash)
+      .set({ sortOrder: otherSort })
+      .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
+    await db
+      .update(inventoryCash)
+      .set({ sortOrder: currSort })
+      .where(and(eq(inventoryCash.id, neighbour.id), eq(inventoryCash.userId, user.id)))
+  })
+
 export const $deleteCash = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ id: z.uuid() })))

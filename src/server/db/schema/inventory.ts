@@ -22,7 +22,6 @@ export const inventoryOrderReferencePrefix = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     prefix: text('prefix').notNull(),
-    sortOrder: integer('sort_order').notNull().default(0),
   },
   (table) => [
     index('inventory_order_reference_prefix_userId_idx').on(table.userId),
@@ -165,6 +164,20 @@ export const orderItem = pgTable(
 )
 export type OrderItem = InferSelectModel<typeof orderItem>
 
+export const inventorySetting = pgTable(
+  'inventory_setting',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    key: text('key').notNull(),
+    value: text('value').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.key] })],
+)
+
+export type InventorySetting = InferSelectModel<typeof inventorySetting>
+
 export const inventoryCash = pgTable(
   'inventory_cash',
   {
@@ -183,6 +196,17 @@ export type InventoryCash = InferSelectModel<typeof inventoryCash>
 
 export const userRelations_inventoryOrderReferencePrefix = relations(user, ({ many }) => ({
   orderReferencePrefixes: many(inventoryOrderReferencePrefix),
+}))
+
+export const userRelations_inventorySetting = relations(user, ({ many }) => ({
+  inventorySettings: many(inventorySetting),
+}))
+
+export const inventorySettingRelations = relations(inventorySetting, ({ one }) => ({
+  user: one(user, {
+    fields: [inventorySetting.userId],
+    references: [user.id],
+  }),
 }))
 
 export const userRelations_inventoryCash = relations(user, ({ many }) => ({

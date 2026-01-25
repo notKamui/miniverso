@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { CashTable } from '@/components/apps/inventory/cash-table'
-import { title } from '@/components/ui/typography'
+import { Section } from '@/components/apps/inventory/section'
 import { getCashQueryOptions } from '@/server/functions/inventory/cash'
 
 export const Route = createFileRoute('/_authed/inventory/cash')({
@@ -13,9 +13,11 @@ export const Route = createFileRoute('/_authed/inventory/cash')({
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col gap-6">
-      <h2 className={title({ h: 2 })}>Cash</h2>
+    <Section
+      title="Cash"
+      description="Track coins and bills by denomination; totals update automatically."
+    >
       <CashTable />
-    </div>
+    </Section>
   )
 }

@@ -8,7 +8,9 @@ import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { formatMoney } from '@/lib/utils/format-money'
 import { DataFromQueryOptions } from '@/lib/utils/types'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import {
   $getNextOrderReference,
   getOrderReferencePrefixesQueryOptions,
@@ -35,6 +37,7 @@ export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const [prefix, setPrefix] = useState<Prefix | null>(null)
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])
@@ -233,7 +236,10 @@ export function OrderCart() {
               <li key={i.productId} className="flex items-center justify-between gap-2 text-sm">
                 <span>
                   {i.name} × {i.quantity} ={' '}
-                  {(priceTaxIncluded(i.priceTaxFree, i.vatPercent) * i.quantity).toFixed(2)} €
+                  {formatMoney(
+                    priceTaxIncluded(i.priceTaxFree, i.vatPercent) * i.quantity,
+                    currency,
+                  )}
                 </span>
                 <Button
                   type="button"
@@ -253,10 +259,10 @@ export function OrderCart() {
       {items.length > 0 && (
         <div className="text-sm">
           <p>
-            <strong>Total (ex. tax):</strong> {totalTaxFree.toFixed(2)} €
+            <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
           </p>
           <p>
-            <strong>Total (incl. tax):</strong> {totalTaxIncluded.toFixed(2)} €
+            <strong>Total (incl. tax):</strong> {formatMoney(totalTaxIncluded, currency)}
           </p>
         </div>
       )}

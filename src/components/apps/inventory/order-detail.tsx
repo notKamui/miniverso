@@ -11,6 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatMoney } from '@/lib/utils/format-money'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import {
   $deleteOrder,
   $markOrderPaid,
@@ -24,6 +26,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data } = useSuspenseQuery(getOrderQueryOptions(orderId))
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const markPaidMut = useMutation({
     mutationFn: $markOrderPaid,
     onSuccess: () => {
@@ -109,10 +112,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                 <TableCell>{i.productName ?? 'Deleted product'}</TableCell>
                 <TableCell className="text-right">{i.quantity}</TableCell>
                 <TableCell className="text-right">
-                  {Number(i.unitPriceTaxIncluded).toFixed(2)} €
+                  {formatMoney(Number(i.unitPriceTaxIncluded), currency)}
                 </TableCell>
                 <TableCell className="text-right">
-                  {(Number(i.quantity) * Number(i.unitPriceTaxIncluded)).toFixed(2)} €
+                  {formatMoney(Number(i.quantity) * Number(i.unitPriceTaxIncluded), currency)}
                 </TableCell>
               </TableRow>
             ))}
@@ -122,13 +125,13 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
 
       <div className="space-y-1 text-sm">
         <p>
-          <strong>Total (ex. tax):</strong> {totalTaxFree.toFixed(2)} €
+          <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
         </p>
         <p>
           <strong>Total (incl. tax):</strong> {totalTaxIncluded.toFixed(2)} €
         </p>
         <p>
-          <strong>Benefit (est.):</strong> {totalBenefit.toFixed(2)} €
+          <strong>Benefit (est.):</strong> {formatMoney(totalBenefit, currency)}
         </p>
       </div>
     </div>

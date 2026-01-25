@@ -10,6 +10,8 @@ import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { Input } from '@/components/ui/input'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { formatMoney } from '@/lib/utils/format-money'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/orders'
 
 const searchSchema = z.object({
@@ -47,6 +49,7 @@ function RouteComponent() {
 
   const debouncedRef = useDebounce(refInput, 300)
 
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const { data: ordersPage } = useSuspenseQuery(
     getOrdersQueryOptions({
       page: search.page,
@@ -112,7 +115,7 @@ function RouteComponent() {
     {
       accessorKey: 'totalTaxIncluded',
       header: 'Total (incl. tax)',
-      cell: ({ row }) => `${Number(row.original.totalTaxIncluded).toFixed(2)} €`,
+      cell: ({ row }) => formatMoney(Number(row.original.totalTaxIncluded), currency),
     },
   ]
 

@@ -57,6 +57,13 @@
       "when": 1769374639956,
       "tag": "0007_add_inventory_cash",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769378033941,
+      "tag": "0008_inventory_add_setting_remove_prefix_sort_order",
+      "breakpoints": true
     }
   ]
 }

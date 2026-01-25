@@ -1,6 +1,9 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createCombobox } from '@/components/ui/combobox'
 import { contrastTextForHex } from '@/lib/utils/color'
+import { formatMoney } from '@/lib/utils/format-money'
+import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { Section } from '../section'
 
 type ProductionCostLabel = { id: string; name: string; color: string }
@@ -26,6 +29,7 @@ export function StockStatsSection({
   search,
   navigate,
 }: StockStatsSectionProps) {
+  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const labelIds = (search.labelIds as string[] | undefined) ?? []
   const anchorRef = LabelCombobox.useAnchor()
 
@@ -90,7 +94,9 @@ export function StockStatsSection({
               <CardTitle className="text-sm font-medium">Worth (ex. tax)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{stockStats.totalWorthExTax.toFixed(2)} €</p>
+              <p className="text-2xl font-bold">
+                {formatMoney(stockStats.totalWorthExTax, currency)}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -98,7 +104,9 @@ export function StockStatsSection({
               <CardTitle className="text-sm font-medium">Worth (incl. tax)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{stockStats.totalWorthIncTax.toFixed(2)} €</p>
+              <p className="text-2xl font-bold">
+                {formatMoney(stockStats.totalWorthIncTax, currency)}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -106,7 +114,9 @@ export function StockStatsSection({
               <CardTitle className="text-sm font-medium">Prod. cost</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{stockStats.totalProdCost.toFixed(2)} €</p>
+              <p className="text-2xl font-bold">
+                {formatMoney(stockStats.totalProdCost, currency)}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -117,7 +127,7 @@ export function StockStatsSection({
               <p
                 className={`text-2xl font-bold ${stockStats.potentialBenefit < 0 ? 'text-destructive' : ''}`}
               >
-                {stockStats.potentialBenefit.toFixed(2)} €
+                {formatMoney(stockStats.potentialBenefit, currency)}
               </p>
             </CardContent>
           </Card>
