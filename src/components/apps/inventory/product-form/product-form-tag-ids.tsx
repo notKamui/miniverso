@@ -57,7 +57,7 @@ export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
                 <ComboboxChipsInput placeholder="Add tag…" />
               </ComboboxChips>
               <ComboboxContent anchor={chipsAnchorRef}>
-                <ComboboxList>
+                <ComboboxList<Tag>>
                   {(t) => (
                     <ComboboxItem key={t.id} value={t}>
                       {t.name}

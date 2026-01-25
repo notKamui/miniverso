@@ -62,6 +62,7 @@ export function OrderCart() {
     getProductsQueryOptions(productSearchParams),
   )
   const products = productsPage?.items ?? []
+  type Product = (typeof products)[number]
 
   const { data: nextReference } = useQuery({
     queryKey: ['next-order-ref', prefix?.id],
@@ -163,7 +164,7 @@ export function OrderCart() {
           >
             <ComboboxInput placeholder="Select prefix" />
             <ComboboxContent>
-              <ComboboxList>
+              <ComboboxList<Prefix>>
                 {(p) => (
                   <ComboboxItem key={p.id} value={p}>
                     {p.prefix}
@@ -202,7 +203,7 @@ export function OrderCart() {
             >
               <ComboboxInput placeholder="Search by name or SKU…" />
               <ComboboxContent>
-                <ComboboxList>
+                <ComboboxList<Product>>
                   {(p) => (
                     <ComboboxItem key={p.id} value={p}>
                       {p.name} ({p.sku ?? '—'}) · stock: {p.quantity}
