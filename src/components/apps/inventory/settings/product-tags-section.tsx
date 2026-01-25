@@ -27,8 +27,8 @@ import {
   getInventoryTagsQueryOptions,
   inventoryTagsQueryKey,
 } from '@/server/functions/inventory/inventory-tags'
+import { Section } from '../section'
 import { ColorInput } from './color-input'
-import { SettingsSection } from './settings-section'
 
 const DEFAULT_COLOR = '#6b7280'
 
@@ -102,7 +102,7 @@ export function ProductTagsSection() {
   }
 
   return (
-    <SettingsSection
+    <Section
       title="Product tags"
       description="Tags to categorize products (e.g. category, material). Used when creating or editing products."
     >
@@ -215,6 +215,6 @@ export function ProductTagsSection() {
           )}
         </DialogContent>
       </Dialog>
-    </SettingsSection>
+    </Section>
   )
 }

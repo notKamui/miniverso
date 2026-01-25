@@ -27,7 +27,7 @@ import {
   getOrderReferencePrefixesQueryOptions,
   orderReferencePrefixesQueryKey,
 } from '@/server/functions/inventory/order-reference-prefixes'
-import { SettingsSection } from './settings-section'
+import { Section } from '../section'
 
 export function OrderReferencePrefixesSection() {
   const queryClient = useQueryClient()
@@ -106,7 +106,7 @@ export function OrderReferencePrefixesSection() {
   }
 
   return (
-    <SettingsSection
+    <Section
       title="Order reference prefixes"
       description={
         <>
@@ -233,6 +233,6 @@ export function OrderReferencePrefixesSection() {
           )}
         </DialogContent>
       </Dialog>
-    </SettingsSection>
+    </Section>
   )
 }

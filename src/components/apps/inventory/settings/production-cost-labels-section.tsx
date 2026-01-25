@@ -2,6 +2,8 @@ import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-q
 import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Section } from '@/components/apps/inventory/section'
+import { ColorInput } from '@/components/apps/inventory/settings/color-input'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,8 +29,6 @@ import {
   getProductionCostLabelsQueryOptions,
   productionCostLabelsQueryKey,
 } from '@/server/functions/inventory/production-cost-labels'
-import { ColorInput } from './color-input'
-import { SettingsSection } from './settings-section'
 
 const DEFAULT_COLOR = '#6b7280'
 
@@ -102,7 +102,7 @@ export function ProductionCostLabelsSection() {
   }
 
   return (
-    <SettingsSection
+    <Section
       title="Production cost labels"
       description="Labels for production cost breakdowns (e.g. Material, Labor). Used when defining production costs on products."
     >
@@ -222,6 +222,6 @@ export function ProductionCostLabelsSection() {
           )}
         </DialogContent>
       </Dialog>
-    </SettingsSection>
+    </Section>
   )
 }

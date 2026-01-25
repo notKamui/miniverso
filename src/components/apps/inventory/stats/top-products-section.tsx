@@ -1,5 +1,5 @@
-import { SettingsSection } from '@/components/apps/inventory/settings/settings-section'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Section } from '../section'
 
 type TopByRevenue = { productId: string; productName: string | null; revenue: number }
 type TopByBenefit = { productId: string; productName: string | null; benefit: number }
@@ -41,7 +41,7 @@ export function TopProductsSection({
   topByQuantitySold,
 }: TopProductsSectionProps) {
   return (
-    <SettingsSection
+    <Section
       title="Top products (date range)"
       description="By revenue, benefit, and quantity sold in the selected period."
     >
@@ -71,6 +71,6 @@ export function TopProductsSection({
           </CardContent>
         </Card>
       </div>
-    </SettingsSection>
+    </Section>
   )
 }

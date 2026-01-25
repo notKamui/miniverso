@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SettingsSection } from '@/components/apps/inventory/settings/settings-section'
+import { Section } from '@/components/apps/inventory/section'
 import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import {
@@ -40,7 +40,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
   }, [debouncedQ, search, navigate])
 
   return (
-    <SettingsSection title="Filters" description="Search, status, and tag filters.">
+    <Section title="Filters" description="Search, status, and tag filters." collapsible={false}>
       <div className="flex flex-wrap items-center gap-4">
         <Input
           placeholder="Search by name or SKU…"
@@ -107,6 +107,6 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
           </TagCombobox.Content>
         </TagCombobox.Root>
       </div>
-    </SettingsSection>
+    </Section>
   )
 }

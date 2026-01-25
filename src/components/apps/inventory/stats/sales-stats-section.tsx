@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { SettingsSection } from '@/components/apps/inventory/settings/settings-section'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Section } from '../section'
 
 type SalesStats = {
   totalSalesTaxFree: number
@@ -22,10 +22,7 @@ export function SalesStatsSection({ stats }: SalesStatsSectionProps) {
   const chartConfig = { revenue: { label: 'Revenue', color: 'var(--chart-1)' } } as const
 
   return (
-    <SettingsSection
-      title="Sales (date range)"
-      description="Revenue and benefit in the selected period."
-    >
+    <Section title="Sales (date range)" description="Revenue and benefit in the selected period.">
       <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
@@ -71,6 +68,6 @@ export function SalesStatsSection({ stats }: SalesStatsSectionProps) {
           </ChartContainer>
         )}
       </div>
-    </SettingsSection>
+    </Section>
   )
 }

@@ -70,8 +70,8 @@ function RouteComponent() {
         </Button>
       </div>
 
-      <ProductFiltersSection search={search} navigate={navigate} tags={tags} />
       <ProductStatsSection total={total} lowStock={lowStock} />
+      <ProductFiltersSection search={search} navigate={navigate} tags={tags} />
       <ProductTable
         products={products}
         total={total}

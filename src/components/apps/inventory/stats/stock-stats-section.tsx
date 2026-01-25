@@ -1,7 +1,7 @@
-import { SettingsSection } from '@/components/apps/inventory/settings/settings-section'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createCombobox } from '@/components/ui/combobox'
 import { contrastTextForHex } from '@/lib/utils/color'
+import { Section } from '../section'
 
 type ProductionCostLabel = { id: string; name: string; color: string }
 const LabelCombobox = createCombobox<ProductionCostLabel, true>()
@@ -30,7 +30,7 @@ export function StockStatsSection({
   const anchorRef = LabelCombobox.useAnchor()
 
   return (
-    <SettingsSection
+    <Section
       title="Stock value"
       description="Total worth of products in stock (ex. tax, incl. tax), production cost, and potential benefit. Filter prod. cost by labels below."
     >
@@ -123,6 +123,6 @@ export function StockStatsSection({
           </Card>
         </div>
       </div>
-    </SettingsSection>
+    </Section>
   )
 }
