@@ -46,6 +46,7 @@ const sections: AppNavGroupProps[] = [
           { title: 'Products', link: { to: '/inventory' } },
           { title: 'Orders', link: { to: '/inventory/orders' } },
           { title: 'Statistics', link: { to: '/inventory/stats' } },
+          { title: 'Cash', link: { to: '/inventory/cash' } },
           { title: 'Settings', link: { to: '/inventory/settings' } },
         ],
         condition: ({ user }) => Boolean(user),

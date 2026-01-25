@@ -177,9 +177,7 @@ export const inventoryCash = pgTable(
     quantity: integer('quantity').notNull().default(0),
     sortOrder: integer('sort_order').notNull().default(0),
   },
-  (table) => [
-    index('inventory_cash_userId_idx').on(table.userId),
-  ],
+  (table) => [index('inventory_cash_userId_idx').on(table.userId)],
 )
 export type InventoryCash = InferSelectModel<typeof inventoryCash>
 
