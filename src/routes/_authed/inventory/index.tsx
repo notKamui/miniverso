@@ -183,7 +183,12 @@ function RouteComponent() {
         const p = row.original
         const isArchived = Boolean(p.archivedAt)
         return (
-          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex justify-end"
+            onClick={(e) => e.stopPropagation()}
+            role="button"
+            onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}
+          >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="size-8">
@@ -192,9 +197,7 @@ function RouteComponent() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onClick={() =>
-                    updateMut.mutate({ data: { id: p.id, archivedAt: !isArchived } })
-                  }
+                  onClick={() => updateMut.mutate({ data: { id: p.id, archivedAt: !isArchived } })}
                   disabled={updateMut.isPending}
                 >
                   {isArchived ? (

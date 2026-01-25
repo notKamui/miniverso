@@ -57,17 +57,18 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
 
   return (
     <Combobox
+      items={tags}
       value={null}
       onValueChange={(v) => {
-        const tag = tags.find((t) => t.id === v)
-        if (tag) handleSelectTag(tag)
+        if (v) handleSelectTag(v)
       }}
+      itemToStringLabel={(t: TimeEntryTag | null) => (t ? t.description : '')}
     >
       <ComboboxInput placeholder="Select tag…" disabled={disabled} />
       <ComboboxContent>
         <ComboboxList>
-          {tags.map((tag) => (
-            <ComboboxItem key={tag.id} value={tag.id} className="flex items-center gap-2">
+          {(tag) => (
+            <ComboboxItem key={tag.id} value={tag} className="flex items-center gap-2">
               <span className="flex-1 truncate">{tag.description}</span>
               <Button
                 type="button"
@@ -81,11 +82,11 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
                 <Trash2Icon className="size-3.5 text-destructive" />
               </Button>
             </ComboboxItem>
-          ))}
-          <ComboboxEmpty>
-            No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
-          </ComboboxEmpty>
+          )}
         </ComboboxList>
+        <ComboboxEmpty>
+          No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
+        </ComboboxEmpty>
       </ComboboxContent>
     </Combobox>
   )

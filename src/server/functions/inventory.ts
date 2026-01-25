@@ -518,7 +518,10 @@ export const $getProducts = createServerFn({ method: 'GET' })
 
     const productIds = pageResult.items.map((p) => p.id)
     if (productIds.length === 0) {
-      return { ...pageResult, items: pageResult.items.map((p) => ({ ...p, tags: [], totalProductionCost: 0 })) }
+      return {
+        ...pageResult,
+        items: pageResult.items.map((p) => ({ ...p, tags: [], totalProductionCost: 0 })),
+      }
     }
 
     const [tagsRows, costsRows] = await Promise.all([

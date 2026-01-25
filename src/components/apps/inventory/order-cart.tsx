@@ -36,15 +36,17 @@ export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
-  const [prefixId, setPrefixId] = useState('')
+  type Prefix = (typeof prefixes)[number]
+  const [prefix, setPrefix] = useState<Prefix | null>(null)
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])
-  const [addProductId, setAddProductId] = useState('')
   const [addProduct, setAddProduct] = useState<{
     id: string
     name: string
     priceTaxFree: number
     vatPercent: number
+    sku?: string | null
+    quantity?: number
   } | null>(null)
   const [addQty, setAddQty] = useState('1')
   const [productSearch, setProductSearch] = useState('')
@@ -62,9 +64,9 @@ export function OrderCart() {
   const products = productsPage?.items ?? []
 
   const { data: nextReference } = useQuery({
-    queryKey: ['next-order-ref', prefixId],
-    queryFn: () => $getNextOrderReference({ data: { prefixId } }),
-    enabled: Boolean(prefixId),
+    queryKey: ['next-order-ref', prefix?.id],
+    queryFn: () => $getNextOrderReference({ data: { prefixId: prefix!.id } }),
+    enabled: Boolean(prefix?.id),
   })
 
   const createMut = useMutation({
@@ -98,7 +100,6 @@ export function OrderCart() {
         },
       ])
     }
-    setAddProductId('')
     setAddProduct(null)
     setAddQty('1')
     setProductSearch('')
@@ -115,10 +116,10 @@ export function OrderCart() {
   )
 
   const hasPrefixes = prefixes.length > 0
-  const canCreate = hasPrefixes && items.length > 0 && prefixId
+  const canCreate = hasPrefixes && items.length > 0 && prefix
 
   function handleSubmit(status: 'prepared' | 'paid') {
-    if (!prefixId) {
+    if (!prefix) {
       toast.error('Select a reference prefix')
       return
     }
@@ -128,7 +129,7 @@ export function OrderCart() {
     }
     createMut.mutate({
       data: {
-        prefixId,
+        prefixId: prefix.id,
         description: description.trim() || undefined,
         status,
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -155,23 +156,21 @@ export function OrderCart() {
         <div className="space-y-2">
           <Label>Reference prefix</Label>
           <Combobox
-            value={prefixId || null}
-            onValueChange={(v) => setPrefixId(v ?? '')}
-            itemToStringLabel={(id) => {
-              const p = prefixes.find((x) => x.id === id)
-              return p ? p.prefix : String(id ?? '')
-            }}
+            items={prefixes}
+            value={prefix}
+            onValueChange={(v) => setPrefix(v ?? null)}
+            itemToStringLabel={(p) => p.prefix}
           >
             <ComboboxInput placeholder="Select prefix" />
             <ComboboxContent>
               <ComboboxList>
-                {prefixes.map((p) => (
-                  <ComboboxItem key={p.id} value={p.id}>
+                {(p) => (
+                  <ComboboxItem key={p.id} value={p}>
                     {p.prefix}
                   </ComboboxItem>
-                ))}
-                <ComboboxEmpty>No prefixes. Add one in Settings.</ComboboxEmpty>
+                )}
               </ComboboxList>
+              <ComboboxEmpty>No prefixes. Add one in Settings.</ComboboxEmpty>
             </ComboboxContent>
           </Combobox>
           {nextReference && (
@@ -193,39 +192,26 @@ export function OrderCart() {
         <div className="flex gap-2">
           <div className="flex-1">
             <Combobox
-              value={addProductId || null}
-              onValueChange={(v) => {
-                setAddProductId(v ?? '')
-                const p = products.find((x) => x.id === (v ?? ''))
-                setAddProduct(
-                  p
-                    ? {
-                        id: p.id,
-                        name: p.name,
-                        priceTaxFree: Number(p.priceTaxFree),
-                        vatPercent: Number(p.vatPercent),
-                      }
-                    : null,
-                )
-              }}
+              items={products}
+              value={addProduct}
+              onValueChange={(v) => setAddProduct(v ?? null)}
               onInputValueChange={(v) => setProductSearch(v)}
-              itemToStringLabel={(id) => {
-                const p = products.find((x) => x.id === id)
-                return p ? `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}` : String(id ?? '')
-              }}
+              itemToStringLabel={(p) =>
+                p ? `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}` : ''
+              }
             >
               <ComboboxInput placeholder="Search by name or SKU…" />
               <ComboboxContent>
                 <ComboboxList>
-                  {products.map((p) => (
-                    <ComboboxItem key={p.id} value={p.id}>
+                  {(p) => (
+                    <ComboboxItem key={p.id} value={p}>
                       {p.name} ({p.sku ?? '—'}) · stock: {p.quantity}
                     </ComboboxItem>
-                  ))}
-                  <ComboboxEmpty>
-                    {productsLoading ? 'Searching…' : 'No products. Try another search.'}
-                  </ComboboxEmpty>
+                  )}
                 </ComboboxList>
+                <ComboboxEmpty>
+                  {productsLoading ? 'Searching…' : 'No products. Try another search.'}
+                </ComboboxEmpty>
               </ComboboxContent>
             </Combobox>
           </div>

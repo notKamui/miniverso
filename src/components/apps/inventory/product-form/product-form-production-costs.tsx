@@ -35,18 +35,16 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                     {(lf) => (
                       <div className="flex-1">
                         <Combobox
-                          value={lf.state.value || null}
-                          onValueChange={(v) => lf.handleChange(v ?? '')}
-                          itemToStringLabel={(id) => {
-                            const l = labels.find((x) => x.id === id)
-                            return l ? l.name : String(id ?? '')
-                          }}
+                          items={labels}
+                          value={labels.find((l) => l.id === lf.state.value) ?? null}
+                          onValueChange={(v) => lf.handleChange(v?.id ?? '')}
+                          itemToStringLabel={(l) => l.name}
                         >
                           <ComboboxInput placeholder="Label" />
                           <ComboboxContent>
                             <ComboboxList>
-                              {labels.map((l) => (
-                                <ComboboxItem key={l.id} value={l.id}>
+                              {(l) => (
+                                <ComboboxItem key={l.id} value={l}>
                                   <span className="flex items-center gap-1.5">
                                     <span
                                       className="size-2 shrink-0 rounded-sm"
@@ -56,9 +54,9 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                                     {l.name}
                                   </span>
                                 </ComboboxItem>
-                              ))}
-                              <ComboboxEmpty>No labels.</ComboboxEmpty>
+                              )}
                             </ComboboxList>
+                            <ComboboxEmpty>No labels.</ComboboxEmpty>
                           </ComboboxContent>
                         </Combobox>
                       </div>
