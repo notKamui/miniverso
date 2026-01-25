@@ -165,8 +165,37 @@ export const orderItem = pgTable(
 )
 export type OrderItem = InferSelectModel<typeof orderItem>
 
+export const inventoryCash = pgTable(
+  'inventory_cash',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    value: numeric('value', money).notNull(),
+    quantity: integer('quantity').notNull().default(0),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (table) => [
+    index('inventory_cash_userId_idx').on(table.userId),
+  ],
+)
+export type InventoryCash = InferSelectModel<typeof inventoryCash>
+
 export const userRelations_inventoryOrderReferencePrefix = relations(user, ({ many }) => ({
   orderReferencePrefixes: many(inventoryOrderReferencePrefix),
+}))
+
+export const userRelations_inventoryCash = relations(user, ({ many }) => ({
+  inventoryCash: many(inventoryCash),
+}))
+
+export const inventoryCashRelations = relations(inventoryCash, ({ one }) => ({
+  user: one(user, {
+    fields: [inventoryCash.userId],
+    references: [user.id],
+  }),
 }))
 
 export const inventoryOrderReferencePrefixRelations = relations(
