@@ -2,14 +2,7 @@ import { PlusIcon, Trash2Icon } from 'lucide-react'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
 import { Button } from '@/components/ui/button'
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox'
+import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -19,6 +12,8 @@ type Props = {
   form: ReactForm<ProductFormValues>
   labels: LabelOption[]
 }
+
+const LabelCombobox = createCombobox<LabelOption>()
 
 export function ProductFormProductionCosts({ form, labels }: Props) {
   return (
@@ -34,17 +29,17 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                   <form.Field name={`productionCosts[${i}].labelId`}>
                     {(lf) => (
                       <div className="flex-1">
-                        <Combobox
+                        <LabelCombobox.Root
                           items={labels}
                           value={labels.find((l) => l.id === lf.state.value) ?? null}
                           onValueChange={(v) => lf.handleChange(v?.id ?? '')}
                           itemToStringLabel={(l) => l.name}
                         >
-                          <ComboboxInput placeholder="Label" />
-                          <ComboboxContent>
-                            <ComboboxList>
+                          <LabelCombobox.Input placeholder="Label" />
+                          <LabelCombobox.Content>
+                            <LabelCombobox.List>
                               {(l) => (
-                                <ComboboxItem key={l.id} value={l}>
+                                <LabelCombobox.Item key={l.id} value={l}>
                                   <span className="flex items-center gap-1.5">
                                     <span
                                       className="size-2 shrink-0 rounded-sm"
@@ -53,12 +48,12 @@ export function ProductFormProductionCosts({ form, labels }: Props) {
                                     />
                                     {l.name}
                                   </span>
-                                </ComboboxItem>
+                                </LabelCombobox.Item>
                               )}
-                            </ComboboxList>
-                            <ComboboxEmpty>No labels.</ComboboxEmpty>
-                          </ComboboxContent>
-                        </Combobox>
+                            </LabelCombobox.List>
+                            <LabelCombobox.Empty>No labels.</LabelCombobox.Empty>
+                          </LabelCombobox.Content>
+                        </LabelCombobox.Root>
                       </div>
                     )}
                   </form.Field>

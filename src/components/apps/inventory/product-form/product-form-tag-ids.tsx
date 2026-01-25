@@ -1,16 +1,7 @@
 import type { RefObject } from 'react'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
-import {
-  Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox'
+import { createCombobox } from '@/components/ui/combobox'
 import { Label } from '@/components/ui/label'
 import { contrastTextForHex } from '@/lib/utils/color'
 
@@ -22,6 +13,8 @@ type Props = {
   chipsAnchorRef: RefObject<HTMLDivElement | null>
 }
 
+const TagCombobox = createCombobox<Tag, true>()
+
 export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
   return (
     <div className="space-y-2">
@@ -31,16 +24,16 @@ export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
           const tagIds = field.state.value ?? []
           const selectedTags = tags.filter((t) => tagIds.includes(t.id))
           return (
-            <Combobox
+            <TagCombobox.Root
               multiple
               items={tags}
               value={selectedTags}
-              onValueChange={(v) => field.handleChange(Array.isArray(v) ? v.map((t) => t.id) : [])}
+              onValueChange={(v) => field.handleChange(v.map((t) => t.id))}
               itemToStringLabel={(t) => t.name}
             >
-              <ComboboxChips ref={chipsAnchorRef}>
+              <TagCombobox.Chips ref={chipsAnchorRef}>
                 {selectedTags.map((t) => (
-                  <ComboboxChip
+                  <TagCombobox.Chip
                     key={t.id}
                     style={
                       t.color
@@ -52,21 +45,21 @@ export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
                     }
                   >
                     {t.name}
-                  </ComboboxChip>
+                  </TagCombobox.Chip>
                 ))}
-                <ComboboxChipsInput placeholder="Add tag…" />
-              </ComboboxChips>
-              <ComboboxContent anchor={chipsAnchorRef}>
-                <ComboboxList>
+                <TagCombobox.ChipsInput placeholder="Add tag…" />
+              </TagCombobox.Chips>
+              <TagCombobox.Content anchor={chipsAnchorRef}>
+                <TagCombobox.List>
                   {(t) => (
-                    <ComboboxItem key={t.id} value={t}>
+                    <TagCombobox.Item key={t.id} value={t}>
                       {t.name}
-                    </ComboboxItem>
+                    </TagCombobox.Item>
                   )}
-                </ComboboxList>
-                <ComboboxEmpty>No tags.</ComboboxEmpty>
-              </ComboboxContent>
-            </Combobox>
+                </TagCombobox.List>
+                <TagCombobox.Empty>No tags.</TagCombobox.Empty>
+              </TagCombobox.Content>
+            </TagCombobox.Root>
           )
         }}
       </form.Field>

@@ -1,3 +1,5 @@
+/* oxlint-disable unicorn/consistent-function-scoping */
+
 import { Combobox as ComboboxPrimitive } from '@base-ui/react'
 import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
@@ -11,6 +13,77 @@ import {
 import { cn } from '@/lib/utils/cn'
 
 const Combobox = ComboboxPrimitive.Root
+
+type PrimitiveRootProps = React.ComponentProps<typeof ComboboxPrimitive.Root>
+type ComboboxChangeEventDetails = Parameters<
+  Extract<NonNullable<PrimitiveRootProps['onValueChange']>, (...a: never[]) => unknown>
+>[1]
+
+type RootOmitKeys =
+  | 'items'
+  | 'value'
+  | 'defaultValue'
+  | 'onValueChange'
+  | 'itemToStringLabel'
+  | 'itemToStringValue'
+  | 'isItemEqualToValue'
+  | 'multiple'
+
+function createCombobox<Item = unknown, Multiple extends boolean = false>() {
+  type RootProps = Omit<PrimitiveRootProps, RootOmitKeys> & {
+    items?: readonly Item[]
+    value?: Multiple extends true ? Item[] : Item | null
+    defaultValue?: Multiple extends true ? Item[] : Item | null
+    onValueChange?: (
+      value: Multiple extends true ? Item[] : Item | null,
+      eventDetails: ComboboxChangeEventDetails,
+    ) => void
+    itemToStringLabel?: (item: Item) => string
+    itemToStringValue?: (item: Item) => string
+    isItemEqualToValue?: (a: Item, b: Item) => boolean
+    multiple?: Multiple
+  }
+
+  function Root(props: RootProps) {
+    return (
+      <ComboboxPrimitive.Root {...(props as React.ComponentProps<typeof ComboboxPrimitive.Root>)} />
+    )
+  }
+
+  type ListProps = Omit<ComboboxPrimitive.List.Props, 'children'> & {
+    children?: (item: Item, index: number) => React.ReactNode
+  }
+
+  function List(props: ListProps) {
+    return <ComboboxList {...props} />
+  }
+
+  type ItemProps = Omit<ComboboxPrimitive.Item.Props, 'value'> & { value: Item }
+
+  function Item(props: ItemProps) {
+    return <ComboboxItem {...props} />
+  }
+
+  return {
+    Root,
+    Input: ComboboxInput,
+    Content: ComboboxContent,
+    List,
+    Item,
+    Empty: ComboboxEmpty,
+    Trigger: ComboboxTrigger,
+    Value: ComboboxValue,
+    Clear: ComboboxClear,
+    Group: ComboboxGroup,
+    Label: ComboboxLabel,
+    Collection: ComboboxCollection,
+    Separator: ComboboxSeparator,
+    Chips: ComboboxChips,
+    Chip: ComboboxChip,
+    ChipsInput: ComboboxChipsInput,
+    useAnchor: useComboboxAnchor,
+  }
+}
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
@@ -265,6 +338,7 @@ function useComboboxAnchor() {
 
 export {
   Combobox,
+  createCombobox,
   ComboboxInput,
   ComboboxContent,
   ComboboxList,

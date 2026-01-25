@@ -2,14 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
 import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox'
+import { createCombobox } from '@/components/ui/combobox'
 import {
   $deleteTimeEntryTag,
   getTimeEntryTagsQueryOptions,
@@ -20,6 +13,8 @@ type TagSelectorProps = {
   onSelectTag: (tag: TimeEntryTag) => void
   disabled?: boolean
 }
+
+const TagCombobox = createCombobox<TimeEntryTag>()
 
 export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps) {
   const queryClient = useQueryClient()
@@ -56,19 +51,19 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
   }
 
   return (
-    <Combobox
+    <TagCombobox.Root
       items={tags}
-      value={null as TimeEntryTag | null}
+      value={null}
       onValueChange={(v) => {
         if (v) handleSelectTag(v)
       }}
       itemToStringLabel={(t) => (t ? t.description : '')}
     >
-      <ComboboxInput placeholder="Select tag…" disabled={disabled} />
-      <ComboboxContent>
-        <ComboboxList>
+      <TagCombobox.Input placeholder="Select tag…" disabled={disabled} />
+      <TagCombobox.Content>
+        <TagCombobox.List>
           {(tag) => (
-            <ComboboxItem key={tag.id} value={tag} className="flex items-center gap-2">
+            <TagCombobox.Item key={tag.id} value={tag} className="flex items-center gap-2">
               <span className="flex-1 truncate">{tag.description}</span>
               <Button
                 type="button"
@@ -81,13 +76,13 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
               >
                 <Trash2Icon className="size-3.5 text-destructive" />
               </Button>
-            </ComboboxItem>
+            </TagCombobox.Item>
           )}
-        </ComboboxList>
-        <ComboboxEmpty>
+        </TagCombobox.List>
+        <TagCombobox.Empty>
           No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
-        </ComboboxEmpty>
-      </ComboboxContent>
-    </Combobox>
+        </TagCombobox.Empty>
+      </TagCombobox.Content>
+    </TagCombobox.Root>
   )
 }

@@ -65,3 +65,13 @@ export type ReactFormField = FieldApi<
   any,
   any
 >
+
+type MaybeReturnType<T> = T extends (...args: never[]) => infer R ? R : T
+
+export type DataFromQueryOptions<T> = NonNullable<
+  MaybeReturnType<
+    T extends (...args: never[]) => ReturnType<typeof queryOptions>
+      ? NonNullable<ReturnType<T>['initialData']>
+      : NonNullable<T['initialData']>
+  >
+>

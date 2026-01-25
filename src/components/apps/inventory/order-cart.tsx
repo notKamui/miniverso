@@ -4,17 +4,11 @@ import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox'
+import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { DataFromQueryOptions } from '@/lib/utils/types'
 import {
   $createOrder,
   $getNextOrderReference,
@@ -32,22 +26,20 @@ type CartItem = {
   vatPercent: number
 }
 
+type Prefix = DataFromQueryOptions<ReturnType<typeof getOrderReferencePrefixesQueryOptions>>[number]
+type Product = DataFromQueryOptions<ReturnType<typeof getProductsQueryOptions>>['items'][number]
+
+const PrefixCombobox = createCombobox<Prefix>()
+const ProductCombobox = createCombobox<Product>()
+
 export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
-  type Prefix = (typeof prefixes)[number]
   const [prefix, setPrefix] = useState<Prefix | null>(null)
   const [description, setDescription] = useState('')
   const [items, setItems] = useState<CartItem[]>([])
-  const [addProduct, setAddProduct] = useState<{
-    id: string
-    name: string
-    priceTaxFree: number
-    vatPercent: number
-    sku?: string | null
-    quantity?: number
-  } | null>(null)
+  const [addProduct, setAddProduct] = useState<Product | null>(null)
   const [addQty, setAddQty] = useState('1')
   const [productSearch, setProductSearch] = useState('')
   const debouncedProductSearch = useDebounce(productSearch, 300)
@@ -155,24 +147,24 @@ export function OrderCart() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Reference prefix</Label>
-          <Combobox
+          <PrefixCombobox.Root
             items={prefixes}
             value={prefix}
-            onValueChange={(v) => setPrefix(v ?? null)}
+            onValueChange={(v) => setPrefix(v)}
             itemToStringLabel={(p) => p.prefix}
           >
-            <ComboboxInput placeholder="Select prefix" />
-            <ComboboxContent>
-              <ComboboxList>
+            <PrefixCombobox.Input placeholder="Select prefix" />
+            <PrefixCombobox.Content>
+              <PrefixCombobox.List>
                 {(p) => (
-                  <ComboboxItem key={p.id} value={p}>
+                  <PrefixCombobox.Item key={p.id} value={p}>
                     {p.prefix}
-                  </ComboboxItem>
+                  </PrefixCombobox.Item>
                 )}
-              </ComboboxList>
-              <ComboboxEmpty>No prefixes. Add one in Settings.</ComboboxEmpty>
-            </ComboboxContent>
-          </Combobox>
+              </PrefixCombobox.List>
+              <PrefixCombobox.Empty>No prefixes. Add one in Settings.</PrefixCombobox.Empty>
+            </PrefixCombobox.Content>
+          </PrefixCombobox.Root>
           {nextReference && (
             <p className="text-xs text-muted-foreground">Next reference: {nextReference}</p>
           )}
@@ -191,33 +183,33 @@ export function OrderCart() {
         <Label>Add product</Label>
         <div className="flex gap-2">
           <div className="flex-1">
-            <Combobox
+            <ProductCombobox.Root
               items={
                 addProduct && !products.some((p) => p.id === addProduct.id)
                   ? [addProduct, ...products]
                   : products
               }
               value={addProduct}
-              onValueChange={(v) => setAddProduct(v ?? null)}
+              onValueChange={(v) => setAddProduct(v)}
               onInputValueChange={(v) => setProductSearch(v)}
               itemToStringLabel={(p) =>
                 p ? `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}` : ''
               }
             >
-              <ComboboxInput placeholder="Search by name or SKU…" />
-              <ComboboxContent>
-                <ComboboxList>
+              <ProductCombobox.Input placeholder="Search by name or SKU…" />
+              <ProductCombobox.Content>
+                <ProductCombobox.List>
                   {(p) => (
-                    <ComboboxItem key={p.id} value={p}>
+                    <ProductCombobox.Item key={p.id} value={p}>
                       {p.name} ({p.sku ?? '—'}) · stock: {p.quantity}
-                    </ComboboxItem>
+                    </ProductCombobox.Item>
                   )}
-                </ComboboxList>
-                <ComboboxEmpty>
+                </ProductCombobox.List>
+                <ProductCombobox.Empty>
                   {productsLoading ? 'Searching…' : 'No products. Try another search.'}
-                </ComboboxEmpty>
-              </ComboboxContent>
-            </Combobox>
+                </ProductCombobox.Empty>
+              </ProductCombobox.Content>
+            </ProductCombobox.Root>
           </div>
           <Input
             type="number"
