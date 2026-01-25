@@ -17,7 +17,7 @@ export function ProductStatsSection({ total, lowStock }: ProductStatsSectionProp
       collapsible={false}
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card size="sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
             <Package className="size-4 text-muted-foreground" />
@@ -26,7 +26,7 @@ export function ProductStatsSection({ total, lowStock }: ProductStatsSectionProp
             <p className="text-2xl font-bold">{total}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card size="sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Low stock (&lt; {LOW_STOCK_THRESHOLD})
