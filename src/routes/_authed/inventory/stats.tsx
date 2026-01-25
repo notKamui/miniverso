@@ -1,17 +1,22 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import * as z from 'zod'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { SalesStatsSection } from '@/components/apps/inventory/stats/sales-stats-section'
+import { StockStatsSection } from '@/components/apps/inventory/stats/stock-stats-section'
+import { TopProductsSection } from '@/components/apps/inventory/stats/top-products-section'
 import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { title } from '@/components/ui/typography'
 import { getRange } from '@/lib/utils/date-range'
-import { getInventoryStatsQueryOptions } from '@/server/functions/inventory'
+import {
+  getInventoryStatsQueryOptions,
+  getInventoryStockStatsQueryOptions,
+  getProductionCostLabelsQueryOptions,
+} from '@/server/functions/inventory'
 
 const searchSchema = z.object({
   preset: z.enum(['today', 'week', 'month', 'year', 'lastYear']).default('month'),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  labelIds: z.array(z.uuid()).optional(),
 })
 
 export const Route = createFileRoute('/_authed/inventory/stats')({
@@ -22,13 +27,19 @@ export const Route = createFileRoute('/_authed/inventory/stats')({
       search.startDate && search.endDate
         ? { start: new Date(search.startDate), end: new Date(search.endDate) }
         : getRange(search.preset)
-    const stats = await queryClient.fetchQuery(
-      getInventoryStatsQueryOptions({
-        startDate: start.toISOString(),
-        endDate: end.toISOString(),
-      }),
-    )
-    return { stats, preset: search.preset, crumb: 'Statistics' }
+
+    const [stats, stockStats, productionCostLabels] = await Promise.all([
+      queryClient.fetchQuery(
+        getInventoryStatsQueryOptions({
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        }),
+      ),
+      queryClient.fetchQuery(getInventoryStockStatsQueryOptions({ labelIds: search.labelIds })),
+      queryClient.fetchQuery(getProductionCostLabelsQueryOptions()),
+    ])
+
+    return { stats, stockStats, productionCostLabels, preset: search.preset, crumb: 'Statistics' }
   },
   component: RouteComponent,
 })
@@ -36,8 +47,13 @@ export const Route = createFileRoute('/_authed/inventory/stats')({
 function RouteComponent() {
   const navigate = useNavigate()
   const search = Route.useSearch()
-  const { stats, preset } = Route.useLoaderData({
-    select: ({ stats, preset }) => ({ stats, preset }),
+  const { stats, stockStats, productionCostLabels, preset } = Route.useLoaderData({
+    select: (d) => ({
+      stats: d.stats,
+      stockStats: d.stockStats,
+      productionCostLabels: d.productionCostLabels,
+      preset: d.preset,
+    }),
   })
 
   const effective =
@@ -48,12 +64,7 @@ function RouteComponent() {
           return { startDate: r.start.toISOString(), endDate: r.end.toISOString() }
         })()
 
-  const chartData = stats.topByRevenue.slice(0, 8).map((t) => ({
-    name: t.productName ?? 'Deleted',
-    revenue: t.revenue,
-  }))
-
-  const chartConfig = { revenue: { label: 'Revenue', color: 'var(--chart-1)' } } as const
+  const labels = productionCostLabels.map((l) => ({ id: l.id, name: l.name, color: l.color }))
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,90 +79,18 @@ function RouteComponent() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Sales (incl. tax)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.totalSalesTaxIncluded.toFixed(2)} €</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Sales (ex. tax)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.totalSalesTaxFree.toFixed(2)} €</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Benefit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.totalBenefit.toFixed(2)} €</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {chartData.length > 0 && (
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <BarChart data={chartData} margin={{ left: 20 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-            <YAxis tickFormatter={(v) => `${Number(v).toFixed(0)} €`} />
-            <ChartTooltip
-              cursor={false}
-              content={(props) => (
-                <ChartTooltipContent {...props} formatter={(v) => `${Number(v).toFixed(2)} €`} />
-              )}
-            />
-            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-          </BarChart>
-        </ChartContainer>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top by revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.topByRevenue.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No data in this range.</p>
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {stats.topByRevenue.slice(0, 5).map((t) => (
-                  <li key={t.productId} className="flex justify-between">
-                    <span className="truncate">{t.productName ?? '—'}</span>
-                    <span>{t.revenue.toFixed(2)} €</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top by benefit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.topByBenefit.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No data in this range.</p>
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {stats.topByBenefit.slice(0, 5).map((t) => (
-                  <li key={t.productId} className="flex justify-between">
-                    <span className="truncate">{t.productName ?? '—'}</span>
-                    <span>{t.benefit.toFixed(2)} €</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <StockStatsSection
+        stockStats={stockStats}
+        labels={labels}
+        search={search}
+        navigate={navigate}
+      />
+      <SalesStatsSection stats={stats} />
+      <TopProductsSection
+        topByRevenue={stats.topByRevenue}
+        topByBenefit={stats.topByBenefit}
+        topByQuantitySold={stats.topByQuantitySold}
+      />
     </div>
   )
 }

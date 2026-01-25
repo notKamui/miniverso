@@ -1274,11 +1274,86 @@ export const $getInventoryStats = createServerFn({ method: 'GET' })
         benefit,
       }))
 
+    const topByQuantitySold = [...byProduct.entries()]
+      .toSorted((a, b) => b[1].quantity - a[1].quantity)
+      .slice(0, 10)
+      .map(([productId, v]) => ({
+        productId,
+        productName: nameMap.get(productId) ?? null,
+        quantity: v.quantity,
+      }))
+
     return {
       totalSalesTaxFree,
       totalSalesTaxIncluded,
       totalBenefit,
       topByRevenue,
       topByBenefit,
+      topByQuantitySold,
+    }
+  })
+
+export const inventoryStockStatsQueryKey = ['inventory-stock-stats'] as const
+
+export function getInventoryStockStatsQueryOptions({ labelIds = [] }: { labelIds?: string[] }) {
+  const cacheKey = [...labelIds].toSorted().join(',') ?? 'all'
+  return queryOptions({
+    queryKey: [...inventoryStockStatsQueryKey, cacheKey] as const,
+    queryFn: ({ signal }) => $getInventoryStockStats({ signal, data: { labelIds } }),
+    staleTime: 1000 * 60 * 2,
+  })
+}
+
+export const $getInventoryStockStats = createServerFn({ method: 'GET' })
+  .middleware([$$auth])
+  .inputValidator(validate(z.object({ labelIds: z.array(z.uuid()).optional() })))
+  .handler(async ({ context: { user }, data: { labelIds } }) => {
+    const products = await db
+      .select({
+        id: product.id,
+        quantity: product.quantity,
+        priceTaxFree: product.priceTaxFree,
+        vatPercent: product.vatPercent,
+      })
+      .from(product)
+      .where(eq(product.userId, user.id))
+
+    const productIds = products.map((p) => p.id)
+    const costConditions = [inArray(productProductionCost.productId, productIds)]
+    if (labelIds != null && labelIds.length > 0) {
+      costConditions.push(inArray(productProductionCost.productionCostLabelId, labelIds))
+    }
+    const costs = await db
+      .select({
+        productId: productProductionCost.productId,
+        amount: productProductionCost.amount,
+      })
+      .from(productProductionCost)
+      .where(and(...costConditions))
+
+    const costByProduct = new Map<string, number>()
+    for (const c of costs) {
+      const cur = costByProduct.get(c.productId) ?? 0
+      costByProduct.set(c.productId, cur + Number(c.amount))
+    }
+
+    let totalWorthExTax = 0
+    let totalWorthIncTax = 0
+    let totalProdCost = 0
+    for (const p of products) {
+      const q = p.quantity
+      const ex = q * Number(p.priceTaxFree)
+      const inc = q * priceTaxIncluded(p.priceTaxFree, p.vatPercent)
+      totalWorthExTax += ex
+      totalWorthIncTax += inc
+      totalProdCost += q * (costByProduct.get(p.id) ?? 0)
+    }
+    const potentialBenefit = totalWorthIncTax - totalProdCost
+
+    return {
+      totalWorthExTax,
+      totalWorthIncTax,
+      totalProdCost,
+      potentialBenefit,
     }
   })
