@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { $createProduct, $updateProduct, productsQueryKey } from '@/server/functions/inventory'
+import {
+  $createProduct,
+  $updateProduct,
+  productsQueryKey,
+} from '@/server/functions/inventory/products'
 
 export function useProductMutations(productId: string | undefined, onSuccess?: () => void) {
   const queryClient = useQueryClient()

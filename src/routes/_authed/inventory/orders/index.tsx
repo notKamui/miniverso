@@ -10,7 +10,7 @@ import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { Input } from '@/components/ui/input'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
-import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory'
+import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/orders'
 
 const searchSchema = z.object({
   page: z.number().int().min(1).default(1),

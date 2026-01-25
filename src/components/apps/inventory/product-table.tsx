@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { contrastTextForHex } from '@/lib/utils/color'
-import { $updateProduct, priceTaxIncluded, productsQueryKey } from '@/server/functions/inventory'
+import { $updateProduct, productsQueryKey } from '@/server/functions/inventory/products'
+import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
 const LOW_STOCK_THRESHOLD = 5
 

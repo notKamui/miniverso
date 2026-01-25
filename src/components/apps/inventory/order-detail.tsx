@@ -12,11 +12,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  getOrderQueryOptions,
-  $markOrderPaid,
   $deleteOrder,
+  $markOrderPaid,
+  getOrderQueryOptions,
   ordersQueryKey,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/orders'
 
 type OrderDetailProps = { orderId: string }
 

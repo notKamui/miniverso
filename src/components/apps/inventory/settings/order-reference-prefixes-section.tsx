@@ -26,7 +26,7 @@ import {
   $updateOrderReferencePrefix,
   getOrderReferencePrefixesQueryOptions,
   orderReferencePrefixesQueryKey,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/order-reference-prefixes'
 import { SettingsSection } from './settings-section'
 
 export function OrderReferencePrefixesSection() {

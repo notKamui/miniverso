@@ -7,7 +7,8 @@ import { ProductStatsSection } from '@/components/apps/inventory/product-stats-s
 import { ProductTable } from '@/components/apps/inventory/product-table'
 import { Button } from '@/components/ui/button'
 import { title } from '@/components/ui/typography'
-import { getInventoryTagsQueryOptions, getProductsQueryOptions } from '@/server/functions/inventory'
+import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inventory-tags'
+import { getProductsQueryOptions } from '@/server/functions/inventory/products'
 
 const LOW_STOCK_THRESHOLD = 5
 

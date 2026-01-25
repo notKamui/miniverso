@@ -1,11 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ProductForm } from '@/components/apps/inventory/product-form'
 import { title } from '@/components/ui/typography'
-import {
-  getInventoryTagsQueryOptions,
-  getProductQueryOptions,
-  getProductionCostLabelsQueryOptions,
-} from '@/server/functions/inventory'
+import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inventory-tags'
+import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
+import { getProductQueryOptions } from '@/server/functions/inventory/products'
 
 export const Route = createFileRoute('/_authed/inventory/products/$productId')({
   loader: async ({ context: { queryClient }, params: { productId } }) => {

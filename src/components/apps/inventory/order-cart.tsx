@@ -10,13 +10,12 @@ import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { DataFromQueryOptions } from '@/lib/utils/types'
 import {
-  $createOrder,
   $getNextOrderReference,
   getOrderReferencePrefixesQueryOptions,
-  getProductsQueryOptions,
-  ordersQueryKey,
-  priceTaxIncluded,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/order-reference-prefixes'
+import { $createOrder, ordersQueryKey } from '@/server/functions/inventory/orders'
+import { getProductsQueryOptions } from '@/server/functions/inventory/products'
+import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
 type CartItem = {
   productId: string

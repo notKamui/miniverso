@@ -3,10 +3,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useComboboxAnchor } from '@/components/ui/combobox'
 import { productFormSchema } from '@/lib/forms/product'
-import {
-  getInventoryTagsQueryOptions,
-  getProductionCostLabelsQueryOptions,
-} from '@/server/functions/inventory'
+import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inventory-tags'
+import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
 import { ProductFormActions } from './product-form-actions'
 import { ProductFormBasicFields } from './product-form-basic-fields'
 import { ProductFormPricing } from './product-form-pricing'

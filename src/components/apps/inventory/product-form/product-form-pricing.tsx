@@ -2,7 +2,7 @@ import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
 import { FormInput } from '@/components/form/form-input'
 import { Label } from '@/components/ui/label'
-import { priceTaxIncluded } from '@/server/functions/inventory'
+import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
 type Props = { form: ReactForm<ProductFormValues> }
 

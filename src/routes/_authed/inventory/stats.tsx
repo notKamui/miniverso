@@ -6,11 +6,11 @@ import { TopProductsSection } from '@/components/apps/inventory/stats/top-produc
 import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { title } from '@/components/ui/typography'
 import { getRange } from '@/lib/utils/date-range'
+import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
 import {
   getInventoryStatsQueryOptions,
   getInventoryStockStatsQueryOptions,
-  getProductionCostLabelsQueryOptions,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/stats'
 
 const searchSchema = z.object({
   preset: z.enum(['today', 'week', 'month', 'year', 'lastYear']).default('month'),

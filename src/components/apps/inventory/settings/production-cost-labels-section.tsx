@@ -26,7 +26,7 @@ import {
   $updateProductionCostLabel,
   getProductionCostLabelsQueryOptions,
   productionCostLabelsQueryKey,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/production-cost-labels'
 import { ColorInput } from './color-input'
 import { SettingsSection } from './settings-section'
 

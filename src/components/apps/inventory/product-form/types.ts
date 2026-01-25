@@ -1,5 +1,5 @@
 import type { ProductFormValues } from '@/lib/forms/product'
-import type { $getProduct } from '@/server/functions/inventory'
+import type { $getProduct } from '@/server/functions/inventory/products'
 
 export type ProductFormExisting = Awaited<ReturnType<typeof $getProduct>>
 

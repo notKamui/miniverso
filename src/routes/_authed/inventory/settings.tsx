@@ -3,11 +3,9 @@ import { OrderReferencePrefixesSection } from '@/components/apps/inventory/setti
 import { ProductTagsSection } from '@/components/apps/inventory/settings/product-tags-section'
 import { ProductionCostLabelsSection } from '@/components/apps/inventory/settings/production-cost-labels-section'
 import { title } from '@/components/ui/typography'
-import {
-  getInventoryTagsQueryOptions,
-  getOrderReferencePrefixesQueryOptions,
-  getProductionCostLabelsQueryOptions,
-} from '@/server/functions/inventory'
+import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inventory-tags'
+import { getOrderReferencePrefixesQueryOptions } from '@/server/functions/inventory/order-reference-prefixes'
+import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
 
 export const Route = createFileRoute('/_authed/inventory/settings')({
   loader: async ({ context: { queryClient } }) => {

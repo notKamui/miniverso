@@ -26,7 +26,7 @@ import {
   $updateInventoryTag,
   getInventoryTagsQueryOptions,
   inventoryTagsQueryKey,
-} from '@/server/functions/inventory'
+} from '@/server/functions/inventory/inventory-tags'
 import { ColorInput } from './color-input'
 import { SettingsSection } from './settings-section'
 
