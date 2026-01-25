@@ -1,13 +1,7 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Section } from '@/components/apps/inventory/section'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
   getInventoryCurrencyQueryOptions,
   inventoryCurrencyQueryKey,
@@ -28,19 +22,21 @@ export function CurrencySection() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const effectiveCurrency = CURRENCIES.includes(currency as (typeof CURRENCIES)[number])
+    ? currency
+    : 'EUR'
+
   return (
     <Section
       title="Currency"
       description="Default currency for amounts in inventory (products, orders, cash, statistics)."
     >
       <Select
-        value={CURRENCIES.includes(currency as (typeof CURRENCIES)[number]) ? currency : 'EUR'}
+        value={effectiveCurrency}
         onValueChange={(v) => setMut.mutate({ data: { currency: v } })}
         disabled={setMut.isPending}
       >
-        <SelectTrigger className="w-32">
-          <SelectValue />
-        </SelectTrigger>
+        <SelectTrigger className="w-32">{effectiveCurrency}</SelectTrigger>
         <SelectContent>
           {CURRENCIES.map((c) => (
             <SelectItem key={c} value={c}>

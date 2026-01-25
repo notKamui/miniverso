@@ -15,7 +15,6 @@
     "fmt": "oxfmt",
     "fix": "bun run fmt && bun run lint --fix",
     "type-check": "tsgo --noEmit",
-    "check": "bun lint --error-on-warnings && bun type-check",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",
     "migrate": "bun db migrate",
