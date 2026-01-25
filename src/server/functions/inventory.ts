@@ -1109,8 +1109,8 @@ export const $getInventoryStats = createServerFn({ method: 'GET' })
   .inputValidator(
     validate(
       z.object({
-        startDate: z.string().datetime(),
-        endDate: z.string().datetime(),
+        startDate: z.iso.datetime(),
+        endDate: z.iso.datetime(),
       }),
     ),
   )

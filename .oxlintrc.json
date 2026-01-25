@@ -180,6 +180,7 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-array-delete": "error",
     "typescript/no-base-to-string": "error",
+    "typescript/no-deprecated": "error",
     "typescript/no-duplicate-enum-values": "error",
     "typescript/no-duplicate-type-constituents": "error",
     "typescript/no-empty-object-type": "error",

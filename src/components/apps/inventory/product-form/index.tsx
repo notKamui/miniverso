@@ -15,12 +15,9 @@ import { ProductFormTagIds } from './product-form-tag-ids'
 import { getProductFormDefaultValues, type ProductFormProps } from './types'
 import { useProductMutations } from './use-product-mutations'
 
-export function ProductForm({ productId, existing: existingProp, onSuccess }: ProductFormProps) {
+export function ProductForm({ productId, existing, onSuccess }: ProductFormProps) {
   const isEdit = Boolean(productId)
-  const existing = existingProp
-
   const chipsAnchorRef = useComboboxAnchor()
-
   const { createMut, updateMut } = useProductMutations(productId, onSuccess)
 
   const form = useForm({
@@ -28,7 +25,7 @@ export function ProductForm({ productId, existing: existingProp, onSuccess }: Pr
     onSubmit: async ({ value }) => {
       const parsed = productFormSchema.safeParse(value)
       if (!parsed.success) {
-        const first = parsed.error.flatten().formErrors[0] ?? parsed.error.issues[0]?.message
+        const first = parsed.error.issues[0]?.message
         toast.error(typeof first === 'string' ? first : 'Invalid form')
         return
       }
