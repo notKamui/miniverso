@@ -16,7 +16,8 @@ import {
   getOrderReferencePrefixesQueryOptions,
 } from '@/server/functions/inventory/order-reference-prefixes'
 import { $createOrder, ordersQueryKey } from '@/server/functions/inventory/orders'
-import { getProductsQueryOptions } from '@/server/functions/inventory/products'
+import { getProductsQueryOptions, productsQueryKey } from '@/server/functions/inventory/products'
+import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
 type CartItem = {
@@ -65,8 +66,12 @@ export function OrderCart() {
 
   const createMut = useMutation({
     mutationFn: $createOrder,
-    onSuccess: () => {
+    onSuccess: (newOrder) => {
       void queryClient.invalidateQueries({ queryKey: ordersQueryKey })
+      if (newOrder.status === 'paid') {
+        void queryClient.invalidateQueries({ queryKey: productsQueryKey })
+        void queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey })
+      }
       toast.success('Order created')
       void navigate({ to: '/inventory/orders' })
     },

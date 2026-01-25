@@ -19,6 +19,8 @@ import {
   getOrderQueryOptions,
   ordersQueryKey,
 } from '@/server/functions/inventory/orders'
+import { productsQueryKey } from '@/server/functions/inventory/products'
+import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
 
 type OrderDetailProps = { orderId: string }
 
@@ -29,9 +31,13 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const markPaidMut = useMutation({
     mutationFn: $markOrderPaid,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ordersQueryKey })
-      void queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
+        queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] }),
+        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }),
+      ])
       toast.success('Order marked as paid')
     },
     onError: (e: Error) => toast.error(e.message),
