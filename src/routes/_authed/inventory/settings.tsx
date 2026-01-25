@@ -26,10 +26,10 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-6">
       <h2 className={title({ h: 2 })}>Inventory Settings</h2>
-      <CurrencySection />
       <OrderReferencePrefixesSection />
       <ProductTagsSection />
       <ProductionCostLabelsSection />
+      <CurrencySection />
     </div>
   )
 }
