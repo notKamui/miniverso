@@ -133,6 +133,7 @@ function RouteComponent() {
 
       <div className="flex flex-wrap items-center gap-4">
         <Input
+          name="reference"
           placeholder="Filter by reference…"
           value={refInput}
           onChange={(e) => setRefInput(e.target.value)}

@@ -124,6 +124,7 @@ export function CashTable() {
               >
                 <TableCell className="p-1">
                   <Input
+                    name="label"
                     defaultValue={row.label}
                     onBlur={(e) => handleBlurLabel(row, e.target.value)}
                     className="h-8 border-0 bg-transparent focus-visible:ring-1"
@@ -132,6 +133,7 @@ export function CashTable() {
                 </TableCell>
                 <TableCell className="p-1">
                   <Input
+                    name="value"
                     type="number"
                     min={0}
                     step={0.01}
@@ -142,6 +144,7 @@ export function CashTable() {
                 </TableCell>
                 <TableCell className="p-1">
                   <Input
+                    name="quantity"
                     type="number"
                     min={0}
                     step={1}

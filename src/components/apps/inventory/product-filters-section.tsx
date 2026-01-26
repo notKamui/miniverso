@@ -43,12 +43,14 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
     <Section title="Filters" description="Search, status, and tag filters." collapsible={false}>
       <div className="flex flex-wrap items-center gap-4">
         <Input
+          name="q"
           placeholder="Search by name or SKU…"
           value={qInput}
           onChange={(e) => setQInput(e.target.value)}
           className="max-w-xs"
         />
         <Select
+          name="archived"
           value={search.archived}
           onValueChange={(v) =>
             navigate({
@@ -93,7 +95,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
                   {t.name}
                 </TagCombobox.Chip>
               ))}
-            <TagCombobox.ChipsInput placeholder="Filter by tag…" />
+            <TagCombobox.ChipsInput placeholder="Filter by tag…" name="tagIds" />
           </TagCombobox.Chips>
           <TagCombobox.Content anchor={tagFilterAnchorRef}>
             <TagCombobox.List>

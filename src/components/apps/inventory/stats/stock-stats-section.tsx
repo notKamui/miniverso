@@ -69,7 +69,7 @@ export function StockStatsSection({
                       {l.name}
                     </LabelCombobox.Chip>
                   ))}
-                <LabelCombobox.ChipsInput placeholder="All labels" />
+                <LabelCombobox.ChipsInput placeholder="All labels" name="labelIds" />
               </LabelCombobox.Chips>
               <LabelCombobox.Content anchor={anchorRef}>
                 <LabelCombobox.List>
