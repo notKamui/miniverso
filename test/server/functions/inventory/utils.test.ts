@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import {
-  priceTaxIncluded,
-  productUnitProductionCost,
-} from '@/server/functions/inventory/utils'
+import { priceTaxIncluded, productUnitProductionCost } from '@/server/functions/inventory/utils'
 
 describe('priceTaxIncluded', () => {
   it('computes price incl. VAT from tax-free price and VAT percent', () => {
@@ -38,8 +35,6 @@ describe('productUnitProductionCost', () => {
   })
 
   it('handles mixed number and string amounts', () => {
-    expect(
-      productUnitProductionCost([{ amount: 10 }, { amount: '5' }, { amount: 2.5 }]),
-    ).toBe(17.5)
+    expect(productUnitProductionCost([{ amount: 10 }, { amount: '5' }, { amount: 2.5 }])).toBe(17.5)
   })
 })

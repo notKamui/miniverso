@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Trash2Icon } from 'lucide-react'
+import { TagIcon, Trash2Icon } from 'lucide-react'
 import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
-import { createCombobox } from '@/components/ui/combobox'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils/cn'
 import {
   $deleteTimeEntryTag,
   getTimeEntryTagsQueryOptions,
@@ -13,8 +14,6 @@ type TagSelectorProps = {
   onSelectTag: (tag: TimeEntryTag) => void
   disabled?: boolean
 }
-
-const TagCombobox = createCombobox<TimeEntryTag>()
 
 export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps) {
   const queryClient = useQueryClient()
@@ -50,39 +49,67 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
     deleteTagMutation.mutate(tagId)
   }
 
+  function handleKeyDown(e: React.KeyboardEvent, tag: TimeEntryTag) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleSelectTag(tag)
+    }
+  }
+
   return (
-    <TagCombobox.Root
-      items={tags}
-      value={null}
-      onValueChange={(v) => {
-        if (v) handleSelectTag(v)
-      }}
-      itemToStringLabel={(t) => (t ? t.description : '')}
-    >
-      <TagCombobox.Input placeholder="Select tag…" disabled={disabled} />
-      <TagCombobox.Content>
-        <TagCombobox.List>
-          {(tag) => (
-            <TagCombobox.Item key={tag.id} value={tag} className="flex items-center gap-2">
-              <span className="flex-1 truncate">{tag.description}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0 opacity-70 hover:opacity-100"
-                onClick={(e) => handleDeleteTag(e, tag.id)}
-                disabled={deleteTagMutation.isPending}
-                aria-label="Delete tag"
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={disabled}
+          aria-label="Select tag"
+        >
+          <TagIcon className="size-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-1" align="start">
+        {tags.length === 0 ? (
+          <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+            <p>No tags saved yet.</p>
+            <p className="mt-1">
+              Type a description and click &quot;Save as tag&quot; to create one.
+            </p>
+          </div>
+        ) : (
+          <div className="max-h-64 overflow-y-auto">
+            {tags.map((tag) => (
+              <div
+                key={tag.id}
+                onClick={() => handleSelectTag(tag)}
+                onKeyDown={(e) => handleKeyDown(e, tag)}
+                role="button"
+                tabIndex={0}
+                className={cn(
+                  'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                  'hover:bg-accent hover:text-accent-foreground',
+                  'focus-within:bg-accent focus-within:text-accent-foreground',
+                  'focus:outline-none',
+                )}
               >
-                <Trash2Icon className="size-3.5 text-destructive" />
-              </Button>
-            </TagCombobox.Item>
-          )}
-        </TagCombobox.List>
-        <TagCombobox.Empty>
-          No tags saved yet. Type a description and click &quot;Save as tag&quot; to create one.
-        </TagCombobox.Empty>
-      </TagCombobox.Content>
-    </TagCombobox.Root>
+                <span className="flex-1 truncate text-left">{tag.description}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0 opacity-70 hover:opacity-100"
+                  onClick={(e) => handleDeleteTag(e, tag.id)}
+                  disabled={deleteTagMutation.isPending}
+                  aria-label="Delete tag"
+                >
+                  <Trash2Icon className="size-3.5 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   )
 }
