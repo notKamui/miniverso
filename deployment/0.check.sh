@@ -2,4 +2,4 @@
 set -euo pipefail
 
 bun install --frozen-lockfile && \
-bun run check
+bun run lint
