@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TagIcon, Trash2Icon } from 'lucide-react'
+import { useState } from 'react'
 import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -16,6 +17,7 @@ type TagSelectorProps = {
 }
 
 export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps) {
+  const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const { data: tags = [] } = useQuery(getTimeEntryTagsQueryOptions())
 
@@ -42,6 +44,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
 
   function handleSelectTag(tag: TimeEntryTag) {
     onSelectTag(tag)
+    setOpen(false)
   }
 
   function handleDeleteTag(e: React.MouseEvent, tagId: string) {
@@ -57,7 +60,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
