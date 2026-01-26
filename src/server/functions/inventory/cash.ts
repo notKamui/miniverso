@@ -6,6 +6,7 @@ import * as z from 'zod'
 import { validate } from '@/lib/utils/validate'
 import { db, takeUniqueOrNull } from '@/server/db'
 import { inventoryCash } from '@/server/db/schema/inventory'
+import { takeUniqueOr } from '@/server/db/utils'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
@@ -48,24 +49,28 @@ export const $createCash = createServerFn({ method: 'POST' })
       }),
     ),
   )
-  .handler(async ({ context: { user }, data }) => {
-    const nextSort =
-      data.sortOrder ??
-      (await db
+  .handler(async ({ context: { user }, data: { label, value, quantity, sortOrder } }) => {
+    let nextSort = sortOrder
+
+    if (nextSort == null) {
+      const rows = await db
         .select({ sortOrder: inventoryCash.sortOrder })
         .from(inventoryCash)
         .where(eq(inventoryCash.userId, user.id))
         .orderBy(desc(inventoryCash.sortOrder))
         .limit(1)
-        .then((rows) => (rows[0]?.sortOrder != null ? Number(rows[0].sortOrder) + 1 : 0)))
+        .then(takeUniqueOrNull)
 
-    const [row] = await db
+      nextSort = rows?.sortOrder != null ? Number(rows.sortOrder) + 1 : 0
+    }
+
+    return await db
       .insert(inventoryCash)
       .values({
         userId: user.id,
-        label: data.label.trim(),
-        value: String(Number(data.value).toFixed(2)),
-        quantity: data.quantity ?? 0,
+        label: label.trim(),
+        value: String(Number(value).toFixed(2)),
+        quantity: quantity ?? 0,
         sortOrder: nextSort,
       })
       .returning({
@@ -76,8 +81,11 @@ export const $createCash = createServerFn({ method: 'POST' })
         quantity: inventoryCash.quantity,
         sortOrder: inventoryCash.sortOrder,
       })
-    if (!row) throw notFound()
-    return row
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
   })
 
 export const $updateCash = createServerFn({ method: 'POST' })
@@ -93,23 +101,26 @@ export const $updateCash = createServerFn({ method: 'POST' })
       }),
     ),
   )
-  .handler(async ({ context: { user }, data }) => {
-    const { id, ...rest } = data
+  .handler(async ({ context: { user }, data: { id, label, value, quantity, sortOrder } }) => {
     const set: Record<string, unknown> = {}
-    if (rest.label !== undefined) set.label = rest.label.trim()
-    if (rest.value !== undefined) set.value = String(Number(rest.value).toFixed(2))
-    if (rest.quantity !== undefined) set.quantity = rest.quantity
-    if (rest.sortOrder !== undefined) set.sortOrder = rest.sortOrder
+    if (label !== undefined) set.label = label.trim()
+    if (value !== undefined) set.value = String(Number(value).toFixed(2))
+    if (quantity !== undefined) set.quantity = quantity
+    if (sortOrder !== undefined) set.sortOrder = sortOrder
+
     if (Object.keys(set).length === 0) {
-      const row = await db
+      return await db
         .select()
         .from(inventoryCash)
         .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
-        .then(takeUniqueOrNull)
-      if (!row) throw notFound()
-      return row
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
     }
-    const row = await db
+
+    return await db
       .update(inventoryCash)
       .set(set)
       .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
@@ -121,9 +132,11 @@ export const $updateCash = createServerFn({ method: 'POST' })
         quantity: inventoryCash.quantity,
         sortOrder: inventoryCash.sortOrder,
       })
-      .then(takeUniqueOrNull)
-    if (!row) throw notFound()
-    return row
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
   })
 
 export const $reorderCashRow = createServerFn({ method: 'POST' })
@@ -134,8 +147,11 @@ export const $reorderCashRow = createServerFn({ method: 'POST' })
       .select({ id: inventoryCash.id, sortOrder: inventoryCash.sortOrder })
       .from(inventoryCash)
       .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!row) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
     const list = await db
       .select({ id: inventoryCash.id, sortOrder: inventoryCash.sortOrder })
@@ -165,12 +181,14 @@ export const $reorderCashRow = createServerFn({ method: 'POST' })
 export const $deleteCash = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(z.object({ id: z.uuid() })))
-  .handler(async ({ context: { user }, data: { id } }) => {
-    const row = await db
+  .handler(({ context: { user }, data: { id } }) =>
+    db
       .delete(inventoryCash)
       .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
       .returning({ id: inventoryCash.id })
-      .then(takeUniqueOrNull)
-    if (!row) throw notFound()
-    return row.id
-  })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      ),
+  )
