@@ -23,5 +23,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/.drizzle ./.drizzle
 COPY --from=builder /app/dist/serve.js ./
 
+USER bun
 EXPOSE 3000
 CMD ["bun", "serve.js"]
