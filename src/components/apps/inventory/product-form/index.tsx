@@ -44,6 +44,14 @@ export function ProductForm({ productId, existing, onSuccess }: ProductFormProps
 
   return (
     <form
+      onKeyDown={(e) => {
+        if (
+          e.key === 'Enter' &&
+          (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+        ) {
+          e.preventDefault()
+        }
+      }}
       onSubmit={async (e) => {
         e.preventDefault()
         e.stopPropagation()
