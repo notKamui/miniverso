@@ -92,14 +92,11 @@
     "vite": "8.0.0-beta.10"
   },
   "overrides": {
-    "react-is": "^19.2.4",
     "vite": "8.0.0-beta.10"
   },
   "engines": {
     "bun": ">=1.3.6",
     "node": ">=25"
   },
-  "_notes": {
-    "react-is": "Synced with React version as per indicated in https://ui.shadcn.com/docs/react-19#recharts for Recharts compatibility"
-  }
+  "_notes": {}
 }
