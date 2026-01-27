@@ -50,7 +50,6 @@ export function ProductTagsSection() {
       setNewTagColor(DEFAULT_COLOR)
       toast.success('Tag added')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const updateTagMut = useMutation({
@@ -60,7 +59,6 @@ export function ProductTagsSection() {
       setEditingTagId(null)
       toast.success('Tag updated')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const deleteTagMut = useMutation({
@@ -69,7 +67,6 @@ export function ProductTagsSection() {
       await queryClient.invalidateQueries({ queryKey: inventoryTagsQueryKey })
       toast.success('Tag deleted')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const editingTag = editingTagId ? tags.find((t) => t.id === editingTagId) : null

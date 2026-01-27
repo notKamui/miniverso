@@ -76,7 +76,6 @@ export function OrderCart() {
       toast.success('Order created')
       await navigate({ to: '/inventory/orders' })
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   function addItem() {

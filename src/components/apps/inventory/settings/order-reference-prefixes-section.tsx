@@ -44,7 +44,6 @@ export function OrderReferencePrefixesSection() {
       setNewPrefix('')
       toast.success('Prefix added')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const updateMut = useMutation({
@@ -54,7 +53,6 @@ export function OrderReferencePrefixesSection() {
       setEditingId(null)
       toast.success('Prefix updated')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const deleteMut = useMutation({
@@ -63,7 +61,6 @@ export function OrderReferencePrefixesSection() {
       await queryClient.invalidateQueries({ queryKey: orderReferencePrefixesQueryKey })
       toast.success('Prefix deleted')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const editing = editingId ? prefixes.find((p) => p.id === editingId) : null

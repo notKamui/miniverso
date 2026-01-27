@@ -337,7 +337,9 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
     const productMap = new Map(products.map((p) => [p.id, p]))
     for (const i of items) {
       const p = productMap.get(i.productId)
-      if (!p || p.quantity < i.quantity) badRequest('Insufficient stock', 400)
+      if (!p || p.quantity < i.quantity) {
+        badRequest(`Insufficient stock for product ${i.productId}`, 400)
+      }
     }
 
     await db

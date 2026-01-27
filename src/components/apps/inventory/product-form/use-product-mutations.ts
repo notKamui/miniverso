@@ -19,7 +19,6 @@ export function useProductMutations(productId: string | undefined, onSuccess?: (
       toast.success('Product created')
       onSuccess?.()
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const updateMut = useMutation({
@@ -32,7 +31,6 @@ export function useProductMutations(productId: string | undefined, onSuccess?: (
       toast.success('Product updated')
       onSuccess?.()
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   return { createMut, updateMut }

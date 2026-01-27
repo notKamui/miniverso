@@ -40,7 +40,6 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       ])
       toast.success('Order marked as paid')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
   const deleteMut = useMutation({
     mutationFn: $deleteOrder,
@@ -54,7 +53,6 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       toast.success('Order deleted')
       await navigate({ to: '/inventory/orders' })
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const { order, items, totalTaxFree, totalTaxIncluded, totalBenefit } = data

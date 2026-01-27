@@ -34,7 +34,6 @@ export function CashTable() {
       await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
       toast.success('Row added')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const updateMut = useMutation({
@@ -42,7 +41,6 @@ export function CashTable() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const deleteMut = useMutation({
@@ -51,7 +49,6 @@ export function CashTable() {
       await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
       toast.success('Row deleted')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const reorderMut = useMutation({
@@ -59,7 +56,6 @@ export function CashTable() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: inventoryCashQueryKey })
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const total = rows.reduce((sum, r) => sum + Number(r.value) * r.quantity, 0)

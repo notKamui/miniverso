@@ -1,5 +1,4 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { Section } from '@/components/apps/inventory/section'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
@@ -19,7 +18,6 @@ export function CurrencySection() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: inventoryCurrencyQueryKey })
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const effectiveCurrency = CURRENCIES.includes(currency as (typeof CURRENCIES)[number])

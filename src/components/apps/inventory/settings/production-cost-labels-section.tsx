@@ -50,7 +50,6 @@ export function ProductionCostLabelsSection() {
       setNewLabelColor(DEFAULT_COLOR)
       toast.success('Label added')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const updateLabelMut = useMutation({
@@ -60,7 +59,6 @@ export function ProductionCostLabelsSection() {
       setEditingLabelId(null)
       toast.success('Label updated')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const deleteLabelMut = useMutation({
@@ -69,7 +67,6 @@ export function ProductionCostLabelsSection() {
       await queryClient.invalidateQueries({ queryKey: productionCostLabelsQueryKey })
       toast.success('Label deleted')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const editingLabel = editingLabelId ? labels.find((l) => l.id === editingLabelId) : null

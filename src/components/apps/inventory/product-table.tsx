@@ -62,7 +62,6 @@ export function ProductTable({
       await queryClient.invalidateQueries({ queryKey: productsQueryKey })
       toast.success('Product updated')
     },
-    onError: (e: Error) => toast.error(e.message),
   })
 
   const columns: ColumnDef<Product>[] = [
