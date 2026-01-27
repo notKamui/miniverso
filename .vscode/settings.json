@@ -24,6 +24,7 @@
   "biome.enabled": false,
   "oxc.enable": true,
   "oxc.typeAware": true,
+  "oxc.unusedDisableDirectives": "warn",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always",
