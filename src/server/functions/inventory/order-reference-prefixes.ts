@@ -79,7 +79,7 @@ export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
     const set: Record<string, unknown> = {}
     if (prefix !== undefined) set.prefix = prefix.trim()
     if (Object.keys(set).length === 0) {
-      const row = await db
+      return await db
         .select()
         .from(inventoryOrderReferencePrefix)
         .where(
@@ -88,11 +88,13 @@ export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
             eq(inventoryOrderReferencePrefix.userId, user.id),
           ),
         )
-        .then(takeUniqueOrNull)
-      if (!row) throw notFound()
-      return row
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
     }
-    const row = await db
+    return await db
       .update(inventoryOrderReferencePrefix)
       .set(set)
       .where(
@@ -106,9 +108,11 @@ export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
         userId: inventoryOrderReferencePrefix.userId,
         prefix: inventoryOrderReferencePrefix.prefix,
       })
-      .then(takeUniqueOrNull)
-    if (!row) throw notFound()
-    return row
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
   })
 
 export const $deleteOrderReferencePrefix = createServerFn({ method: 'POST' })
@@ -131,8 +135,12 @@ export const $deleteOrderReferencePrefix = createServerFn({ method: 'POST' })
         ),
       )
       .returning({ id: inventoryOrderReferencePrefix.id })
-      .then(takeUniqueOrNull)
-    if (!row) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
     return row.id
   })
 
@@ -149,8 +157,11 @@ export const $getNextOrderReference = createServerFn({ method: 'GET' })
           eq(inventoryOrderReferencePrefix.userId, user.id),
         ),
       )
-      .then(takeUniqueOrNull)
-    if (!p) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
     const [last] = await db
       .select({ reference: order.reference })

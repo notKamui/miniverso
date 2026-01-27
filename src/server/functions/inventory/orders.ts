@@ -5,7 +5,7 @@ import { and, count, desc, eq, gte, inArray, ilike, isNull, like, lte, sql } fro
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOrNull } from '@/server/db'
+import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import {
   inventoryOrderReferencePrefix,
   order,
@@ -136,8 +136,11 @@ export const $getOrder = createServerFn({ method: 'GET' })
       .select(orderListFields)
       .from(order)
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!o) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
     const items = await db
       .select({
@@ -254,24 +257,29 @@ export const $createOrder = createServerFn({ method: 'POST' })
               eq(inventoryOrderReferencePrefix.userId, user.id),
             ),
           )
-          .then(takeUniqueOrNull)
-        if (!p) badRequest('Prefix not found', 400)
-        const [last] = await tx
+          .then(
+            takeUniqueOr(() => {
+              badRequest('Prefix not found', 400)
+            }),
+          )
+
+        const last = await tx
           .select({ reference: order.reference })
           .from(order)
           .where(and(eq(order.userId, user.id), like(order.reference, `${p.prefix}-%`)))
           .orderBy(desc(order.reference))
-          .limit(1)
-        const n = last
-          ? (() => {
-              const t = Number(last.reference.split('-').at(-1))
-              return (Number.isNaN(t) ? 0 : t) + 1
-            })()
-          : 1
-        ref = `${p.prefix}-${n}`
+          .then(takeUniqueOrNull)
+
+        if (!last) {
+          ref = `${p.prefix}-1`
+        } else {
+          const t = Number(last.reference.split('-').at(-1))
+          const n = Number.isNaN(t) ? 0 : t + 1
+          ref = `${p.prefix}-${n}`
+        }
       }
 
-      const [newOrder] = await tx
+      const newOrder = await tx
         .insert(order)
         .values({
           userId: user.id,
@@ -281,8 +289,11 @@ export const $createOrder = createServerFn({ method: 'POST' })
           ...(data.status === 'paid' && { paidAt: new Date() }),
         })
         .returning(orderListFields)
-
-      if (!newOrder) throw notFound()
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
 
       for (const i of data.items) {
         const p = productMap.get(i.productId)!
@@ -320,8 +331,11 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       .select({ id: order.id, status: order.status })
       .from(order)
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!o) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
     if (o.status !== 'prepared') badRequest('Order is not prepared', 400)
 
     const items = await db
@@ -358,8 +372,12 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       .select(orderListFields)
       .from(order)
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!updated) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
     return updated
   })
 
@@ -371,8 +389,12 @@ export const $deleteOrder = createServerFn({ method: 'POST' })
       .select({ id: order.id, status: order.status })
       .from(order)
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!o) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
     if (o.status !== 'prepared') badRequest('Can only delete prepared orders', 400)
 
     await db.delete(order).where(and(eq(order.id, orderId), eq(order.userId, user.id)))

@@ -29,29 +29,29 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   const queryClient = useQueryClient()
   const { data } = useSuspenseQuery(getOrderQueryOptions(orderId))
   const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+
+  async function invalidateQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
+      queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] }),
+      queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+      queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }),
+    ])
+  }
+
   const markPaidMut = useMutation({
     mutationFn: $markOrderPaid,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
-        queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] }),
-        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
-        queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }),
-      ])
+      await invalidateQueries()
       toast.success('Order marked as paid')
     },
   })
   const deleteMut = useMutation({
     mutationFn: $deleteOrder,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
-        queryClient.invalidateQueries({ queryKey: [...ordersQueryKey, orderId] }),
-        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
-        queryClient.invalidateQueries({ queryKey: inventoryStockStatsQueryKey }),
-      ])
-      toast.success('Order deleted')
+      await invalidateQueries()
       await navigate({ to: '/inventory/orders' })
+      toast.success('Order deleted')
     },
   })
 

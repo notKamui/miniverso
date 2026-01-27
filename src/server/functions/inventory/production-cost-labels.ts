@@ -89,8 +89,8 @@ export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
       }),
     ),
   )
-  .handler(async ({ context: { user }, data: { id, name, color } }) => {
-    const label = await db
+  .handler(async ({ context: { user }, data: { id, name, color } }) =>
+    db
       .update(inventoryProductionCostLabel)
       .set({
         ...(name !== undefined && { name: name.trim() }),
@@ -108,11 +108,12 @@ export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
         name: inventoryProductionCostLabel.name,
         color: inventoryProductionCostLabel.color,
       })
-      .then(takeUniqueOrNull)
-
-    if (!label) throw notFound()
-    return label
-  })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      ),
+  )
 
 export const $deleteProductionCostLabel = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -127,8 +128,11 @@ export const $deleteProductionCostLabel = createServerFn({ method: 'POST' })
         ),
       )
       .returning({ id: inventoryProductionCostLabel.id })
-      .then(takeUniqueOrNull)
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
-    if (!label) throw notFound()
     return label.id
   })

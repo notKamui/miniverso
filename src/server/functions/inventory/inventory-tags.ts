@@ -84,8 +84,8 @@ export const $updateInventoryTag = createServerFn({ method: 'POST' })
       }),
     ),
   )
-  .handler(async ({ context: { user }, data: { id, name, color } }) => {
-    const tag = await db
+  .handler(async ({ context: { user }, data: { id, name, color } }) =>
+    db
       .update(inventoryTag)
       .set({
         ...(name !== undefined && { name: name.trim() }),
@@ -98,11 +98,12 @@ export const $updateInventoryTag = createServerFn({ method: 'POST' })
         name: inventoryTag.name,
         color: inventoryTag.color,
       })
-      .then(takeUniqueOrNull)
-
-    if (!tag) throw notFound()
-    return tag
-  })
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      ),
+  )
 
 export const $deleteInventoryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -112,8 +113,11 @@ export const $deleteInventoryTag = createServerFn({ method: 'POST' })
       .delete(inventoryTag)
       .where(and(eq(inventoryTag.id, id), eq(inventoryTag.userId, user.id)))
       .returning({ id: inventoryTag.id })
-      .then(takeUniqueOrNull)
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
-    if (!tag) throw notFound()
     return tag.id
   })

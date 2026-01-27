@@ -13,6 +13,7 @@ import {
   productProductionCost,
   productTag,
 } from '@/server/db/schema/inventory'
+import { takeUniqueOr } from '@/server/db/utils'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 
@@ -205,7 +206,7 @@ export const $createProduct = createServerFn({ method: 'POST' })
       if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
     }
 
-    const [p] = await db
+    const p = await db
       .insert(product)
       .values({
         userId: user.id,
@@ -217,8 +218,11 @@ export const $createProduct = createServerFn({ method: 'POST' })
         quantity: data.quantity,
       })
       .returning(productListFields)
-
-    if (!p) throw notFound()
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
 
     if (data.tagIds.length > 0) {
       await db.insert(productTag).values(data.tagIds.map((tagId) => ({ productId: p.id, tagId })))
