@@ -151,6 +151,7 @@ export function ProductTable({
       id: 'actions',
       header: '',
       size: 40,
+      enableHiding: false,
       cell: ({ row }) => {
         const p = row.original
         const isArchived = Boolean(p.archivedAt)
