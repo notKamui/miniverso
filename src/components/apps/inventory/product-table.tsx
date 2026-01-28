@@ -150,6 +150,7 @@ export function ProductTable({
     {
       id: 'actions',
       header: '',
+      size: 40,
       cell: ({ row }) => {
         const p = row.original
         const isArchived = Boolean(p.archivedAt)
@@ -162,7 +163,7 @@ export function ProductTable({
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-8">
+                <Button variant="ghost" size="icon-sm" className="size-8">
                   <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
