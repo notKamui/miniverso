@@ -77,14 +77,14 @@ export function ProductTagsSection() {
     setEditTagColor(t.color)
   }
 
-  function handleCreateTag(e: React.FormEvent) {
+  function handleCreateTag(e: React.SubmitEvent) {
     e.preventDefault()
     const n = newTagName.trim()
     if (!n) return
     createTagMut.mutate({ data: { name: n, color: newTagColor.trim() || DEFAULT_COLOR } })
   }
 
-  function handleUpdateTag(e: React.FormEvent) {
+  function handleUpdateTag(e: React.SubmitEvent) {
     e.preventDefault()
     if (!editingTagId) return
     const n = editTagName.trim()

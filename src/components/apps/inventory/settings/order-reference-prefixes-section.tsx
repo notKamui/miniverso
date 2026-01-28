@@ -70,14 +70,14 @@ export function OrderReferencePrefixesSection() {
     setEditPrefix(p.prefix)
   }
 
-  function handleCreate(e: React.FormEvent) {
+  function handleCreate(e: React.SubmitEvent) {
     e.preventDefault()
     const p = newPrefix.trim()
     if (!p) return
     createMut.mutate({ data: { prefix: p } })
   }
 
-  function handleUpdate(e: React.FormEvent) {
+  function handleUpdate(e: React.SubmitEvent) {
     e.preventDefault()
     if (!editingId) return
     const p = editPrefix.trim()

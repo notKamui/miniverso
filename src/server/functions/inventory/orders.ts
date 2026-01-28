@@ -199,7 +199,7 @@ const orderCreateSchema = z.object({
   reference: z.string().min(1).max(500).optional(),
   prefixId: z.uuid().optional(),
   description: z.string().max(2000).optional(),
-  status: z.enum(['prepared', 'paid']),
+  status: z.enum(['prepared', 'sent', 'paid']),
   items: z.array(z.object({ productId: z.uuid(), quantity: z.number().int().min(1) })),
 })
 
@@ -372,6 +372,36 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       .select(orderListFields)
       .from(order)
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
+    return updated
+  })
+
+export const $markOrderSent = createServerFn({ method: 'POST' })
+  .middleware([$$auth, $$rateLimit])
+  .inputValidator(validate(z.object({ orderId: z.uuid() })))
+  .handler(async ({ context: { user }, data: { orderId } }) => {
+    const o = await db
+      .select({ id: order.id, status: order.status })
+      .from(order)
+      .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
+      .then(
+        takeUniqueOr(() => {
+          throw notFound()
+        }),
+      )
+
+    if (o.status !== 'paid') badRequest('Order is not paid', 400)
+
+    const updated = await db
+      .update(order)
+      .set({ status: 'sent' })
+      .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
+      .returning(orderListFields)
       .then(
         takeUniqueOr(() => {
           throw notFound()

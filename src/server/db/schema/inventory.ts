@@ -134,7 +134,7 @@ export const order = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     reference: text('reference').notNull(),
-    status: text('status', { enum: ['prepared', 'paid'] }).notNull(),
+    status: text('status', { enum: ['prepared', 'sent', 'paid'] }).notNull(),
     description: text('description'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     paidAt: timestamp('paid_at'),

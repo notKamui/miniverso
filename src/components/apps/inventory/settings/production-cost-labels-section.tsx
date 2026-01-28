@@ -77,14 +77,14 @@ export function ProductionCostLabelsSection() {
     setEditLabelColor(l.color)
   }
 
-  function handleCreateLabel(e: React.FormEvent) {
+  function handleCreateLabel(e: React.SubmitEvent) {
     e.preventDefault()
     const n = newLabelName.trim()
     if (!n) return
     createLabelMut.mutate({ data: { name: n, color: newLabelColor.trim() || DEFAULT_COLOR } })
   }
 
-  function handleUpdateLabel(e: React.FormEvent) {
+  function handleUpdateLabel(e: React.SubmitEvent) {
     e.preventDefault()
     if (!editingLabelId) return
     const n = editLabelName.trim()

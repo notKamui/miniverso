@@ -97,7 +97,9 @@ function RouteComponent() {
           className={
             row.original.status === 'paid'
               ? 'text-green-600 dark:text-green-400'
-              : 'text-muted-foreground'
+              : row.original.status === 'sent'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-muted-foreground'
           }
         >
           {row.original.status}

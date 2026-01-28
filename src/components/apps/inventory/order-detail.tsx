@@ -1,6 +1,6 @@
 import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { BanknoteIcon, Trash2Icon } from 'lucide-react'
+import { BanknoteIcon, SendIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +16,7 @@ import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/c
 import {
   $deleteOrder,
   $markOrderPaid,
+  $markOrderSent,
   getOrderQueryOptions,
   ordersQueryKey,
 } from '@/server/functions/inventory/orders'
@@ -46,6 +47,13 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       toast.success('Order marked as paid')
     },
   })
+  const markSentMut = useMutation({
+    mutationFn: $markOrderSent,
+    onSuccess: async () => {
+      await invalidateQueries()
+      toast.success('Order marked as sent')
+    },
+  })
   const deleteMut = useMutation({
     mutationFn: $deleteOrder,
     onSuccess: async () => {
@@ -73,7 +81,9 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               className={
                 order.status === 'paid'
                   ? 'font-medium text-green-600 dark:text-green-400'
-                  : 'text-muted-foreground'
+                  : order.status === 'sent'
+                    ? 'font-medium text-blue-600 dark:text-blue-400'
+                    : 'text-muted-foreground'
               }
             >
               {order.status}
@@ -99,6 +109,18 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             >
               <Trash2Icon className="size-4" />
               Delete
+            </Button>
+          </div>
+        )}
+        {order.status === 'paid' && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => markSentMut.mutate({ data: { orderId } })}
+              disabled={markSentMut.isPending}
+            >
+              <SendIcon className="size-4" />
+              Mark as sent
             </Button>
           </div>
         )}
