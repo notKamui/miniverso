@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,6 +25,9 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
   const [qInput, setQInput] = useState(search.q ?? '')
   const debouncedQ = useDebounce(qInput, 300)
   const tagFilterAnchorRef = TagCombobox.useAnchor()
+  const selectedTags = tags.filter((t) => (search.tagIds ?? []).includes(t.id))
+  const visibleTags = selectedTags.slice(0, 2)
+  const hiddenCount = Math.max(0, selectedTags.length - visibleTags.length)
 
   useEffect(() => {
     setQInput(search.q ?? '')
@@ -78,10 +82,12 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
         }
         itemToStringLabel={(t) => t.name}
       >
-        <TagCombobox.Chips ref={tagFilterAnchorRef} className="max-w-64 min-w-32">
-          {tags
-            .filter((t) => (search.tagIds ?? []).includes(t.id))
-            .map((t) => (
+        <div className="flex items-center gap-1">
+          <TagCombobox.Chips
+            ref={tagFilterAnchorRef}
+            className="h-9 max-w-64 min-w-0 flex-nowrap overflow-hidden"
+          >
+            {visibleTags.map((t) => (
               <TagCombobox.Chip
                 key={t.id}
                 style={
@@ -93,13 +99,45 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
                 {t.name}
               </TagCombobox.Chip>
             ))}
-          <TagCombobox.ChipsInput placeholder="Tag…" name="tagIds" />
-        </TagCombobox.Chips>
+            {hiddenCount > 0 ? (
+              <TagCombobox.Chip
+                showRemove={false}
+                className="cursor-pointer"
+                title={`${hiddenCount} more`}
+              >
+                +{hiddenCount}
+              </TagCombobox.Chip>
+            ) : null}
+            <TagCombobox.ChipsInput placeholder="Tag…" name="tagIds" className="min-w-0" />
+          </TagCombobox.Chips>
+          {selectedTags.length > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="h-9 w-9"
+              onClick={() =>
+                navigate({ to: '.', search: { ...search, tagIds: undefined, page: 1 } })
+              }
+              aria-label="Clear tag filter"
+              title="Clear tag filter"
+            >
+              ×
+            </Button>
+          ) : null}
+        </div>
         <TagCombobox.Content anchor={tagFilterAnchorRef}>
           <TagCombobox.List>
             {(t) => (
               <TagCombobox.Item key={t.id} value={t}>
-                {t.name}
+                <span className="flex items-center gap-2">
+                  <span
+                    className="size-2 rounded-sm"
+                    style={{ backgroundColor: t.color }}
+                    aria-hidden
+                  />
+                  {t.name}
+                </span>
               </TagCombobox.Item>
             )}
           </TagCombobox.List>
