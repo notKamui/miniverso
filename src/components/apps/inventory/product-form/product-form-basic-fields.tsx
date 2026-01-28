@@ -3,6 +3,7 @@ import type { ReactForm } from '@/lib/utils/types'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 type Props = { form: ReactForm<ProductFormValues> }
 
@@ -26,30 +27,24 @@ export function ProductFormBasicFields({ form }: Props) {
         {(field) => (
           <div className="space-y-2">
             <Label>Product type</Label>
-            <div className="flex gap-4">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="kind"
-                  value="simple"
-                  checked={(field.state.value ?? 'simple') === 'simple'}
-                  onChange={() => field.handleChange('simple')}
-                  className="size-4"
-                />
-                <span className="text-sm">Simple product</span>
-              </label>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="kind"
-                  value="bundle"
-                  checked={field.state.value === 'bundle'}
-                  onChange={() => field.handleChange('bundle')}
-                  className="size-4"
-                />
-                <span className="text-sm">Bundle of products</span>
-              </label>
-            </div>
+            <RadioGroup
+              value={field.state.value ?? 'simple'}
+              onValueChange={(v) => field.handleChange(v as 'simple' | 'bundle')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="simple" id="kind-simple" />
+                <Label htmlFor="kind-simple" className="cursor-pointer font-normal">
+                  Simple product
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="bundle" id="kind-bundle" />
+                <Label htmlFor="kind-bundle" className="cursor-pointer font-normal">
+                  Bundle of products
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         )}
       </form.Field>
