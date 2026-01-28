@@ -1,11 +1,13 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
+import { useState } from 'react'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { DataFromQueryOptions, ReactForm } from '@/lib/utils/types'
 import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 import { getProductsQueryOptions } from '@/server/functions/inventory/products'
 
 type ProductOption = DataFromQueryOptions<
@@ -20,10 +22,19 @@ type Props = {
 const ProductCombobox = createCombobox<ProductOption>()
 
 export function ProductFormBundleItems({ form, productId }: Props) {
-  const { data: productsPage } = useSuspenseQuery(
-    getProductsQueryOptions({ page: 1, size: 100, archived: 'active' }),
-  )
-  const allProducts = productsPage.items
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+
+  const productSearchParams = {
+    page: 1,
+    size: 25,
+    archived: 'active' as const,
+    ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }),
+  }
+
+  const { data: productsPage, isFetching } = useQuery(getProductsQueryOptions(productSearchParams))
+  const allProducts = productsPage?.items ?? []
   const productOptions = allProducts.filter(
     (p) => p.kind === 'simple' && (productId == null || p.id !== productId),
   )
@@ -41,26 +52,48 @@ export function ProductFormBundleItems({ form, productId }: Props) {
                   <form.Field name={`bundleItems[${i}].productId`}>
                     {(pf) => (
                       <div className="flex-1">
-                        <ProductCombobox.Root
-                          items={productOptions}
-                          value={productOptions.find((p) => p.id === pf.state.value) ?? null}
-                          onValueChange={(v) => pf.handleChange(v?.id ?? '')}
-                          itemToStringLabel={(p) => (p ? `${p.name} (${p.sku ?? '—'})` : '')}
-                        >
-                          <ProductCombobox.Input placeholder="Product" />
-                          <ProductCombobox.Content>
-                            <ProductCombobox.List>
-                              {(p) => (
-                                <ProductCombobox.Item key={p.id} value={p}>
-                                  {p.name} ({p.sku ?? '—'})
-                                </ProductCombobox.Item>
-                              )}
-                            </ProductCombobox.List>
-                            <ProductCombobox.Empty>
-                              No simple products. Create products first.
-                            </ProductCombobox.Empty>
-                          </ProductCombobox.Content>
-                        </ProductCombobox.Root>
+                        {(() => {
+                          const selected =
+                            productOptions.find((p) => p.id === pf.state.value) ??
+                            allProducts.find((p) => p.id === pf.state.value) ??
+                            null
+                          const items =
+                            selected && !productOptions.some((p) => p.id === selected.id)
+                              ? [selected, ...productOptions]
+                              : productOptions
+                          return (
+                            <ProductCombobox.Root
+                              items={items}
+                              value={selected}
+                              onValueChange={(v) => pf.handleChange(v?.id ?? '')}
+                              onInputValueChange={(v) => {
+                                if (!open) return
+                                setSearch(v)
+                              }}
+                              onOpenChange={(nextOpen) => {
+                                setOpen(nextOpen)
+                                if (!nextOpen) setSearch('')
+                              }}
+                              itemToStringLabel={(p) => (p ? `${p.name} (${p.sku ?? '—'})` : '')}
+                            >
+                              <ProductCombobox.Input placeholder="Product" />
+                              <ProductCombobox.Content>
+                                <ProductCombobox.List>
+                                  {(p) => (
+                                    <ProductCombobox.Item key={p.id} value={p}>
+                                      {p.name} ({p.sku ?? '—'})
+                                    </ProductCombobox.Item>
+                                  )}
+                                </ProductCombobox.List>
+                                <ProductCombobox.Empty>
+                                  {isFetching
+                                    ? 'Searching…'
+                                    : 'No simple products. Try another search.'}
+                                </ProductCombobox.Empty>
+                              </ProductCombobox.Content>
+                            </ProductCombobox.Root>
+                          )
+                        })()}
                       </div>
                     )}
                   </form.Field>
@@ -94,11 +127,11 @@ export function ProductFormBundleItems({ form, productId }: Props) {
                 size="sm"
                 onClick={() => {
                   field.pushValue({
-                    productId: productOptions[0]?.id ?? '',
+                    productId: '',
                     quantity: '1',
                   })
                 }}
-                disabled={productOptions.length === 0}
+                disabled={false}
               >
                 <PlusIcon className="size-4" />
                 Add
