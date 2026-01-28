@@ -11,11 +11,88 @@ import {
   order,
   orderItem,
   product,
+  productBundleItem,
   productProductionCost,
 } from '@/server/db/schema/inventory'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
 import { priceTaxIncluded } from './utils'
+
+type DbOrTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db
+
+/**
+ * Expands order items into simple product requirements.
+ * For simple products, returns the quantity directly.
+ * For bundle products, expands into component products.
+ * Returns a Map of simple product ID -> required quantity.
+ */
+async function expandBundleItems(
+  items: { productId: string; quantity: number }[],
+  userId: string,
+  tx?: Parameters<Parameters<typeof db.transaction>[0]>[0],
+): Promise<Map<string, number>> {
+  const dbInstance: DbOrTransaction = tx ?? db
+  const productIds = [...new Set(items.map((i) => i.productId))]
+
+  // Load products with their kind
+  const products = await dbInstance
+    .select({
+      id: product.id,
+      kind: product.kind,
+    })
+    .from(product)
+    .where(
+      and(eq(product.userId, userId), inArray(product.id, productIds), isNull(product.archivedAt)),
+    )
+
+  const productMap = new Map(products.map((p) => [p.id, p]))
+  const bundleIds = products.filter((p) => p.kind === 'bundle').map((p) => p.id)
+
+  // Load bundle items for all bundles
+  let bundleItemsMap = new Map<string, Array<{ productId: string; quantity: number }>>()
+  if (bundleIds.length > 0) {
+    const bundleItems = await dbInstance
+      .select({
+        bundleId: productBundleItem.bundleId,
+        productId: productBundleItem.productId,
+        quantity: productBundleItem.quantity,
+      })
+      .from(productBundleItem)
+      .where(inArray(productBundleItem.bundleId, bundleIds))
+
+    for (const bi of bundleItems) {
+      const existing = bundleItemsMap.get(bi.bundleId) ?? []
+      existing.push({ productId: bi.productId, quantity: Number(bi.quantity) })
+      bundleItemsMap.set(bi.bundleId, existing)
+    }
+  }
+
+  // Expand items into simple product requirements
+  const requiredQuantities = new Map<string, number>()
+
+  for (const item of items) {
+    const p = productMap.get(item.productId)
+    if (!p) continue
+
+    if (p.kind === 'simple') {
+      const current = requiredQuantities.get(item.productId) ?? 0
+      requiredQuantities.set(item.productId, current + item.quantity)
+    } else if (p.kind === 'bundle') {
+      const components = bundleItemsMap.get(item.productId) ?? []
+      if (components.length === 0) {
+        // Bundle has no components - skip or warn?
+        continue
+      }
+      for (const component of components) {
+        const requiredQty = item.quantity * component.quantity
+        const current = requiredQuantities.get(component.productId) ?? 0
+        requiredQuantities.set(component.productId, current + requiredQty)
+      }
+    }
+  }
+
+  return requiredQuantities
+}
 
 export const ordersQueryKey = ['orders'] as const
 
@@ -218,6 +295,7 @@ export const $createOrder = createServerFn({ method: 'POST' })
         priceTaxFree: product.priceTaxFree,
         vatPercent: product.vatPercent,
         quantity: product.quantity,
+        kind: product.kind,
       })
       .from(product)
       .where(
@@ -232,8 +310,29 @@ export const $createOrder = createServerFn({ method: 'POST' })
     for (const i of data.items) {
       const p = productMap.get(i.productId)
       if (!p) badRequest(`Product not found, not owned, or archived: ${i.productId}`, 400)
-      if (data.status === 'paid' && p.quantity < i.quantity) {
-        badRequest(`Insufficient stock for product ${i.productId}`, 400)
+    }
+
+    // Stock validation: expand bundles and check simple product stock
+    if (data.status === 'paid') {
+      const requiredQuantities = await expandBundleItems(data.items, user.id)
+      const simpleProductIds = [...requiredQuantities.keys()]
+
+      if (simpleProductIds.length > 0) {
+        const simpleProducts = await db
+          .select({
+            id: product.id,
+            quantity: product.quantity,
+          })
+          .from(product)
+          .where(and(eq(product.userId, user.id), inArray(product.id, simpleProductIds)))
+
+        const simpleProductMap = new Map(simpleProducts.map((p) => [p.id, p]))
+        for (const [productId, requiredQty] of requiredQuantities.entries()) {
+          const p = simpleProductMap.get(productId)
+          if (!p || p.quantity < requiredQty) {
+            badRequest(`Insufficient stock for product ${productId}`, 400)
+          }
+        }
       }
     }
 
@@ -311,11 +410,13 @@ export const $createOrder = createServerFn({ method: 'POST' })
       }
 
       if (data.status === 'paid') {
-        for (const i of data.items) {
+        // Expand bundles and deduct stock from simple products only
+        const requiredQuantities = await expandBundleItems(data.items, user.id, tx)
+        for (const [productId, quantity] of requiredQuantities.entries()) {
           await tx
             .update(product)
-            .set({ quantity: sql`${product.quantity} - ${i.quantity}` })
-            .where(eq(product.id, i.productId))
+            .set({ quantity: sql`${product.quantity} - ${quantity}` })
+            .where(eq(product.id, productId))
         }
       }
 
@@ -343,16 +444,28 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       .from(orderItem)
       .where(eq(orderItem.orderId, orderId))
 
-    const productIds = items.map((i) => i.productId)
-    const products = await db
-      .select({ id: product.id, quantity: product.quantity })
-      .from(product)
-      .where(inArray(product.id, productIds))
-    const productMap = new Map(products.map((p) => [p.id, p]))
-    for (const i of items) {
-      const p = productMap.get(i.productId)
-      if (!p || p.quantity < i.quantity) {
-        badRequest(`Insufficient stock for product ${i.productId}`, 400)
+    // Expand bundles and validate stock for simple products
+    const requiredQuantities = await expandBundleItems(
+      items.map((i) => ({ productId: i.productId, quantity: Number(i.quantity) })),
+      user.id,
+    )
+
+    const simpleProductIds = [...requiredQuantities.keys()]
+    if (simpleProductIds.length > 0) {
+      const simpleProducts = await db
+        .select({
+          id: product.id,
+          quantity: product.quantity,
+        })
+        .from(product)
+        .where(and(eq(product.userId, user.id), inArray(product.id, simpleProductIds)))
+
+      const simpleProductMap = new Map(simpleProducts.map((p) => [p.id, p]))
+      for (const [productId, requiredQty] of requiredQuantities.entries()) {
+        const p = simpleProductMap.get(productId)
+        if (!p || p.quantity < requiredQty) {
+          badRequest(`Insufficient stock for product ${productId}`, 400)
+        }
       }
     }
 
@@ -361,11 +474,12 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       .set({ status: 'paid', paidAt: new Date() })
       .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
 
-    for (const i of items) {
+    // Deduct stock from simple products only (bundles are expanded)
+    for (const [productId, quantity] of requiredQuantities.entries()) {
       await db
         .update(product)
-        .set({ quantity: sql`${product.quantity} - ${i.quantity}` })
-        .where(eq(product.id, i.productId))
+        .set({ quantity: sql`${product.quantity} - ${quantity}` })
+        .where(eq(product.id, productId))
     }
 
     const updated = await db
