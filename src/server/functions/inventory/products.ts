@@ -10,6 +10,7 @@ import {
   inventoryProductionCostLabel,
   inventoryTag,
   product,
+  productBundleItem,
   productProductionCost,
   productTag,
 } from '@/server/db/schema/inventory'
@@ -28,6 +29,7 @@ export const productListFields = {
   priceTaxFree: product.priceTaxFree,
   vatPercent: product.vatPercent,
   quantity: product.quantity,
+  kind: product.kind,
   archivedAt: product.archivedAt,
   createdAt: product.createdAt,
   updatedAt: product.updatedAt,
@@ -167,19 +169,47 @@ export const $getProduct = createServerFn({ method: 'GET' })
       )
       .where(eq(productProductionCost.productId, productId))
 
-    return { product: p, tags, productionCosts: costs }
+    const bundleItems = await db
+      .select({
+        productId: productBundleItem.productId,
+        quantity: productBundleItem.quantity,
+      })
+      .from(productBundleItem)
+      .where(eq(productBundleItem.bundleId, productId))
+
+    return {
+      product: p,
+      tags,
+      productionCosts: costs,
+      bundleItems: bundleItems.map((b) => ({
+        productId: b.productId,
+        quantity: Number(b.quantity),
+      })),
+    }
   })
 
-const productCreateSchema = z.object({
+const bundleItemPayloadSchema = z.object({
+  productId: z.uuid(),
+  quantity: z.number().int().min(1),
+})
+
+const productUpsertBaseSchema = z.object({
   name: z.string().min(1).max(2000),
   description: z.string().max(10_000).optional(),
   sku: z.string().min(1).max(200),
   priceTaxFree: z.number().min(0),
   vatPercent: z.number().min(0).max(100),
+  kind: z.enum(['simple', 'bundle']).default('simple'),
   quantity: z.number().int().min(0),
   tagIds: z.array(z.uuid()).default([]),
   productionCosts: z.array(z.object({ labelId: z.uuid(), amount: z.number().min(0) })).default([]),
+  bundleItems: z.array(bundleItemPayloadSchema).default([]),
 })
+
+const productCreateSchema = productUpsertBaseSchema.refine(
+  (data) => data.kind !== 'bundle' || data.bundleItems.length > 0,
+  { message: 'Bundle must have at least one component', path: ['bundleItems'] },
+)
 
 export const $createProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -206,6 +236,25 @@ export const $createProduct = createServerFn({ method: 'POST' })
       if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
     }
 
+    if (data.kind === 'bundle') {
+      const componentIds = [...new Set(data.bundleItems.map((b) => b.productId))]
+      const components = await db
+        .select({ id: product.id, kind: product.kind })
+        .from(product)
+        .where(
+          and(
+            eq(product.userId, user.id),
+            inArray(product.id, componentIds),
+            isNull(product.archivedAt),
+          ),
+        )
+      if (components.length !== componentIds.length)
+        badRequest('Invalid bundle component productIds', 400)
+      const nonSimple = components.filter((c) => c.kind !== 'simple')
+      if (nonSimple.length > 0) badRequest('Bundle components must be simple products', 400)
+    }
+
+    const quantity = data.kind === 'bundle' ? 0 : data.quantity
     const p = await db
       .insert(product)
       .values({
@@ -215,7 +264,8 @@ export const $createProduct = createServerFn({ method: 'POST' })
         sku: data.sku,
         priceTaxFree: String(data.priceTaxFree.toFixed(2)),
         vatPercent: String(data.vatPercent.toFixed(2)),
-        quantity: data.quantity,
+        quantity,
+        kind: data.kind,
       })
       .returning(productListFields)
       .then(
@@ -236,14 +286,51 @@ export const $createProduct = createServerFn({ method: 'POST' })
         })),
       )
     }
+    if (data.kind === 'bundle' && data.bundleItems.length > 0) {
+      await db.insert(productBundleItem).values(
+        data.bundleItems.map((b) => ({
+          bundleId: p.id,
+          productId: b.productId,
+          quantity: b.quantity,
+        })),
+      )
+    }
 
     return p
   })
 
-const productUpdateSchema = productCreateSchema.partial().extend({
-  id: z.uuid(),
-  archivedAt: z.boolean().optional(),
-})
+const productUpdateSchema = productUpsertBaseSchema
+  .partial()
+  .extend({
+    id: z.uuid(),
+    archivedAt: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // If switching to bundle, bundleItems must be provided and non-empty.
+    if (data.kind === 'bundle') {
+      if (!data.bundleItems || data.bundleItems.length === 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Bundle must have at least one component',
+          path: ['bundleItems'],
+        })
+      }
+      if (data.bundleItems?.some((b) => b.productId === data.id)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Bundle cannot contain itself',
+          path: ['bundleItems'],
+        })
+      }
+    } else if (data.bundleItems?.some((b) => b.productId === data.id)) {
+      // Even if kind isn't present, never allow self-reference when bundleItems are provided.
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Bundle cannot contain itself',
+        path: ['bundleItems'],
+      })
+    }
+  })
 
 export const $updateProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
@@ -264,18 +351,47 @@ export const $updateProduct = createServerFn({ method: 'POST' })
       .then(takeUniqueOrNull)
     if (!existing) throw notFound()
 
+    const kind = rest.kind
+    const bundleItems = rest.bundleItems
+    delete (rest as Record<string, unknown>).kind
+    delete (rest as Record<string, unknown>).bundleItems
+
     const set: Record<string, unknown> = {}
     if (rest.name !== undefined) set.name = rest.name
     if (rest.description !== undefined) set.description = rest.description
     if (rest.sku !== undefined) set.sku = rest.sku
     if (rest.priceTaxFree !== undefined) set.priceTaxFree = String(rest.priceTaxFree.toFixed(2))
     if (rest.vatPercent !== undefined) set.vatPercent = String(rest.vatPercent.toFixed(2))
+    if (kind !== undefined) set.kind = kind
     if (rest.quantity !== undefined) {
       if (rest.quantity < 0) badRequest('quantity must be >= 0', 400)
       set.quantity = rest.quantity
+    } else if (kind === 'bundle') {
+      set.quantity = 0
     }
     if (archivedAt !== undefined) {
       set.archivedAt = archivedAt ? new Date() : null
+    }
+
+    if (kind === 'bundle' && bundleItems !== undefined) {
+      if (bundleItems.length === 0) badRequest('Bundle must have at least one component', 400)
+      if (bundleItems.some((b) => b.productId === id))
+        badRequest('Bundle cannot contain itself', 400)
+      const componentIds = [...new Set(bundleItems.map((b) => b.productId))]
+      const components = await db
+        .select({ id: product.id, kind: product.kind })
+        .from(product)
+        .where(
+          and(
+            eq(product.userId, user.id),
+            inArray(product.id, componentIds),
+            isNull(product.archivedAt),
+          ),
+        )
+      if (components.length !== componentIds.length)
+        badRequest('Invalid bundle component productIds', 400)
+      const nonSimple = components.filter((c) => c.kind !== 'simple')
+      if (nonSimple.length > 0) badRequest('Bundle components must be simple products', 400)
     }
 
     if (Object.keys(set).length > 0) {
@@ -283,6 +399,19 @@ export const $updateProduct = createServerFn({ method: 'POST' })
         .update(product)
         .set(set)
         .where(and(eq(product.id, id), eq(product.userId, user.id)))
+    }
+
+    if (kind !== undefined || bundleItems !== undefined) {
+      await db.delete(productBundleItem).where(eq(productBundleItem.bundleId, id))
+      if (kind === 'bundle' && bundleItems && bundleItems.length > 0) {
+        await db.insert(productBundleItem).values(
+          bundleItems.map((b) => ({
+            bundleId: id,
+            productId: b.productId,
+            quantity: b.quantity,
+          })),
+        )
+      }
     }
 
     if (tagIds !== undefined) {

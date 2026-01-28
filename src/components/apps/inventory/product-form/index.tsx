@@ -7,6 +7,7 @@ import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inven
 import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
 import { ProductFormActions } from './product-form-actions'
 import { ProductFormBasicFields } from './product-form-basic-fields'
+import { ProductFormBundleItems } from './product-form-bundle-items'
 import { ProductFormPricing } from './product-form-pricing'
 import { ProductFormProductionCosts } from './product-form-production-costs'
 import { ProductFormTagIds } from './product-form-tag-ids'
@@ -30,6 +31,8 @@ export function ProductForm({ productId, existing, onSuccess }: ProductFormProps
       const payload = {
         ...parsed.data,
         productionCosts: parsed.data.productionCosts.filter((r) => r.labelId),
+        bundleItems:
+          parsed.data.kind === 'bundle' ? parsed.data.bundleItems.filter((r) => r.productId) : [],
       }
       if (isEdit) {
         await updateMut.mutateAsync({ data: { ...payload, id: productId! } })
@@ -61,6 +64,11 @@ export function ProductForm({ productId, existing, onSuccess }: ProductFormProps
     >
       <ProductFormBasicFields form={form} />
       <ProductFormPricing form={form} />
+      <form.Subscribe selector={(s) => s.values.kind}>
+        {(kind) =>
+          kind === 'bundle' ? <ProductFormBundleItems form={form} productId={productId} /> : null
+        }
+      </form.Subscribe>
       <ProductFormTagIds form={form} tags={tags} chipsAnchorRef={chipsAnchorRef} />
       <ProductFormProductionCosts form={form} labels={labels} />
       <ProductFormActions

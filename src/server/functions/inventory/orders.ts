@@ -20,8 +20,40 @@ import { priceTaxIncluded } from './utils'
 
 type DbOrTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db
 
+/** Product kind for expansion. */
+export type ProductKind = 'simple' | 'bundle'
+
 /**
- * Expands order items into simple product requirements.
+ * Pure helper: compute required quantities of simple products from order items.
+ * For simple products, adds quantity directly; for bundles, expands into components.
+ * Used by expandBundleItems and by tests.
+ */
+export function computeRequiredQuantities(
+  items: { productId: string; quantity: number }[],
+  productMap: Map<string, { kind: ProductKind }>,
+  bundleItemsMap: Map<string, Array<{ productId: string; quantity: number }>>,
+): Map<string, number> {
+  const requiredQuantities = new Map<string, number>()
+  for (const item of items) {
+    const p = productMap.get(item.productId)
+    if (!p) continue
+    if (p.kind === 'simple') {
+      const current = requiredQuantities.get(item.productId) ?? 0
+      requiredQuantities.set(item.productId, current + item.quantity)
+    } else if (p.kind === 'bundle') {
+      const components = bundleItemsMap.get(item.productId) ?? []
+      for (const component of components) {
+        const requiredQty = item.quantity * component.quantity
+        const current = requiredQuantities.get(component.productId) ?? 0
+        requiredQuantities.set(component.productId, current + requiredQty)
+      }
+    }
+  }
+  return requiredQuantities
+}
+
+/**
+ * Expands order items into simple product requirements (async, loads from db).
  * For simple products, returns the quantity directly.
  * For bundle products, expands into component products.
  * Returns a Map of simple product ID -> required quantity.
@@ -34,7 +66,6 @@ async function expandBundleItems(
   const dbInstance: DbOrTransaction = tx ?? db
   const productIds = [...new Set(items.map((i) => i.productId))]
 
-  // Load products with their kind
   const products = await dbInstance
     .select({
       id: product.id,
@@ -48,8 +79,7 @@ async function expandBundleItems(
   const productMap = new Map(products.map((p) => [p.id, p]))
   const bundleIds = products.filter((p) => p.kind === 'bundle').map((p) => p.id)
 
-  // Load bundle items for all bundles
-  let bundleItemsMap = new Map<string, Array<{ productId: string; quantity: number }>>()
+  const bundleItemsMap = new Map<string, Array<{ productId: string; quantity: number }>>()
   if (bundleIds.length > 0) {
     const bundleItems = await dbInstance
       .select({
@@ -59,7 +89,6 @@ async function expandBundleItems(
       })
       .from(productBundleItem)
       .where(inArray(productBundleItem.bundleId, bundleIds))
-
     for (const bi of bundleItems) {
       const existing = bundleItemsMap.get(bi.bundleId) ?? []
       existing.push({ productId: bi.productId, quantity: Number(bi.quantity) })
@@ -67,31 +96,7 @@ async function expandBundleItems(
     }
   }
 
-  // Expand items into simple product requirements
-  const requiredQuantities = new Map<string, number>()
-
-  for (const item of items) {
-    const p = productMap.get(item.productId)
-    if (!p) continue
-
-    if (p.kind === 'simple') {
-      const current = requiredQuantities.get(item.productId) ?? 0
-      requiredQuantities.set(item.productId, current + item.quantity)
-    } else if (p.kind === 'bundle') {
-      const components = bundleItemsMap.get(item.productId) ?? []
-      if (components.length === 0) {
-        // Bundle has no components - skip or warn?
-        continue
-      }
-      for (const component of components) {
-        const requiredQty = item.quantity * component.quantity
-        const current = requiredQuantities.get(component.productId) ?? 0
-        requiredQuantities.set(component.productId, current + requiredQty)
-      }
-    }
-  }
-
-  return requiredQuantities
+  return computeRequiredQuantities(items, productMap, bundleItemsMap)
 }
 
 export const ordersQueryKey = ['orders'] as const

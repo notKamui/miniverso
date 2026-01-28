@@ -17,9 +17,11 @@ export function getProductFormDefaultValues(existing?: ProductFormExisting): Pro
       sku: '',
       priceTaxFree: '',
       vatPercent: '20',
+      kind: 'simple',
       quantity: '0',
       tagIds: [],
       productionCosts: [],
+      bundleItems: [],
     }
   }
   return {
@@ -28,11 +30,16 @@ export function getProductFormDefaultValues(existing?: ProductFormExisting): Pro
     sku: existing.product.sku ?? '',
     priceTaxFree: String(existing.product.priceTaxFree),
     vatPercent: String(existing.product.vatPercent),
+    kind: existing.product.kind ?? 'simple',
     quantity: String(existing.product.quantity),
     tagIds: existing.tags.map((t) => t.id),
     productionCosts: existing.productionCosts.map((c) => ({
       labelId: c.labelId,
       amount: String(c.amount),
+    })),
+    bundleItems: existing.bundleItems.map((b) => ({
+      productId: b.productId,
+      quantity: String(b.quantity),
     })),
   }
 }

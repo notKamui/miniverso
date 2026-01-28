@@ -97,7 +97,11 @@ function OrderCartAddProductSection({
                     onValueChange={(v) => addProductField.handleChange(v)}
                     onInputValueChange={onProductSearchChange}
                     itemToStringLabel={(p) =>
-                      p ? `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}` : ''
+                      p
+                        ? p.kind === 'bundle'
+                          ? `${p.name} (${p.sku ?? '—'}) · bundle`
+                          : `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}`
+                        : ''
                     }
                   >
                     <ProductCombobox.Input placeholder="Search by name or SKU…" />
@@ -105,7 +109,9 @@ function OrderCartAddProductSection({
                       <ProductCombobox.List>
                         {(p) => (
                           <ProductCombobox.Item key={p.id} value={p}>
-                            {p.name} ({p.sku ?? '—'}) · stock: {p.quantity}
+                            {p.kind === 'bundle'
+                              ? `${p.name} (${p.sku ?? '—'}) · bundle`
+                              : `${p.name} (${p.sku ?? '—'}) · stock: ${p.quantity}`}
                           </ProductCombobox.Item>
                         )}
                       </ProductCombobox.List>
