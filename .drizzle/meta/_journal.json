@@ -64,6 +64,13 @@
       "when": 1769378033941,
       "tag": "0008_inventory_add_setting_remove_prefix_sort_order",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1769618117009,
+      "tag": "0009_product_bundles",
+      "breakpoints": true
     }
   ]
 }
