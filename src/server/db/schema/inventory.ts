@@ -77,6 +77,9 @@ export const product = pgTable(
     priceTaxFree: numeric('price_tax_free', money).notNull(),
     vatPercent: numeric('vat_percent', { precision: 5, scale: 2 }).notNull(),
     quantity: integer('quantity').notNull().default(0),
+    kind: text('kind', { enum: ['simple', 'bundle'] })
+      .notNull()
+      .default('simple'),
     archivedAt: timestamp('archived_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
@@ -90,6 +93,25 @@ export const product = pgTable(
   ],
 )
 export type Product = InferSelectModel<typeof product>
+
+export const productBundleItem = pgTable(
+  'product_bundle_item',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    bundleId: uuid('bundle_id')
+      .notNull()
+      .references(() => product.id, { onDelete: 'cascade' }),
+    productId: uuid('product_id')
+      .notNull()
+      .references(() => product.id, { onDelete: 'restrict' }),
+    quantity: integer('quantity').notNull(),
+  },
+  (table) => [
+    index('product_bundle_item_bundleId_idx').on(table.bundleId),
+    index('product_bundle_item_productId_idx').on(table.productId),
+  ],
+)
+export type ProductBundleItem = InferSelectModel<typeof productBundleItem>
 
 export const productTag = pgTable(
   'product_tag',
@@ -269,6 +291,21 @@ export const productRelations = relations(product, ({ one, many }) => ({
   productTags: many(productTag),
   productProductionCosts: many(productProductionCost),
   orderItems: many(orderItem),
+  bundleItems: many(productBundleItem, { relationName: 'bundle' }),
+  bundleComponents: many(productBundleItem, { relationName: 'component' }),
+}))
+
+export const productBundleItemRelations = relations(productBundleItem, ({ one }) => ({
+  bundle: one(product, {
+    fields: [productBundleItem.bundleId],
+    references: [product.id],
+    relationName: 'bundle',
+  }),
+  product: one(product, {
+    fields: [productBundleItem.productId],
+    references: [product.id],
+    relationName: 'component',
+  }),
 }))
 
 export const productTagRelations = relations(productTag, ({ one }) => ({
