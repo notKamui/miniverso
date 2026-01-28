@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
-import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, eq, gte, inArray, isNull, lte } from 'drizzle-orm'
 import * as z from 'zod'
 import { validate } from '@/lib/utils/validate'
 import { db } from '@/server/db'
@@ -175,9 +175,12 @@ export const $getInventoryStockStats = createServerFn({ method: 'GET' })
         quantity: product.quantity,
         priceTaxFree: product.priceTaxFree,
         vatPercent: product.vatPercent,
+        kind: product.kind,
       })
       .from(product)
-      .where(eq(product.userId, user.id))
+      .where(
+        and(eq(product.userId, user.id), isNull(product.archivedAt), eq(product.kind, 'simple')),
+      )
 
     const productIds = products.map((p) => p.id)
     const costConditions = [inArray(productProductionCost.productId, productIds)]

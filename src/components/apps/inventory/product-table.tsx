@@ -26,6 +26,7 @@ type Product = {
   priceTaxFree: string | number
   vatPercent: string | number
   quantity: number
+  kind?: 'simple' | 'bundle'
   archivedAt?: string | Date | null
   tags?: { id: string; name: string; color: string }[]
   totalProductionCost?: number
@@ -106,7 +107,9 @@ export function ProductTable({
       accessorKey: 'quantity',
       header: 'Stock',
       cell: ({ row }) => {
-        const q = row.original.quantity
+        const p = row.original
+        if (p.kind === 'bundle') return '—'
+        const q = p.quantity
         return (
           <span className={q < LOW_STOCK_THRESHOLD ? 'font-medium text-destructive' : ''}>{q}</span>
         )

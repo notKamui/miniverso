@@ -57,7 +57,9 @@ function RouteComponent() {
 
   const products = productsPage.items
   const { total, page, totalPages } = productsPage
-  const lowStock = products.filter((p) => p.quantity < LOW_STOCK_THRESHOLD).length
+  const lowStock = products.filter(
+    (p) => p.kind === 'simple' && p.quantity < LOW_STOCK_THRESHOLD,
+  ).length
 
   return (
     <div className="flex flex-col gap-6">
