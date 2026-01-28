@@ -33,6 +33,7 @@ export type DataTableProps<TData, TValue> = {
   onRowClick?: (row: TData) => void
   onRowDoubleClick?: (row: TData) => void
   enableColumnHiding?: boolean
+  toolbarSlot?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -43,6 +44,7 @@ export function DataTable<TData, TValue>({
   onRowClick,
   onRowDoubleClick,
   enableColumnHiding = true,
+  toolbarSlot,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
 
@@ -59,33 +61,39 @@ export function DataTable<TData, TValue>({
   const hideableColumns = enableColumnHiding
     ? table.getAllLeafColumns().filter((c) => c.getCanHide())
     : []
+  const showHeaderBar = Boolean(toolbarSlot) || hideableColumns.length > 0
 
   return (
     <div className={cn('rounded-md border', className)}>
-      {hideableColumns.length > 0 && (
-        <div className="flex justify-end border-b p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {hideableColumns.map((col) => {
-                const label =
-                  typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={col.id}
-                    checked={col.getIsVisible()}
-                    onCheckedChange={(checked) => col.toggleVisibility(Boolean(checked))}
-                  >
-                    {label}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {showHeaderBar && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
+          <div className="flex flex-wrap items-center gap-2">{toolbarSlot}</div>
+          {hideableColumns.length > 0 && (
+            <div className="shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {hideableColumns.map((col) => {
+                    const label =
+                      typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={col.id}
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(checked) => col.toggleVisibility(Boolean(checked))}
+                      >
+                        {label}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       )}
       <Table>

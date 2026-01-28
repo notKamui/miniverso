@@ -38,6 +38,7 @@ type ProductTableProps = {
   page: number
   totalPages: number
   search: Record<string, unknown>
+  toolbarSlot?: React.ReactNode
   navigate: (opts: {
     to: string
     search?: Record<string, unknown>
@@ -52,6 +53,7 @@ export function ProductTable({
   page,
   totalPages,
   search,
+  toolbarSlot,
   navigate,
   emptyMessage = 'No products yet. Add one to get started.',
 }: ProductTableProps) {
@@ -199,6 +201,7 @@ export function ProductTable({
         columns={columns}
         data={products}
         emptyMessage={emptyMessage}
+        toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
           navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })
         }

@@ -74,13 +74,13 @@ function RouteComponent() {
       </div>
 
       <ProductStatsSection total={total} lowStock={lowStock} />
-      <ProductFiltersSection search={search} navigate={navigate} tags={tags} />
       <ProductTable
         products={products}
         total={total}
         page={page}
         totalPages={totalPages}
         search={search}
+        toolbarSlot={<ProductFiltersSection search={search} navigate={navigate} tags={tags} />}
         navigate={navigate}
         emptyMessage="No products yet. Add one to get started."
       />

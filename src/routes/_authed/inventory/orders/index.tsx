@@ -133,30 +133,31 @@ function RouteComponent() {
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Input
-          name="reference"
-          placeholder="Filter by reference…"
-          value={refInput}
-          onChange={(e) => setRefInput(e.target.value)}
-          className="max-w-xs"
-        />
-        <DateRangeSelect
-          startDate={search.startDate ?? ''}
-          endDate={search.endDate ?? ''}
-          onChange={({ startDate, endDate }) =>
-            navigate({
-              to: '.',
-              search: { ...search, startDate, endDate, page: 1 },
-            })
-          }
-        />
-      </div>
-
       <DataTable
         columns={columns}
         data={orders}
         emptyMessage="No orders yet."
+        toolbarSlot={
+          <div className="flex items-center gap-4">
+            <Input
+              name="reference"
+              placeholder="Filter by reference…"
+              value={refInput}
+              onChange={(e) => setRefInput(e.target.value)}
+              className="h-8 max-w-xs"
+            />
+            <DateRangeSelect
+              startDate={search.startDate ?? ''}
+              endDate={search.endDate ?? ''}
+              onChange={({ startDate, endDate }) =>
+                navigate({
+                  to: '.',
+                  search: { ...search, startDate, endDate, page: 1 },
+                })
+              }
+            />
+          </div>
+        }
         onRowClick={(row) =>
           navigate({ to: '/inventory/orders/$orderId', params: { orderId: row.id } })
         }
