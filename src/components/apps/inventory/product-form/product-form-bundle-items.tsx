@@ -50,52 +50,50 @@ export function ProductFormBundleItems({ form, productId }: Props) {
               {rows.map((_, i) => (
                 <div key={i} className="flex gap-2">
                   <form.Field name={`bundleItems[${i}].productId`}>
-                    {(pf) => (
-                      <div className="flex-1">
-                        {(() => {
-                          const selected =
-                            productOptions.find((p) => p.id === pf.state.value) ??
-                            allProducts.find((p) => p.id === pf.state.value) ??
-                            null
-                          const items =
-                            selected && !productOptions.some((p) => p.id === selected.id)
-                              ? [selected, ...productOptions]
-                              : productOptions
-                          return (
-                            <ProductCombobox.Root
-                              items={items}
-                              value={selected}
-                              onValueChange={(v) => pf.handleChange(v?.id ?? '')}
-                              onInputValueChange={(v) => {
-                                if (!open) return
-                                setSearch(v)
-                              }}
-                              onOpenChange={(nextOpen) => {
-                                setOpen(nextOpen)
-                                if (!nextOpen) setSearch('')
-                              }}
-                              itemToStringLabel={(p) => (p ? `${p.name} (${p.sku ?? '—'})` : '')}
-                            >
-                              <ProductCombobox.Input placeholder="Product" />
-                              <ProductCombobox.Content>
-                                <ProductCombobox.List>
-                                  {(p) => (
-                                    <ProductCombobox.Item key={p.id} value={p}>
-                                      {p.name} ({p.sku ?? '—'})
-                                    </ProductCombobox.Item>
-                                  )}
-                                </ProductCombobox.List>
-                                <ProductCombobox.Empty>
-                                  {isFetching
-                                    ? 'Searching…'
-                                    : 'No simple products. Try another search.'}
-                                </ProductCombobox.Empty>
-                              </ProductCombobox.Content>
-                            </ProductCombobox.Root>
-                          )
-                        })()}
-                      </div>
-                    )}
+                    {(pf) => {
+                      const selected =
+                        productOptions.find((p) => p.id === pf.state.value) ??
+                        allProducts.find((p) => p.id === pf.state.value) ??
+                        null
+                      const items =
+                        selected && !productOptions.some((p) => p.id === selected.id)
+                          ? [selected, ...productOptions]
+                          : productOptions
+                      return (
+                        <div className="flex-1">
+                          <ProductCombobox.Root
+                            items={items}
+                            value={selected}
+                            onValueChange={(v) => pf.handleChange(v?.id ?? '')}
+                            onInputValueChange={(v) => {
+                              if (!open) return
+                              setSearch(v)
+                            }}
+                            onOpenChange={(nextOpen) => {
+                              setOpen(nextOpen)
+                              if (!nextOpen) setSearch('')
+                            }}
+                            itemToStringLabel={(p) => (p ? `${p.name} (${p.sku ?? '—'})` : '')}
+                          >
+                            <ProductCombobox.Input placeholder="Product" />
+                            <ProductCombobox.Content>
+                              <ProductCombobox.List>
+                                {(p) => (
+                                  <ProductCombobox.Item key={p.id} value={p}>
+                                    {p.name} ({p.sku ?? '—'})
+                                  </ProductCombobox.Item>
+                                )}
+                              </ProductCombobox.List>
+                              <ProductCombobox.Empty>
+                                {isFetching
+                                  ? 'Searching…'
+                                  : 'No simple products. Try another search.'}
+                              </ProductCombobox.Empty>
+                            </ProductCombobox.Content>
+                          </ProductCombobox.Root>
+                        </div>
+                      )
+                    }}
                   </form.Field>
                   <form.Field name={`bundleItems[${i}].quantity`}>
                     {(qf) => (
