@@ -3,15 +3,15 @@ import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tansta
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
+import type { DataFromQueryOptions, ReactForm } from '@/lib/utils/types'
+import { FormInput } from '@/components/form/form-input'
 import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
-import { FormInput } from '@/components/form/form-input'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { orderCartSubmitSchema } from '@/lib/forms/order-cart'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { formatMoney } from '@/lib/utils/format-money'
-import type { DataFromQueryOptions, ReactForm } from '@/lib/utils/types'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import {
   $getNextOrderReference,
@@ -150,9 +150,23 @@ export function OrderCart() {
 
   const form = useForm({
     defaultValues,
-    onSubmit: async () => {
-      // Submissions are triggered by the "Create as prepared" / "Create and mark paid" buttons
-      // with status; validation and mutate happen in handleSubmit(status).
+    onSubmitMeta: { status: 'prepared' as 'prepared' | 'paid' },
+    onSubmit: async ({ value, meta: { status } }) => {
+      const parsed = orderCartSubmitSchema.safeParse({
+        prefixId: value.prefix?.id,
+        description: value.description.trim() || undefined,
+        items: value.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+      })
+
+      if (!parsed.success) {
+        const first = parsed.error.issues[0]?.message
+        toast.error(typeof first === 'string' ? first : 'Invalid form')
+        return
+      }
+
+      createMut.mutate({
+        data: { ...parsed.data, status },
+      })
     },
   })
 
@@ -178,9 +192,7 @@ export function OrderCart() {
     const items = form.state.values.items
     const existing = items.find((i: CartItem) => i.productId === p.id)
     const newItems = existing
-      ? items.map((i: CartItem) =>
-          i.productId === p.id ? { ...i, quantity: i.quantity + q } : i,
-        )
+      ? items.map((i: CartItem) => (i.productId === p.id ? { ...i, quantity: i.quantity + q } : i))
       : [
           ...items,
           {
@@ -195,23 +207,6 @@ export function OrderCart() {
     form.setFieldValue('addProduct', null)
     form.setFieldValue('addQty', '1')
     form.setFieldValue('productSearch', '')
-  }
-
-  function handleSubmit(status: 'prepared' | 'paid') {
-    const values = form.state.values
-    const parsed = orderCartSubmitSchema.safeParse({
-      prefixId: values.prefix?.id,
-      description: values.description.trim() || undefined,
-      items: values.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-    })
-    if (!parsed.success) {
-      const first = parsed.error.issues[0]?.message
-      toast.error(typeof first === 'string' ? first : 'Invalid form')
-      return
-    }
-    createMut.mutate({
-      data: { ...parsed.data, status },
-    })
   }
 
   const hasPrefixes = prefixes.length > 0
@@ -267,11 +262,7 @@ export function OrderCart() {
                   </PrefixCombobox.Content>
                 </PrefixCombobox.Root>
                 <form.Subscribe selector={(s) => s.values.prefix}>
-                  {(prefix) =>
-                    prefix?.id ? (
-                      <NextReference prefixId={prefix.id} />
-                    ) : null
-                  }
+                  {(prefix) => (prefix?.id ? <NextReference prefixId={prefix.id} /> : null)}
                 </form.Subscribe>
               </>
             )}
@@ -302,7 +293,10 @@ export function OrderCart() {
               ) : (
                 <ul className="space-y-2 rounded-md border p-2">
                   {items.map((i) => (
-                    <li key={i.productId} className="flex items-center justify-between gap-2 text-sm">
+                    <li
+                      key={i.productId}
+                      className="flex items-center justify-between gap-2 text-sm"
+                    >
                       <span>
                         {i.name} × {i.quantity} ={' '}
                         {formatMoney(
@@ -363,7 +357,7 @@ export function OrderCart() {
             <div className="flex gap-2">
               <Button
                 type="button"
-                onClick={() => handleSubmit('prepared')}
+                onClick={() => form.handleSubmit({ status: 'prepared' })}
                 disabled={createMut.isPending || !canCreate}
               >
                 Create as prepared
@@ -371,7 +365,7 @@ export function OrderCart() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => handleSubmit('paid')}
+                onClick={() => form.handleSubmit({ status: 'paid' })}
                 disabled={createMut.isPending || !canCreate}
               >
                 Create and mark paid
@@ -389,7 +383,5 @@ function NextReference({ prefixId }: { prefixId: string }) {
     queryKey: ['next-order-ref', prefixId],
     queryFn: () => $getNextOrderReference({ data: { prefixId } }),
   })
-  return data ? (
-    <p className="text-xs text-muted-foreground">Next reference: {data}</p>
-  ) : null
+  return data ? <p className="text-xs text-muted-foreground">Next reference: {data}</p> : null
 }
