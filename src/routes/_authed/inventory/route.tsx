@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 
 export const Route = createFileRoute('/_authed/inventory')({
@@ -6,9 +6,4 @@ export const Route = createFileRoute('/_authed/inventory')({
     await queryClient.ensureQueryData(getInventoryCurrencyQueryOptions())
     return { crumb: 'Inventory' }
   },
-  component: RouteComponent,
 })
-
-function RouteComponent() {
-  return <Outlet />
-}
