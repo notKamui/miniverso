@@ -78,14 +78,14 @@ const INCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_INCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
-  .map(globToRegExp)
+  .map((s) => globToRegExp(s))
 
 // Parse comma-separated exclude patterns (no defaults)
 const EXCLUDE_PATTERNS = (process.env.STATIC_PRELOAD_EXCLUDE ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
-  .map(globToRegExp)
+  .map((s) => globToRegExp(s))
 
 // Verbose logging flag
 const VERBOSE = process.env.STATIC_PRELOAD_VERBOSE === 'true'
@@ -108,9 +108,7 @@ const GZIP_TYPES = (
  */
 function globToRegExp(glob: string): RegExp {
   // Escape regex special chars except *, then replace * with .*
-  const escaped = glob
-    .replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&')
-    .replace(/\*/g, '.*')
+  const escaped = glob.replaceAll(/[-/\\^$+?.()|[\]{}]/g, String.raw`\$&`).replaceAll('*', '.*')
   return new RegExp(`^${escaped}$`, 'i')
 }
 
@@ -138,10 +136,8 @@ interface PreloadResult {
 function shouldInclude(relativePath: string): boolean {
   const fileName = relativePath.split(/[/\\]/).pop() ?? relativePath
 
-  if (INCLUDE_PATTERNS.length > 0) {
-    if (!INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
-      return false
-    }
+  if (INCLUDE_PATTERNS.length > 0 && !INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
+    return false
   }
 
   if (EXCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
@@ -152,9 +148,7 @@ function shouldInclude(relativePath: string): boolean {
 }
 
 function matchesCompressible(type: string) {
-  return GZIP_TYPES.some((t) =>
-    t.endsWith('/') ? type.startsWith(t) : type === t,
-  )
+  return GZIP_TYPES.some((t) => (t.endsWith('/') ? type.startsWith(t) : type === t))
 }
 
 interface InMemoryAsset {
@@ -176,9 +170,7 @@ function formatKB(bytes: number) {
   return kb < 100 ? kb.toFixed(2) : kb.toFixed(1)
 }
 
-function buildResponseFactory(
-  asset: InMemoryAsset,
-): (req: Request) => Response {
+function buildResponseFactory(asset: InMemoryAsset): (req: Request) => Response {
   return (req: Request) => {
     const headers: Record<string, string> = {
       'Content-Type': asset.type,
@@ -198,11 +190,7 @@ function buildResponseFactory(
       headers.ETag = asset.etag
     }
 
-    if (
-      ENABLE_GZIP &&
-      asset.gz &&
-      req.headers.get('accept-encoding')?.includes('gzip')
-    ) {
+    if (ENABLE_GZIP && asset.gz && req.headers.get('accept-encoding')?.includes('gzip')) {
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
       const gzCopy = new Uint8Array(asset.gz)
@@ -215,10 +203,7 @@ function buildResponseFactory(
   }
 }
 
-async function gzipMaybe(
-  data: Uint8Array<ArrayBuffer>,
-  type: string,
-): Promise<Uint8Array | undefined> {
+function gzipMaybe(data: Uint8Array<ArrayBuffer>, type: string): Uint8Array | undefined {
   if (!ENABLE_GZIP) return undefined
   if (data.byteLength < GZIP_MIN_BYTES) return undefined
   if (!matchesCompressible(type)) return undefined
@@ -254,24 +239,17 @@ function buildCompositeGlob(): Bun.Glob {
  * Small files are loaded into memory, large files are served on-demand
  */
 async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
-  const routes: Record<string, (req: Request) => Response | Promise<Response>> =
-    {}
+  const routes: Record<string, (req: Request) => Response | Promise<Response>> = {}
   const loaded: AssetMetadata[] = []
   const skipped: AssetMetadata[] = []
 
   console.log(`📦 Loading static assets from ${clientDir}...`)
-  console.log(
-    `   Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`,
-  )
+  console.log(`   Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`)
   if (INCLUDE_PATTERNS.length > 0) {
-    console.log(
-      `   Include patterns: ${process.env.STATIC_PRELOAD_INCLUDE ?? ''}`,
-    )
+    console.log(`   Include patterns: ${process.env.STATIC_PRELOAD_INCLUDE ?? ''}`)
   }
   if (EXCLUDE_PATTERNS.length > 0) {
-    console.log(
-      `   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`,
-    )
+    console.log(`   Exclude patterns: ${process.env.STATIC_PRELOAD_EXCLUDE ?? ''}`)
   }
   console.log('   ETag generation:', ENABLE_ETAG ? 'enabled' : 'disabled')
   console.log('   Gzip precompression:', ENABLE_GZIP ? 'enabled' : 'disabled')
@@ -307,7 +285,7 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
 
         if (matchesPattern && withinSizeLimit) {
           const bytes = new Uint8Array(await file.arrayBuffer())
-          const gz = await gzipMaybe(bytes, metadata.type)
+          const gz = gzipMaybe(bytes, metadata.type)
           const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined
           const asset: InMemoryAsset = {
             raw: bytes,
@@ -333,46 +311,37 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
     }
 
     if (loaded.length > 0 || skipped.length > 0) {
-      const allFiles = [...loaded, ...skipped].sort((a, b) =>
-        a.route.localeCompare(b.route),
-      )
+      const allFiles = [...loaded, ...skipped].toSorted((a, b) => a.route.localeCompare(b.route))
 
-      const maxPathLength = Math.min(
-        Math.max(...allFiles.map((f) => f.route.length)),
-        60,
-      )
+      const maxPathLength = Math.min(Math.max(...allFiles.map((f) => f.route.length)), 60)
 
       if (loaded.length > 0) {
         console.log('\n📁 Preloaded into memory:')
-        loaded
-          .sort((a, b) => a.route.localeCompare(b.route))
-          .forEach((file) => {
-            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
-            const paddedPath = file.route.padEnd(maxPathLength)
-            const gzSize = gzSizes[file.route]
-            if (gzSize) {
-              const gzStr = `${formatKB(gzSize).padStart(7)} kB`
-              console.log(`   ${paddedPath} ${sizeStr} │ gzip: ${gzStr}`)
-            } else {
-              console.log(`   ${paddedPath} ${sizeStr}`)
-            }
-          })
+        for (const file of loaded.toSorted((a, b) => a.route.localeCompare(b.route))) {
+          const sizeStr = `${formatKB(file.size).padStart(7)} kB`
+          const paddedPath = file.route.padEnd(maxPathLength)
+          const gzSize = gzSizes[file.route]
+          if (gzSize) {
+            const gzStr = `${formatKB(gzSize).padStart(7)} kB`
+            console.log(`   ${paddedPath} ${sizeStr} │ gzip: ${gzStr}`)
+          } else {
+            console.log(`   ${paddedPath} ${sizeStr}`)
+          }
+        }
       }
 
       if (skipped.length > 0) {
         console.log('\n💾 Served on-demand:')
-        skipped
-          .sort((a, b) => a.route.localeCompare(b.route))
-          .forEach((file) => {
-            const sizeStr = `${formatKB(file.size).padStart(7)} kB`
-            const paddedPath = file.route.padEnd(maxPathLength)
-            console.log(`   ${paddedPath} ${sizeStr}`)
-          })
+        for (const file of skipped.toSorted((a, b) => a.route.localeCompare(b.route))) {
+          const sizeStr = `${formatKB(file.size).padStart(7)} kB`
+          const paddedPath = file.route.padEnd(maxPathLength)
+          console.log(`   ${paddedPath} ${sizeStr}`)
+        }
       }
 
       if (VERBOSE) {
         console.log('\n📊 Detailed file information:')
-        allFiles.forEach((file) => {
+        for (const file of allFiles) {
           const isPreloaded = loaded.includes(file)
           const status = isPreloaded ? '[MEMORY]' : '[ON-DEMAND]'
           const reason =
@@ -381,10 +350,8 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
               : !isPreloaded
                 ? ' (filtered)'
                 : ''
-          console.log(
-            `   ${status.padEnd(12)} ${file.route} - ${file.type}${reason}`,
-          )
-        })
+          console.log(`   ${status.padEnd(12)} ${file.route} - ${file.type}${reason}`)
+        }
       }
     }
 
@@ -425,6 +392,7 @@ async function startServer() {
 
   if (error) {
     console.error('❌ Failed to load server module:', error)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 
@@ -444,21 +412,21 @@ async function startServer() {
     },
   })
 
-  console.log(
-    `\n🚀 Server running at http://localhost:${String(server.port)}\n`,
-  )
+  console.log(`\n🚀 Server running at http://localhost:${String(server.port)}\n`)
 }
 
 async function main() {
   const [migrationError] = await tryAsync(runDatabaseMigrations())
   if (migrationError) {
     console.error('❌ Failed to run database migrations:', migrationError)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 
   const [serverError] = await tryAsync(startServer())
   if (serverError) {
     console.error('❌ Failed to start server:', serverError)
+    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 }

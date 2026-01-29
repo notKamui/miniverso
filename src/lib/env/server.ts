@@ -45,18 +45,13 @@ export const env = createEnv({
     z.object(shape).transform((env, ctx) => {
       const socials = {
         emailAndPassword: Boolean(env.RESEND_API_KEY && env.RESEND_MAIL_DOMAIN),
-        github: Boolean(
-          env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET,
-        ),
-        google: Boolean(
-          env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET,
-        ),
+        github: Boolean(env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET),
+        google: Boolean(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET),
       }
       if (!socials.emailAndPassword && !socials.github && !socials.google) {
         ctx.addIssue({
           code: 'custom',
-          message:
-            'At least one social OAuth provider or email/password must be configured',
+          message: 'At least one social OAuth provider or email/password must be configured',
         })
         return z.NEVER
       }

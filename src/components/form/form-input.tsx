@@ -1,20 +1,24 @@
+import type { ComponentProps } from 'react'
+import type { ReactForm } from '@/lib/utils/types'
 import { FieldInfo } from '@/components/form/field-info'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ReactForm } from '@/lib/utils/types'
 
-export interface FormInputProps<F extends Record<string, any>> {
-  type: React.HTMLInputTypeAttribute
+const inputControlledKeys = ['type', 'value', 'onChange', 'onBlur', 'name', 'id', 'form'] as const
+
+export type FormInputProps<F extends Record<string, any>> = {
+  type?: React.HTMLInputTypeAttribute
   form: ReactForm<F>
   name: keyof F
   label: string
-}
+} & Omit<ComponentProps<'input'>, (typeof inputControlledKeys)[number]>
 
 export function FormInput<F extends Record<string, any>>({
   type = 'text',
   name,
   form,
   label,
+  ...inputProps
 }: FormInputProps<F>) {
   return (
     <form.Field name={name as any}>
@@ -28,6 +32,7 @@ export function FormInput<F extends Record<string, any>>({
             value={field.state.value as any}
             onBlur={field.handleBlur}
             onChange={(event) => field.handleChange(event.target.value as any)}
+            {...inputProps}
           />
           <FieldInfo field={field} />
         </div>

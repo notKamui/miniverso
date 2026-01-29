@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
 import { UserButton } from '@daveyplate/better-auth-ui'
 import { Link, linkOptions, useRouteContext } from '@tanstack/react-router'
 import { ShieldIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import {
@@ -13,17 +13,10 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
-import {
-  useSidebarState,
-  useUpdateSidebarState,
-} from '@/lib/hooks/use-sidebar-state'
+import { useSidebarState, useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()

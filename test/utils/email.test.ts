@@ -1,11 +1,11 @@
 import { describe, expect, it, mock } from 'bun:test'
 
 // Prepare mocks before importing the module under test
-const sendMock = mock(async (args: any) => ({ ok: true, args }))
+const sendMock = mock((args: any) => ({ ok: true, args }))
 let constructedApiKey: string | undefined
 
 // Mock env module used by email.tsx
-mock.module('@/lib/env/server', () => ({
+await mock.module('@/lib/env/server', () => ({
   env: {
     RESEND_API_KEY: 'test-resend-key',
     RESEND_MAIL_DOMAIN: 'example.com',
@@ -14,7 +14,7 @@ mock.module('@/lib/env/server', () => ({
 }))
 
 // Mock Resend SDK
-mock.module('resend', () => ({
+await mock.module('resend', () => ({
   Resend: class Resend {
     emails = { send: sendMock }
     constructor(apiKey: string) {
@@ -24,7 +24,7 @@ mock.module('resend', () => ({
 }))
 
 // Mock EmailTemplate to a simple factory that exposes props for inspection
-mock.module('@daveyplate/better-auth-ui/server', () => ({
+await mock.module('@daveyplate/better-auth-ui/server', () => ({
   EmailTemplate: (props: any) => ({ __type: 'EmailTemplate', props }),
 }))
 
@@ -32,7 +32,7 @@ mock.module('@daveyplate/better-auth-ui/server', () => ({
 const emailMod = await import('@/lib/utils/email')
 
 describe('email utils', () => {
-  it('initializes Resend with API key from env', async () => {
+  it('initializes Resend with API key from env', () => {
     expect(constructedApiKey).toBe('test-resend-key')
     // resend instance is created at module load; ensure it exists
     expect(emailMod.resend).toBeDefined()
@@ -56,9 +56,7 @@ describe('email utils', () => {
     expect(call.react.props.action).toBe('Reset password')
     expect(call.react.props.heading).toBe('Reset your password')
     expect(call.react.props.url).toBe('https://app.example.com/reset?token=abc')
-    expect(call.react.props.imageUrl).toBe(
-      'https://app.example.com/logo512.png',
-    )
+    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
   })
 
   it('sendResetPasswordEmail respects provided imageUrl and name', async () => {
@@ -87,11 +85,7 @@ describe('email utils', () => {
     expect(call.react.__type).toBe('EmailTemplate')
     expect(call.react.props.action).toBe('Verify email')
     expect(call.react.props.heading).toBe('Verify your email address')
-    expect(call.react.props.url).toBe(
-      'https://app.example.com/verify?token=xyz',
-    )
-    expect(call.react.props.imageUrl).toBe(
-      'https://app.example.com/logo512.png',
-    )
+    expect(call.react.props.url).toBe('https://app.example.com/verify?token=xyz')
+    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
   })
 })

@@ -12,9 +12,7 @@ export function installFakeTime() {
   return { advance, restore }
 }
 
-export function withFakeTime<T>(
-  fn: (ctrl: { advance: (ms: number) => number }) => T,
-): T {
+export function withFakeTime<T>(fn: (ctrl: { advance: (ms: number) => number }) => T): T {
   const { advance, restore } = installFakeTime()
   try {
     return fn({ advance })

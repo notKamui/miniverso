@@ -1,8 +1,6 @@
 type Operation<K, T> = [K, (context: T) => void]
 
-export function createFallthroughExec<K extends string, T>(
-  operations: readonly Operation<K, T>[],
-) {
+export function createFallthroughExec<K extends string, T>(operations: readonly Operation<K, T>[]) {
   const keyIndex = new Map<K, number>()
   for (const [index, [key]] of operations.entries()) {
     keyIndex.set(key, index)

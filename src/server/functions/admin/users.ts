@@ -17,16 +17,10 @@ const GetUsersSchema = z.object({
 
 export const adminUsersQueryKey = ['admin', 'users'] as const
 
-export function getUsersQueryOptions({
-  page,
-  size,
-  search,
-  role,
-}: z.infer<typeof GetUsersSchema>) {
+export function getUsersQueryOptions({ page, size, search, role }: z.infer<typeof GetUsersSchema>) {
   return queryOptions({
     queryKey: [...adminUsersQueryKey, { page, size, search, role }] as const,
-    queryFn: ({ signal }) =>
-      $getUsers({ signal, data: { page, size, search, role } }),
+    queryFn: ({ signal }) => $getUsers({ signal, data: { page, size, search, role } }),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -38,10 +32,8 @@ export const $getUsers = createServerFn({ method: 'GET' })
   .handler(async ({ data: { page, size, search, role } }) => {
     const conditions = [] as (SQL | undefined)[]
     if (search) {
-      const pattern = search.replace(/[%_]/g, '\\$&')
-      conditions.push(
-        or(ilike(user.name, `%${pattern}%`), ilike(user.email, `%${pattern}%`)),
-      )
+      const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
+      conditions.push(or(ilike(user.name, `%${pattern}%`), ilike(user.email, `%${pattern}%`)))
     }
     if (role) {
       conditions.push(eq(user.role, role))

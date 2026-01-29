@@ -18,7 +18,7 @@ describe('Collection.groupBy', () => {
 
   it('groups strings by first letter (string keys)', () => {
     const words = ['apple', 'banana', 'apricot', 'blue', 'avocado']
-    const res = Collection.groupBy(words, (w) => w[0]!)
+    const res = Collection.groupBy(words, (w) => w[0])
     expect(res.a).toEqual(['apple', 'apricot', 'avocado'])
     expect(res.b).toEqual(['banana', 'blue'])
   })
@@ -63,9 +63,7 @@ describe('Collection.groupBy', () => {
     arr[1] = 1
     arr[2] = undefined
     arr[3] = 2
-    const res = Collection.groupBy(arr, (v) =>
-      v === undefined ? 'undef' : 'val',
-    )
+    const res = Collection.groupBy(arr, (v) => (v === undefined ? 'undef' : 'val'))
     expect(res.undef).toEqual([undefined])
     expect(res.val).toEqual([1, 2])
   })
@@ -77,7 +75,7 @@ describe('Collection.groupBy', () => {
       (i) => i % 10,
     )
     for (let k = 0; k <= 9; k++) {
-      const group = res[k]!
+      const group = res[k]
       expect(group.length).toBe(N / 10)
       expect(group[0]).toBe(k)
       expect(group[1]).toBe(k + 10)

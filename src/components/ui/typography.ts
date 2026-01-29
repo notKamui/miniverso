@@ -3,10 +3,10 @@ import { cva } from 'class-variance-authority'
 export const title = cva('scroll-m-20 tracking-tight', {
   variants: {
     h: {
-      1: 'font-extrabold text-4xl lg:text-5xl',
-      2: 'font-semibold text-3xl first:mt-0',
-      3: 'font-semibold text-2xl',
-      4: 'font-semibold text-xl',
+      1: 'text-4xl font-extrabold lg:text-5xl',
+      2: 'text-3xl font-semibold first:mt-0',
+      3: 'text-2xl font-semibold',
+      4: 'text-xl font-semibold',
     },
   },
 })
@@ -16,7 +16,7 @@ export const text = cva('', {
     variant: {
       DEFAULT: '',
       small: 'text-sm',
-      muted: 'text-muted-foreground text-sm',
+      muted: 'text-sm text-muted-foreground',
     },
     paragraphed: {
       true: 'space-y-6 leading-7',

@@ -17,9 +17,7 @@ export type MailOptions = {
   imageUrl?: string
 }
 
-export async function sendResetPasswordEmail(
-  options: MailOptions & { url: string },
-) {
+export async function sendResetPasswordEmail(options: MailOptions & { url: string }) {
   const name = options.name || options.to.split('@')[0]
 
   return await resend.emails.send({
@@ -41,9 +39,7 @@ export async function sendResetPasswordEmail(
   })
 }
 
-export async function sendVerificationEmail(
-  options: MailOptions & { url: string },
-) {
+export async function sendVerificationEmail(options: MailOptions & { url: string }) {
   const name = options.name || options.to.split('@')[0]
 
   return await resend.emails.send({

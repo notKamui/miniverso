@@ -68,7 +68,7 @@ describe('Collection.partition', () => {
 
   it('can partition by truthiness using Boolean coercion', () => {
     const values = [0, 1, Number.NaN, 2, '', 'a', false, true, null, undefined]
-    const [truthy, falsy] = Collection.partition(values, (v) => Boolean(v))
+    const [truthy, falsy] = Collection.partition(values, Boolean)
     expect(truthy).toEqual([1, 2, 'a', true])
     expect(falsy).toEqual([0, Number.NaN, '', false, null, undefined])
   })

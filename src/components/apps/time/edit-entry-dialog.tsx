@@ -1,5 +1,7 @@
-import { useForm } from '@tanstack/react-form'
 import type { MaybePromise } from 'bun'
+import { useForm } from '@tanstack/react-form'
+import type { PartialExcept } from '@/lib/utils/types'
+import type { TimeEntry } from '@/server/db/schema/time'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -14,8 +16,6 @@ import {
 } from '@/components/ui/dialog'
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
-import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/schema/time'
 
 export function EditEntryDialog({
   entry,
@@ -70,26 +70,19 @@ export function EditEntryDialog({
     <Dialog open={entry !== null} onOpenChange={(open) => !open && onClose?.()}>
       <DialogContent ref={ref}>
         <form
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
             event.stopPropagation()
-            form.handleSubmit()
+            await form.handleSubmit()
           }}
           className="space-y-4"
         >
           <DialogHeader>
             <DialogTitle>Edit entry</DialogTitle>
-            <DialogDescription className="sr-only">
-              Edit time entry dialog
-            </DialogDescription>
+            <DialogDescription className="sr-only">Edit time entry dialog</DialogDescription>
           </DialogHeader>
 
-          <FormInput
-            type="time"
-            form={form}
-            name="startedAt"
-            label="Started at"
-          />
+          <FormInput type="time" form={form} name="startedAt" label="Started at" />
 
           <FormInput type="time" form={form} name="endedAt" label="Ended at" />
 
@@ -97,28 +90,19 @@ export function EditEntryDialog({
             form={form}
             name="description"
             label="Description"
-            className="wrap-break-word max-h-60 min-h-60 resize-none break-all"
+            className="max-h-60 min-h-60 resize-none wrap-break-word break-all"
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">
             <form.Subscribe selector={(state) => state.canSubmit}>
               {(canSubmit) => (
-                <Button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="max-sm:grow"
-                >
+                <Button type="submit" disabled={!canSubmit} className="max-sm:grow">
                   Save
                 </Button>
               )}
             </form.Subscribe>
             <DialogClose asChild>
-              <Button
-                type="button"
-                onClick={onClose}
-                className="max-sm:grow"
-                variant="destructive"
-              >
+              <Button type="button" onClick={onClose} className="max-sm:grow" variant="destructive">
                 Cancel
               </Button>
             </DialogClose>

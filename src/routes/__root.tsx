@@ -1,12 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from '@tanstack/react-router'
 import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import type { Theme } from '@/server/functions/theme'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { DevTools } from '@/components/devtools'
 import { MainLayout } from '@/layouts/main'
@@ -18,7 +14,6 @@ import { Providers } from '@/providers'
 import { hcaptchaInfoQueryOptions } from '@/server/functions/hcaptcha'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
 import { socialOAuthQueryOptions } from '@/server/functions/social-oauth'
-import type { Theme } from '@/server/functions/theme'
 import { userQueryOptions } from '@/server/functions/user'
 import appCss from '../styles.css?url'
 
@@ -29,7 +24,7 @@ export const Route = createRootRouteWithContext<{
   head: () => ({
     meta: [
       {
-        charSet: 'utf-8',
+        charSet: 'utf8',
       },
       {
         name: 'viewport',
@@ -58,7 +53,7 @@ export const Route = createRootRouteWithContext<{
 
     return { user, requestInfo, socialOAuth, hcaptchaInfo }
   },
-  loader: async () => ({ crumb: 'Home' }),
+  loader: () => ({ crumb: 'Home' }),
   component: RouteComponent,
 })
 
@@ -75,13 +70,7 @@ function RouteComponent() {
   )
 }
 
-function RootDocument({
-  children,
-  theme,
-}: {
-  children: ReactNode
-  theme: Theme
-}) {
+function RootDocument({ children, theme }: { children: ReactNode; theme: Theme }) {
   return (
     <html lang="en" className={cn(theme)} suppressHydrationWarning>
       <head>

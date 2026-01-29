@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import type { TimeEntry } from '@/server/db/schema/time'
 import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
 import { Time } from '@/lib/utils/time'
-import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $createTimeEntry,
   $updateTimeEntry,
@@ -44,8 +44,7 @@ export function useTimeEntryMutations({
 
       queryClient.setQueriesData(
         { queryKey: timeEntriesQueryKey },
-        (old: TimeEntry[] | undefined) =>
-          old ? [optimisticEntry, ...old] : [optimisticEntry],
+        (old: TimeEntry[] | undefined) => (old ? [optimisticEntry, ...old] : [optimisticEntry]),
       )
 
       setCurrentEntry(optimisticEntry)

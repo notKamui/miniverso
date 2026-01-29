@@ -6,10 +6,11 @@ export function setAuthSession(next: any) {
   currentSession = next
 }
 
-mock.module('@/lib/auth', () => ({
+await mock.module('@/lib/auth', () => ({
   auth: {
     api: {
-      getSession: async (_args: any) => currentSession,
+      // oxlint-disable-next-line typescript/no-unsafe-return
+      getSession: (_args: any) => currentSession,
     },
   },
 }))

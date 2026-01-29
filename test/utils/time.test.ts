@@ -20,6 +20,7 @@ describe('Time', () => {
 
   it('from(null|undefined) yields current-time-based instance without throwing', () => {
     const t1 = Time.from(null)
+    // oxlint-disable-next-line unicorn/no-useless-undefined
     const t2 = Time.from(undefined)
     expect(t1).toBeInstanceOf(Time)
     expect(t2).toBeInstanceOf(Time)
@@ -34,9 +35,7 @@ describe('Time', () => {
     expect(t.shift('hours', 2).getDate().getUTCHours()).toBe(12)
     expect(t.shift('minutes', 30).getDate().getUTCMinutes()).toBe(30)
     expect(t.shift('seconds', 5).getDate().getUTCSeconds()).toBe(5)
-    expect(t.shift('milliseconds', 500).getDate().getUTCMilliseconds()).toBe(
-      500,
-    )
+    expect(t.shift('milliseconds', 500).getDate().getUTCMilliseconds()).toBe(500)
   })
 
   it('compare respects the granularity (type) by zeroing lower components', () => {
@@ -60,9 +59,7 @@ describe('Time', () => {
     const other = Time.from('2020-01-01T12:00:00Z')
     const long = other.formatDay()
     const short = other.formatDay({ short: true })
-    expect(long).toMatch(
-      /Wednesday|Thursday|Friday|Saturday|Sunday|Monday|Tuesday/,
-    )
+    expect(long).toMatch(/Wednesday|Thursday|Friday|Saturday|Sunday|Monday|Tuesday/)
     expect(short).not.toBe('Today')
   })
 

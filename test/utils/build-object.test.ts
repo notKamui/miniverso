@@ -16,7 +16,7 @@ describe('buildObject', () => {
   })
 
   it('skips non-object inputs', () => {
-    const res = buildObject(false as any, null as any, undefined as any, {
+    const res = buildObject(false, null, undefined, {
       a: 1,
     })
     expect(res).toEqual({ a: 1 })

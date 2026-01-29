@@ -21,11 +21,12 @@ function makeNdjsonStream(text: string) {
 }
 
 // Ensure admin middleware is importable without real env/auth.
-mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
+await mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
 
 const importRouteMod = await import('@/routes/api/admin/import')
-const POST = (importRouteMod.Route.options.server?.handlers as any)
-  ?.POST as (args: { request: Request }) => Promise<Response>
+const POST = (importRouteMod.Route.options.server?.handlers as any)?.POST as (args: {
+  request: Request
+}) => Promise<Response>
 
 describe('/api/admin/import', () => {
   beforeEach(() => {
@@ -48,12 +49,9 @@ describe('/api/admin/import', () => {
 
   it('returns 400 when request body is missing', async () => {
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+      }),
     })
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -90,20 +88,14 @@ describe('/api/admin/import', () => {
       description: null,
     }
 
-    const ndjson =
-      `${JSON.stringify(meta)}\n` +
-      `${JSON.stringify(known)}\n` +
-      `${JSON.stringify(unknown)}\n`
+    const ndjson = `${JSON.stringify(meta)}\n${JSON.stringify(known)}\n${JSON.stringify(unknown)}\n`
 
     const stream = makeNdjsonStream(ndjson)
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-          body: stream,
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+        body: stream,
+      }),
     })
 
     expect(res.status).toBe(200)
@@ -172,13 +164,10 @@ describe('/api/admin/import', () => {
       version: 1,
     }
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-          body: makeNdjsonStream(`${JSON.stringify(badMeta)}\n`),
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+        body: makeNdjsonStream(`${JSON.stringify(badMeta)}\n`),
+      }),
     })
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -208,13 +197,10 @@ describe('/api/admin/import', () => {
       `  \n${JSON.stringify(entry)}\n\n`
 
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-          body: makeNdjsonStream(ndjson),
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+        body: makeNdjsonStream(ndjson),
+      }),
     })
     expect(res.status).toBe(200)
     const summary = await res.json()
@@ -225,13 +211,10 @@ describe('/api/admin/import', () => {
 
   it('returns 400 for an empty import file', async () => {
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-          body: makeNdjsonStream(''),
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+        body: makeNdjsonStream(''),
+      }),
     })
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -240,17 +223,13 @@ describe('/api/admin/import', () => {
 
   it('returns 400 on invalid JSON line and reports processedLines', async () => {
     const ndjson =
-      '{"type":"meta","format":"miniverso.export.ndjson","version":1}\n' +
-      '{not valid json}\n'
+      '{"type":"meta","format":"miniverso.export.ndjson","version":1}\n{not valid json}\n'
 
     const res = await POST({
-      request: new Request(
-        'http://localhost/api/admin/import?apps=timeRecorder',
-        {
-          method: 'POST',
-          body: makeNdjsonStream(ndjson),
-        },
-      ),
+      request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
+        method: 'POST',
+        body: makeNdjsonStream(ndjson),
+      }),
     })
 
     expect(res.status).toBe(400)

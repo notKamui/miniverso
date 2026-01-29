@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react'
+import type { ReactForm } from '@/lib/utils/types'
 import { FieldInfo } from '@/components/form/field-info'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { ReactForm } from '@/lib/utils/types'
 
 export type TextInputProps<F extends Record<string, any>> = Omit<
   ComponentProps<typeof Textarea>,

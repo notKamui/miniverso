@@ -15,11 +15,10 @@ export const $$admin = createMiddleware({ type: 'function' })
     }),
   )
 
-export const $$adminApi = createMiddleware({ type: 'request' }).server(
-  ({ next }) =>
-    adminApiGuard({
-      headers: getRequestHeaders(),
-      getSession: async (headers) => auth.api.getSession({ headers }),
-      next,
-    }),
+export const $$adminApi = createMiddleware({ type: 'request' }).server(({ next }) =>
+  adminApiGuard({
+    headers: getRequestHeaders(),
+    getSession: async (headers) => auth.api.getSession({ headers }),
+    next,
+  }),
 )

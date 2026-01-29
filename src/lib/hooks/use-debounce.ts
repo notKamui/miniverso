@@ -1,9 +1,4 @@
-import {
-  type DependencyList,
-  type EffectCallback,
-  useEffect,
-  useState,
-} from 'react'
+import { type DependencyList, type EffectCallback, useEffect, useState } from 'react'
 
 export function useDebounce<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -24,11 +19,7 @@ export function useDebounce<T>(value: T, delayMs: number): T {
   return debouncedValue
 }
 
-export function useDebouncedFn<T>(
-  value: T,
-  delayMs: number,
-  fn: (value: T) => void,
-) {
+export function useDebouncedFn<T>(value: T, delayMs: number, fn: (value: T) => void) {
   useEffect(() => {
     if (delayMs <= 0) {
       fn(value)
@@ -43,12 +34,7 @@ export function useDebouncedFn<T>(
   }, [delayMs, fn, value])
 }
 
-export function useDebouncedEffect(
-  effect: EffectCallback,
-  deps: DependencyList,
-  delayMs: number,
-) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Deps are passed in explicitly
+export function useDebouncedEffect(effect: EffectCallback, deps: DependencyList, delayMs: number) {
   useEffect(() => {
     let closer: ReturnType<EffectCallback> | undefined
     const handler = setTimeout(() => {
@@ -59,5 +45,6 @@ export function useDebouncedEffect(
       clearTimeout(handler)
       closer?.()
     }
+    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
   }, [...(deps || []), delayMs])
 }

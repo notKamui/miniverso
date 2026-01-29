@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_authed')({
         params: { pathname: authViewPaths.SIGN_IN },
       })
   },
-  component: () => {
+  component: function RouteComponent() {
     useAuthenticate()
     return <Outlet />
   },

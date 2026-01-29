@@ -4,6 +4,7 @@ import * as z from 'zod'
 export const zodErrorSerializationAdapter = createSerializationAdapter({
   key: 'zod-error',
   test: (v) => v instanceof z.ZodError,
+  // oxlint-disable-next-line typescript/no-unsafe-return
   toSerializable: (error: z.ZodError) => error.issues as any[],
   fromSerializable: (issues) => new z.ZodError(issues),
 })
@@ -16,7 +17,7 @@ export const responseSerializationAdapter = createSerializationAdapter({
       body: JSON.stringify(response.body),
       status: response.status,
       statusText: response.statusText,
-      headers: Array.from(response.headers.entries()),
+      headers: [...response.headers.entries()],
     }
   },
   fromSerializable: (obj) =>
