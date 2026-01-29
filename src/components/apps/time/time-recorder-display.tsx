@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EditIcon,
+  PlusIcon,
   MoreVerticalIcon,
   Trash2Icon,
 } from 'lucide-react'
@@ -13,6 +14,7 @@ import * as m from 'motion/react-m'
 import { useState } from 'react'
 import type { PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema/time'
+import { AddEntryDialog } from '@/components/apps/time/add-entry-dialog'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
 import { DataTable } from '@/components/data/data-table'
@@ -84,6 +86,7 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
   const queryClient = useQueryClient()
   const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>({})
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
+  const [addEntryOpen, setAddEntryOpen] = useState(false)
 
   const helpers = createOptimisticMutationHelpers(
     queryClient,
@@ -227,7 +230,18 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
             </Button>
           )}
         </div>
-        <TotalTime entries={entries} />
+        <div className="flex flex-row items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAddEntryOpen(true)}
+            className="gap-2"
+          >
+            <PlusIcon className="size-4" />
+            Add entry
+          </Button>
+          <TotalTime entries={entries} />
+        </div>
       </div>
       <div className="flex flex-col-reverse gap-4 lg:flex-row">
         <div className="grow">
@@ -281,6 +295,20 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
           onClose={() => setSelectedEntry(null)}
         />
       </AnimatePresence>
+
+      <AddEntryDialog
+        key={addEntryOpen ? time.formatDayKey() : 'closed'}
+        open={addEntryOpen}
+        onOpenChange={setAddEntryOpen}
+        defaultDate={time}
+        tzOffset={tzOffset}
+        onSuccess={async () => {
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey }),
+            queryClient.invalidateQueries({ queryKey: timeStatsQueryKey }),
+          ])
+        }}
+      />
     </div>
   )
 }

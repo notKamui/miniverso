@@ -149,13 +149,27 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ startedAt: Time.schema })))
-  .handler(({ context: { user }, data: { startedAt } }) =>
-    db
+  .inputValidator(
+    validate(
+      z
+        .object({
+          startedAt: Time.schema,
+          endedAt: Time.schema.nullable().optional(),
+          description: z.string().nullable().optional(),
+        })
+        .refine((data) => data.endedAt == null || !data.endedAt.isBefore(data.startedAt), {
+          message: 'End time must be after or equal to start time',
+        }),
+    ),
+  )
+  .handler(async ({ context: { user }, data: { startedAt, endedAt, description } }) => {
+    const row = await db
       .insert(timeEntry)
       .values({
         userId: user.id,
         startedAt,
+        endedAt: endedAt ?? null,
+        description: description ?? null,
       })
       .returning({
         id: timeEntry.id,
@@ -168,8 +182,9 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
         takeUniqueOr(() => {
           throw notFound()
         }),
-      ),
-  )
+      )
+    return row
+  })
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])

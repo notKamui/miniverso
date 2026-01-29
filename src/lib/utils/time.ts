@@ -315,6 +315,12 @@ export namespace UTCTime {
     }
   }
 
+  export function at(dayKey: string, timeStr: string, tzOffsetMinutes: number): Time {
+    const { start } = UTCTime.localDayRange(dayKey, tzOffsetMinutes)
+    const [hours, minutes] = timeStr.split(':').map(Number)
+    return start.shift('hours', hours).shift('minutes', minutes ?? 0)
+  }
+
   export function localPeriodRange(
     dayKey: string,
     type: Exclude<RangeType, 'day'>,
