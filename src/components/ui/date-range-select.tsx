@@ -40,12 +40,12 @@ export function DateRangeSelect({
   const from = startDate ? new Date(startDate) : undefined
   const to = endDate ? new Date(endDate) : undefined
 
-  const handlePreset = (p: Preset) => {
+  function handlePreset(p: Preset) {
     const { start, end } = getRange(p)
     onChange({ startDate: start.toISOString(), endDate: end.toISOString() })
   }
 
-  const handleRangeSelect = (range: { from?: Date; to?: Date } | undefined) => {
+  function handleRangeSelect(range: { from?: Date; to?: Date } | undefined) {
     if (range?.from && range?.to) {
       onChange({
         startDate: range.from.toISOString(),
@@ -57,7 +57,7 @@ export function DateRangeSelect({
   }
 
   const triggerLabel =
-    startDate && endDate ? `${formatDate(startDate)} – ${formatDate(endDate)}` : 'Select date range'
+    startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'Select date range'
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

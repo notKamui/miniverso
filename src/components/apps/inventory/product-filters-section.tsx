@@ -49,7 +49,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
         placeholder="Search by name or SKU…"
         value={qInput}
         onChange={(e) => setQInput(e.target.value)}
-        className="max-w-xs"
+        className="max-w-lg min-w-sm"
       />
       <Select
         name="archived"
@@ -61,7 +61,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
           })
         }
       >
-        <SelectTrigger className="w-32">
+        <SelectTrigger className="min-w-32">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
