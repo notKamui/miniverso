@@ -1,11 +1,11 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, gte, inArray, ilike, isNull, like, lte, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, ilike, isNull, lte, sql } from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
+import { type DbOrTransaction, type Transaction, db, takeUniqueOr } from '@/server/db'
 import {
   inventoryOrderReferencePrefix,
   order,
@@ -16,9 +16,8 @@ import {
 } from '@/server/db/schema/inventory'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
+import { getNextOrderReferenceForPrefix } from './order-reference-prefixes'
 import { priceTaxIncluded } from './utils'
-
-type DbOrTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db
 
 /** Product kind for expansion. */
 export type ProductKind = 'simple' | 'bundle'
@@ -61,7 +60,7 @@ export function computeRequiredQuantities(
 async function expandBundleItems(
   items: { productId: string; quantity: number }[],
   userId: string,
-  tx?: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  tx?: Transaction,
 ): Promise<Map<string, number>> {
   const dbInstance: DbOrTransaction = tx ?? db
   const productIds = [...new Set(items.map((i) => i.productId))]
@@ -373,20 +372,7 @@ export const $createOrder = createServerFn({ method: 'POST' })
             }),
           )
 
-        const last = await tx
-          .select({ reference: order.reference })
-          .from(order)
-          .where(and(eq(order.userId, user.id), like(order.reference, `${p.prefix}-%`)))
-          .orderBy(desc(order.reference))
-          .then(takeUniqueOrNull)
-
-        if (!last) {
-          ref = `${p.prefix}-1`
-        } else {
-          const t = Number(last.reference.split('-').at(-1))
-          const n = Number.isNaN(t) ? 0 : t + 1
-          ref = `${p.prefix}-${n}`
-        }
+        ref = await getNextOrderReferenceForPrefix(tx, user.id, p.prefix)
       }
 
       const newOrder = await tx

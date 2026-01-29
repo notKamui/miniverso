@@ -1,11 +1,11 @@
 import { queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, desc, eq, like } from 'drizzle-orm'
+import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
+import { type DbOrTransaction, db, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import { inventoryOrderReferencePrefix, order } from '@/server/db/schema/inventory'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
@@ -144,6 +144,33 @@ export const $deleteOrderReferencePrefix = createServerFn({ method: 'POST' })
     return row.id
   })
 
+/**
+ * Returns the next order reference for a prefix (e.g. "ORD-10" → "ORD-11").
+ * Uses numeric ordering so "ORD-9" < "ORD-10". Use with db or a transaction.
+ */
+export async function getNextOrderReferenceForPrefix(
+  dbOrTx: DbOrTransaction,
+  userId: string,
+  prefix: string,
+): Promise<string> {
+  const [last] = await dbOrTx
+    .select({ reference: order.reference })
+    .from(order)
+    .where(and(eq(order.userId, userId), like(order.reference, `${prefix}-%`)))
+    .orderBy(desc(sql`COALESCE((regexp_match(${order.reference}, '-([0-9]+)$'))[1]::int, 0)`))
+    .limit(1)
+
+  const n = last
+    ? (() => {
+        const parts = last.reference.split('-')
+        const t = Number(parts.at(-1))
+        return Number.isNaN(t) ? 0 : t
+      })() + 1
+    : 1
+
+  return `${prefix}-${n}`
+}
+
 export const $getNextOrderReference = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(validate(z.object({ prefixId: z.uuid() })))
@@ -163,20 +190,5 @@ export const $getNextOrderReference = createServerFn({ method: 'GET' })
         }),
       )
 
-    const [last] = await db
-      .select({ reference: order.reference })
-      .from(order)
-      .where(and(eq(order.userId, user.id), like(order.reference, `${p.prefix}-%`)))
-      .orderBy(desc(order.reference))
-      .limit(1)
-
-    const n = last
-      ? (() => {
-          const parts = last.reference.split('-')
-          const t = Number(parts.at(-1))
-          return Number.isNaN(t) ? 0 : t
-        })() + 1
-      : 1
-
-    return `${p.prefix}-${n}`
+    return getNextOrderReferenceForPrefix(db, user.id, p.prefix)
   })
