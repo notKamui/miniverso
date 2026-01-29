@@ -30,6 +30,23 @@ export const inventoryOrderReferencePrefix = pgTable(
 )
 export type InventoryOrderReferencePrefix = InferSelectModel<typeof inventoryOrderReferencePrefix>
 
+export const orderPriceModificationPreset = pgTable(
+  'order_price_modification_preset',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    type: text('type', { enum: ['increase', 'decrease'] }).notNull(),
+    kind: text('kind', { enum: ['flat', 'relative'] }).notNull(),
+    value: numeric('value', { precision: 10, scale: 2 }).notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (table) => [index('order_price_modification_preset_userId_idx').on(table.userId)],
+)
+export type OrderPriceModificationPreset = InferSelectModel<typeof orderPriceModificationPreset>
+
 export const inventoryTag = pgTable(
   'inventory_tag',
   {
@@ -219,6 +236,20 @@ export type InventoryCash = InferSelectModel<typeof inventoryCash>
 export const userRelations_inventoryOrderReferencePrefix = relations(user, ({ many }) => ({
   orderReferencePrefixes: many(inventoryOrderReferencePrefix),
 }))
+
+export const userRelations_orderPriceModificationPreset = relations(user, ({ many }) => ({
+  orderPriceModificationPresets: many(orderPriceModificationPreset),
+}))
+
+export const orderPriceModificationPresetRelations = relations(
+  orderPriceModificationPreset,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [orderPriceModificationPreset.userId],
+      references: [user.id],
+    }),
+  }),
+)
 
 export const userRelations_inventorySetting = relations(user, ({ many }) => ({
   inventorySettings: many(inventorySetting),

@@ -2,17 +2,37 @@ import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import type { DataFromQueryOptions, ReactForm } from '@/lib/utils/types'
 import { FormInput } from '@/components/form/form-input'
 import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { orderCartSubmitSchema } from '@/lib/forms/order-cart'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { formatMoney } from '@/lib/utils/format-money'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
+import {
+  $createOrderPriceModificationPreset,
+  getOrderPriceModificationPresetsQueryOptions,
+  orderPriceModificationPresetsQueryKey,
+} from '@/server/functions/inventory/order-price-modification-presets'
 import {
   $getNextOrderReference,
   getOrderReferencePrefixesQueryOptions,
@@ -28,10 +48,36 @@ type CartItem = {
   name: string
   priceTaxFree: number
   vatPercent: number
+  unitPriceTaxFree?: number
+}
+
+type PriceModification = {
+  type: 'increase' | 'decrease'
+  kind: 'flat' | 'relative'
+  value: number
+}
+
+function effectivePriceTaxFree(item: CartItem): number {
+  return item.unitPriceTaxFree ?? item.priceTaxFree
+}
+
+function applyModificationToPrice(basePrice: number, mod: PriceModification): number {
+  const v = mod.value
+  let result: number
+  if (mod.type === 'increase') {
+    result = mod.kind === 'flat' ? basePrice + v : basePrice * (1 + v / 100)
+  } else {
+    result = mod.kind === 'flat' ? Math.max(0, basePrice - v) : basePrice * (1 - v / 100)
+    result = Math.max(0, result)
+  }
+  return Number(result.toFixed(2))
 }
 
 type Prefix = DataFromQueryOptions<ReturnType<typeof getOrderReferencePrefixesQueryOptions>>[number]
 type Product = DataFromQueryOptions<ReturnType<typeof getProductsQueryOptions>>['items'][number]
+type Preset = DataFromQueryOptions<
+  ReturnType<typeof getOrderPriceModificationPresetsQueryOptions>
+>[number]
 
 type OrderCartFormValues = {
   prefix: Prefix | null
@@ -53,6 +99,7 @@ const defaultValues: OrderCartFormValues = {
 
 const PrefixCombobox = createCombobox<Prefix>()
 const ProductCombobox = createCombobox<Product>()
+const PresetCombobox = createCombobox<Preset>()
 
 function OrderCartAddProductSection({
   form,
@@ -148,11 +195,46 @@ function OrderCartAddProductSection({
   )
 }
 
+function presetToModification(p: Preset): PriceModification {
+  return {
+    type: p.type,
+    kind: p.kind,
+    value: Number(p.value),
+  }
+}
+
+function presetLabel(p: Preset): string {
+  const v = Number(p.value)
+  const suffix = p.kind === 'relative' ? `%` : ''
+  const sign = p.type === 'increase' ? '+' : '−'
+  return `${p.name} (${sign}${v}${suffix})`
+}
+
 export function OrderCart() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
   const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: presets = [] } = useQuery(getOrderPriceModificationPresetsQueryOptions())
+
+  const [modification, setModification] = useState<PriceModification>({
+    type: 'decrease',
+    kind: 'relative',
+    value: 0,
+  })
+  const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null)
+  const [savePresetOpen, setSavePresetOpen] = useState(false)
+  const [savePresetName, setSavePresetName] = useState('')
+
+  const createPresetMut = useMutation({
+    mutationFn: $createOrderPriceModificationPreset,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orderPriceModificationPresetsQueryKey })
+      setSavePresetOpen(false)
+      setSavePresetName('')
+      toast.success('Preset saved')
+    },
+  })
 
   const form = useForm({
     defaultValues,
@@ -161,7 +243,11 @@ export function OrderCart() {
       const parsed = orderCartSubmitSchema.safeParse({
         prefixId: value.prefix?.id,
         description: value.description.trim() || undefined,
-        items: value.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+        items: value.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPriceTaxFree: i.unitPriceTaxFree ?? undefined,
+        })),
       })
 
       if (!parsed.success) {
@@ -213,6 +299,38 @@ export function OrderCart() {
     form.setFieldValue('addProduct', null)
     form.setFieldValue('addQty', '1')
     form.setFieldValue('productSearch', '')
+  }
+
+  function applyModification() {
+    const items = form.state.values.items
+    if (items.length === 0) return
+    const newItems = items.map((i) => ({
+      ...i,
+      unitPriceTaxFree: applyModificationToPrice(i.priceTaxFree, modification),
+    }))
+    form.setFieldValue('items', newItems)
+  }
+
+  function clearModification() {
+    const items = form.state.values.items
+    const newItems = items.map(({ unitPriceTaxFree: _, ...rest }) => rest)
+    form.setFieldValue('items', newItems)
+    setSelectedPreset(null)
+  }
+
+  function handleApplyPreset(preset: Preset | null) {
+    if (!preset) return
+    setSelectedPreset(preset)
+    setModification(presetToModification(preset))
+    const items = form.state.values.items
+    if (items.length > 0) {
+      const mod = presetToModification(preset)
+      const newItems = items.map((i) => ({
+        ...i,
+        unitPriceTaxFree: applyModificationToPrice(i.priceTaxFree, mod),
+      }))
+      form.setFieldValue('items', newItems)
+    }
   }
 
   const hasPrefixes = prefixes.length > 0
@@ -306,7 +424,7 @@ export function OrderCart() {
                       <span>
                         {i.name} × {i.quantity} ={' '}
                         {formatMoney(
-                          priceTaxIncluded(i.priceTaxFree, i.vatPercent) * i.quantity,
+                          priceTaxIncluded(effectivePriceTaxFree(i), i.vatPercent) * i.quantity,
                           currency,
                         )}
                       </span>
@@ -333,23 +451,182 @@ export function OrderCart() {
       <form.Subscribe selector={(s) => s.values.items}>
         {(items) => {
           const list = items ?? []
-          const totalTaxFree = list.reduce((s, i) => s + i.priceTaxFree * i.quantity, 0)
+          const totalTaxFree = list.reduce((s, i) => s + effectivePriceTaxFree(i) * i.quantity, 0)
           const totalTaxIncluded = list.reduce(
-            (s, i) => s + priceTaxIncluded(i.priceTaxFree, i.vatPercent) * i.quantity,
+            (s, i) => s + priceTaxIncluded(effectivePriceTaxFree(i), i.vatPercent) * i.quantity,
             0,
           )
-          return list.length > 0 ? (
-            <div className="text-sm">
-              <p>
-                <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
-              </p>
-              <p>
-                <strong>Total (incl. tax):</strong> {formatMoney(totalTaxIncluded, currency)}
-              </p>
-            </div>
-          ) : null
+          const hasItems = list.length > 0
+          return (
+            <>
+              {hasItems && (
+                <div className="space-y-2">
+                  <Label>Price modification</Label>
+                  <div className="flex flex-wrap items-end gap-2 rounded-md border p-3">
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Preset</Label>
+                        <PresetCombobox.Root
+                          items={presets}
+                          value={selectedPreset}
+                          onValueChange={(p) => handleApplyPreset(p)}
+                          itemToStringLabel={presetLabel}
+                        >
+                          <PresetCombobox.Input placeholder="Apply preset…" className="w-44" />
+                          <PresetCombobox.Content>
+                            <PresetCombobox.List>
+                              {(p) => (
+                                <PresetCombobox.Item key={p.id} value={p}>
+                                  {presetLabel(p)}
+                                </PresetCombobox.Item>
+                              )}
+                            </PresetCombobox.List>
+                            <PresetCombobox.Empty>
+                              No presets. Add in Settings.
+                            </PresetCombobox.Empty>
+                          </PresetCombobox.Content>
+                        </PresetCombobox.Root>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Type</Label>
+                        <Select
+                          value={modification.type}
+                          onValueChange={(v) =>
+                            setModification((m) => ({ ...m, type: v as PriceModification['type'] }))
+                          }
+                        >
+                          <SelectTrigger className="w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="increase">Increase</SelectItem>
+                            <SelectItem value="decrease">Decrease</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Kind</Label>
+                        <Select
+                          value={modification.kind}
+                          onValueChange={(v) =>
+                            setModification((m) => ({ ...m, kind: v as PriceModification['kind'] }))
+                          }
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="flat">Flat</SelectItem>
+                            <SelectItem value="relative">%</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Value</Label>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={modification.kind === 'relative' ? 1 : 0.01}
+                          value={modification.value || ''}
+                          onChange={(e) =>
+                            setModification((m) => ({
+                              ...m,
+                              value: Number.parseFloat(e.target.value) || 0,
+                            }))
+                          }
+                          className="w-20"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={applyModification}
+                        disabled={list.length === 0}
+                      >
+                        Apply
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearModification}
+                        disabled={!list.some((i) => i.unitPriceTaxFree !== undefined)}
+                      >
+                        Clear
+                      </Button>
+                      {list.some((i) => i.unitPriceTaxFree !== undefined) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSavePresetOpen(true)}
+                        >
+                          Save as preset
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {list.length > 0 ? (
+                <div className="text-sm">
+                  <p>
+                    <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
+                  </p>
+                  <p>
+                    <strong>Total (incl. tax):</strong> {formatMoney(totalTaxIncluded, currency)}
+                  </p>
+                </div>
+              ) : null}
+            </>
+          )
         }}
       </form.Subscribe>
+
+      <Dialog open={savePresetOpen} onOpenChange={setSavePresetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save as preset</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              const name = savePresetName.trim()
+              if (!name) return
+              createPresetMut.mutate({
+                data: {
+                  name,
+                  type: modification.type,
+                  kind: modification.kind,
+                  value: modification.value,
+                },
+              })
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="preset-name">Name</Label>
+              <Input
+                id="preset-name"
+                value={savePresetName}
+                onChange={(e) => setSavePresetName(e.target.value)}
+                placeholder="e.g. Wholesale -15%"
+                maxLength={200}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setSavePresetOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!savePresetName.trim() || createPresetMut.isPending}>
+                Save
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <form.Subscribe
         selector={(s) => ({

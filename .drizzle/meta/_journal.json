@@ -71,6 +71,13 @@
       "when": 1769618117009,
       "tag": "0009_product_bundles",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1769679502893,
+      "tag": "0010_add_order_price_modification_preset",
+      "breakpoints": true
     }
   ]
 }

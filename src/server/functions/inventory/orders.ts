@@ -282,7 +282,13 @@ const orderCreateSchema = z.object({
   prefixId: z.uuid().optional(),
   description: z.string().max(2000).optional(),
   status: z.enum(['prepared', 'sent', 'paid']),
-  items: z.array(z.object({ productId: z.uuid(), quantity: z.number().int().min(1) })),
+  items: z.array(
+    z.object({
+      productId: z.uuid(),
+      quantity: z.number().int().min(1),
+      unitPriceTaxFree: z.number().min(0).optional(),
+    }),
+  ),
 })
 
 export const $createOrder = createServerFn({ method: 'POST' })
@@ -401,9 +407,20 @@ export const $createOrder = createServerFn({ method: 'POST' })
 
       for (const i of data.items) {
         const p = productMap.get(i.productId)!
-        const unitPriceTaxFree = String(Number(p.priceTaxFree).toFixed(2))
+        const basePrice = Number(p.priceTaxFree)
+        const overridePrice = i.unitPriceTaxFree
+        const priceTaxFree =
+          overridePrice !== undefined && overridePrice >= 0 ? overridePrice : basePrice
+        // Sanity check: avoid typos (e.g. max 100× product price)
+        const maxPrice = basePrice * 100
+        if (priceTaxFree > maxPrice)
+          badRequest(
+            `Unit price for product ${i.productId} exceeds maximum (${maxPrice.toFixed(2)})`,
+            400,
+          )
+        const unitPriceTaxFree = String(Number(priceTaxFree).toFixed(2))
         const unitPriceTaxIncluded = String(
-          priceTaxIncluded(p.priceTaxFree, p.vatPercent).toFixed(2),
+          priceTaxIncluded(priceTaxFree, p.vatPercent).toFixed(2),
         )
         await tx.insert(orderItem).values({
           orderId: newOrder.id,
