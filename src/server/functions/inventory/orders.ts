@@ -230,6 +230,7 @@ export const $getOrder = createServerFn({ method: 'GET' })
         quantity: orderItem.quantity,
         unitPriceTaxFree: orderItem.unitPriceTaxFree,
         unitPriceTaxIncluded: orderItem.unitPriceTaxIncluded,
+        priceModifications: orderItem.priceModifications,
         productName: product.name,
       })
       .from(orderItem)
@@ -276,6 +277,12 @@ export const $getOrder = createServerFn({ method: 'GET' })
     }
   })
 
+const orderItemModificationSchema = z.object({
+  type: z.enum(['increase', 'decrease']),
+  kind: z.enum(['flat', 'relative']),
+  value: z.number(),
+})
+
 const orderCreateSchema = z.object({
   reference: z.string().min(1).max(500).optional(),
   prefixId: z.uuid().optional(),
@@ -286,6 +293,7 @@ const orderCreateSchema = z.object({
       productId: z.uuid(),
       quantity: z.number().int().min(1),
       unitPriceTaxFree: z.number().min(0).optional(),
+      modifications: z.array(orderItemModificationSchema).optional(),
     }),
   ),
 })
@@ -406,12 +414,15 @@ export const $createOrder = createServerFn({ method: 'POST' })
           )
         const unitPriceTaxFree = String(Number(priceTaxFree).toFixed(2))
         const unitPriceTaxIncluded = String(priceTaxIncluded(priceTaxFree, p.vatPercent).toFixed(2))
+        const priceModifications =
+          i.modifications && i.modifications.length > 0 ? i.modifications : null
         await tx.insert(orderItem).values({
           orderId: newOrder.id,
           productId: i.productId,
           quantity: i.quantity,
           unitPriceTaxFree,
           unitPriceTaxIncluded,
+          priceModifications,
         })
       }
 

@@ -2,6 +2,7 @@ import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-q
 import { useNavigate } from '@tanstack/react-router'
 import { BanknoteIcon, SendIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner'
+import { modificationLabel } from '@/components/apps/inventory/order-cart/utils'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -22,6 +23,13 @@ import {
 } from '@/server/functions/inventory/orders'
 import { productsQueryKey } from '@/server/functions/inventory/products'
 import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
+
+type OrderItemMod = { type: string; kind: string; value: number }
+
+function formatItemModifications(mods: OrderItemMod[] | null | undefined): string {
+  if (!mods?.length) return '—'
+  return mods.map((m) => modificationLabel(m as Parameters<typeof modificationLabel>[0])).join(', ')
+}
 
 type OrderDetailProps = { orderId: string }
 
@@ -135,6 +143,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               <TableHead className="text-right">Qty</TableHead>
               <TableHead className="text-right">Unit (incl. tax)</TableHead>
               <TableHead className="text-right">Line total</TableHead>
+              <TableHead>Modifications</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -148,6 +157,9 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                 <TableCell className="text-right">
                   {formatMoney(Number(i.quantity) * Number(i.unitPriceTaxIncluded), currency)}
                 </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {formatItemModifications(i.priceModifications)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -159,7 +171,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
           <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
         </p>
         <p>
-          <strong>Total (incl. tax):</strong> {totalTaxIncluded.toFixed(2)} €
+          <strong>Total (incl. tax):</strong> {formatMoney(totalTaxIncluded, currency)}
         </p>
         <p>
           <strong>Benefit (est.):</strong> {formatMoney(totalBenefit, currency)}

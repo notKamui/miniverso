@@ -9,7 +9,7 @@ export type CartItem = {
   name: string
   priceTaxFree: number
   vatPercent: number
-  unitPriceTaxFree?: number
+  modifications?: PriceModification[]
 }
 
 export type PriceModification = {

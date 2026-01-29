@@ -1,0 +1,1 @@
+ALTER TABLE "order_item" ADD COLUMN "price_modifications" jsonb;

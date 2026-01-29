@@ -2,6 +2,7 @@ import { type InferSelectModel, relations } from 'drizzle-orm'
 import {
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
@@ -185,6 +186,12 @@ export const order = pgTable(
 )
 export type Order = InferSelectModel<typeof order>
 
+export type OrderItemPriceModification = {
+  type: 'increase' | 'decrease'
+  kind: 'flat' | 'relative'
+  value: number
+}
+
 export const orderItem = pgTable(
   'order_item',
   {
@@ -198,6 +205,7 @@ export const orderItem = pgTable(
     quantity: integer('quantity').notNull(),
     unitPriceTaxFree: numeric('unit_price_tax_free', money).notNull(),
     unitPriceTaxIncluded: numeric('unit_price_tax_included', money).notNull(),
+    priceModifications: jsonb('price_modifications').$type<OrderItemPriceModification[]>(),
   },
   (table) => [index('order_item_orderId_idx').on(table.orderId)],
 )

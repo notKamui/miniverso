@@ -7,6 +7,7 @@ import { FormInput } from '@/components/form/form-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { orderCartSubmitSchema } from '@/lib/forms/order-cart'
+import { formatMoney } from '@/lib/utils/format-money'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import {
   $createOrderPriceModificationPreset,
@@ -17,14 +18,14 @@ import { getOrderReferencePrefixesQueryOptions } from '@/server/functions/invent
 import { $createOrder, ordersQueryKey } from '@/server/functions/inventory/orders'
 import { productsQueryKey } from '@/server/functions/inventory/products'
 import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
+import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 import { PrefixCombobox } from './comboboxes'
 import { NextReference } from './next-reference'
 import { OrderCartAddProductSection } from './order-cart-add-product-section'
 import { OrderCartItemsList } from './order-cart-items-list'
-import { OrderCartPriceModificationSection } from './order-cart-price-modification-section'
 import { OrderCartSavePresetDialog } from './order-cart-save-preset-dialog'
-import { CartItem, PriceModification, Preset, defaultValues } from './types'
-import { applyModificationToPrice, presetToModification } from './utils'
+import { CartItem, defaultValues } from './types'
+import { effectivePriceTaxFree } from './utils'
 
 export function OrderCartForm() {
   const navigate = useNavigate()
@@ -33,14 +34,13 @@ export function OrderCartForm() {
   const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const { data: presets = [] } = useQuery(getOrderPriceModificationPresetsQueryOptions())
 
-  const [modification, setModification] = useState<PriceModification>({
-    type: 'decrease',
-    kind: 'relative',
-    value: 0,
-  })
-  const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null)
   const [savePresetOpen, setSavePresetOpen] = useState(false)
   const [savePresetName, setSavePresetName] = useState('')
+  const [savePresetModification, setSavePresetModification] = useState<{
+    type: 'increase' | 'decrease'
+    kind: 'flat' | 'relative'
+    value: number
+  } | null>(null)
 
   const createPresetMut = useMutation({
     mutationFn: $createOrderPriceModificationPreset,
@@ -48,6 +48,7 @@ export function OrderCartForm() {
       await queryClient.invalidateQueries({ queryKey: orderPriceModificationPresetsQueryKey })
       setSavePresetOpen(false)
       setSavePresetName('')
+      setSavePresetModification(null)
       toast.success('Preset saved')
     },
   })
@@ -73,11 +74,15 @@ export function OrderCartForm() {
       const parsed = orderCartSubmitSchema.safeParse({
         prefixId: value.prefix?.id,
         description: value.description.trim() || undefined,
-        items: value.items.map((i) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          unitPriceTaxFree: i.unitPriceTaxFree ?? undefined,
-        })),
+        items: value.items.map((i) => {
+          const effective = effectivePriceTaxFree(i)
+          return {
+            productId: i.productId,
+            quantity: i.quantity,
+            unitPriceTaxFree: effective !== i.priceTaxFree ? effective : undefined,
+            modifications: i.modifications?.length ? i.modifications : undefined,
+          }
+        }),
       })
 
       if (!parsed.success) {
@@ -100,7 +105,11 @@ export function OrderCartForm() {
     const items = form.state.values.items
     const existing = items.find((i: CartItem) => i.productId === p.id)
     const newItems = existing
-      ? items.map((i: CartItem) => (i.productId === p.id ? { ...i, quantity: i.quantity + q } : i))
+      ? items.map((i: CartItem) =>
+          i.productId === p.id
+            ? { ...i, quantity: i.quantity + q, modifications: i.modifications ?? [] }
+            : i,
+        )
       : [
           ...items,
           {
@@ -109,6 +118,7 @@ export function OrderCartForm() {
             name: p.name,
             priceTaxFree: Number(p.priceTaxFree),
             vatPercent: Number(p.vatPercent),
+            modifications: [],
           },
         ]
     form.setFieldValue('items', newItems)
@@ -117,45 +127,22 @@ export function OrderCartForm() {
     form.setFieldValue('productSearch', '')
   }
 
-  function applyModification() {
-    const items = form.state.values.items
-    if (items.length === 0) return
-    const newItems = items.map((i) => ({
-      ...i,
-      unitPriceTaxFree: applyModificationToPrice(i.priceTaxFree, modification),
-    }))
-    form.setFieldValue('items', newItems)
-  }
-
-  function clearModification() {
-    const items = form.state.values.items
-    const newItems = items.map(({ unitPriceTaxFree: _, ...rest }) => rest)
-    form.setFieldValue('items', newItems)
-    setSelectedPreset(null)
-  }
-
-  function handleApplyPreset(preset: Preset | null) {
-    if (!preset) return
-    setSelectedPreset(preset)
-    setModification(presetToModification(preset))
-    const items = form.state.values.items
-    if (items.length > 0) {
-      const mod = presetToModification(preset)
-      const newItems = items.map((i) => ({
-        ...i,
-        unitPriceTaxFree: applyModificationToPrice(i.priceTaxFree, mod),
-      }))
-      form.setFieldValue('items', newItems)
-    }
-  }
-
   function handleSavePreset(data: {
     name: string
-    type: PriceModification['type']
-    kind: PriceModification['kind']
+    type: 'increase' | 'decrease'
+    kind: 'flat' | 'relative'
     value: number
   }) {
     createPresetMut.mutate({ data })
+  }
+
+  function openSavePresetDialog(mod: {
+    type: 'increase' | 'decrease'
+    kind: 'flat' | 'relative'
+    value: number
+  }) {
+    setSavePresetModification(mod)
+    setSavePresetOpen(true)
   }
 
   const hasPrefixes = prefixes.length > 0
@@ -231,36 +218,43 @@ export function OrderCartForm() {
         )}
       </form.Subscribe>
 
-      <OrderCartItemsList form={form} currency={currency} />
+      <OrderCartItemsList
+        form={form}
+        currency={currency}
+        presets={presets}
+        onSavePresetClick={openSavePresetDialog}
+      />
 
       <form.Subscribe selector={(s) => s.values.items}>
         {(items) => {
           const list = items ?? []
-          return (
-            <>
-              <OrderCartPriceModificationSection
-                presets={presets}
-                modification={modification}
-                setModification={setModification}
-                selectedPreset={selectedPreset}
-                onApplyPreset={handleApplyPreset}
-                onApplyModification={applyModification}
-                onClearModification={clearModification}
-                onSavePresetClick={() => setSavePresetOpen(true)}
-                list={list}
-                currency={currency}
-              />
-            </>
+          const totalTaxFree = list.reduce((s, i) => s + effectivePriceTaxFree(i) * i.quantity, 0)
+          const totalTaxIncluded = list.reduce(
+            (s, i) => s + priceTaxIncluded(effectivePriceTaxFree(i), i.vatPercent) * i.quantity,
+            0,
           )
+          return list.length > 0 ? (
+            <div className="text-sm">
+              <p>
+                <strong>Total (ex. tax):</strong> {formatMoney(totalTaxFree, currency)}
+              </p>
+              <p>
+                <strong>Total (incl. tax):</strong> {formatMoney(totalTaxIncluded, currency)}
+              </p>
+            </div>
+          ) : null
         }}
       </form.Subscribe>
 
       <OrderCartSavePresetDialog
         open={savePresetOpen}
-        onOpenChange={setSavePresetOpen}
+        onOpenChange={(open) => {
+          setSavePresetOpen(open)
+          if (!open) setSavePresetModification(null)
+        }}
         name={savePresetName}
         onNameChange={setSavePresetName}
-        modification={modification}
+        modification={savePresetModification ?? { type: 'decrease', kind: 'relative', value: 0 }}
         onSave={handleSavePreset}
         isPending={createPresetMut.isPending}
       />
