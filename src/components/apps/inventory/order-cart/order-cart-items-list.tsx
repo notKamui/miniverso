@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/select'
 import { formatMoney } from '@/lib/utils/format-money'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
-import type { CartItem, OrderCartFormValues, Preset } from './types'
-import type { PriceModification } from './types'
+import type { CartItem, OrderCartFormValues, Preset, PriceModification } from './types'
 import { PresetCombobox } from './comboboxes'
 import {
   effectivePriceTaxFree,
@@ -26,14 +25,12 @@ import {
 
 function AddModificationPopover({
   itemIndex,
-  item,
   items,
   onItemsChange,
   presets,
   onSavePresetClick,
 }: {
   itemIndex: number
-  item: CartItem
   items: CartItem[]
   onItemsChange: (newItems: CartItem[]) => void
   presets: Preset[]
@@ -49,7 +46,7 @@ function AddModificationPopover({
   function addModification() {
     const value = mod.value
     if (value <= 0) return
-    const newItems = items.slice()
+    const newItems = [...items]
     const current = newItems[itemIndex]
     if (!current) return
     newItems[itemIndex] = {
@@ -182,7 +179,7 @@ export function OrderCartItemsList({
   return (
     <form.Field name="items">
       {(field) => {
-        const items = (field.state.value ?? []) as CartItem[]
+        const items = field.state.value ?? []
         return (
           <div className="space-y-2">
             <Label>Items</Label>
@@ -224,7 +221,7 @@ export function OrderCartItemsList({
                             <button
                               type="button"
                               onClick={() => {
-                                const newItems = items.slice()
+                                const newItems = [...items]
                                 const current = newItems[index]
                                 if (!current) return
                                 newItems[index] = {
@@ -244,7 +241,6 @@ export function OrderCartItemsList({
                         ))}
                         <AddModificationPopover
                           itemIndex={index}
-                          item={i}
                           items={items}
                           onItemsChange={field.handleChange}
                           presets={presets}

@@ -11,7 +11,7 @@ isProject: false
 
 1. **Per-line, multiple mods** (as before): Each cart line has its own list of modifications applied in sequence; no global "Apply to all".
 2. **Persist on order**: Store the list of modifications per order item in the DB so they survive after order creation.
-3. **Review in order view**: Display each order item's modifications in [src/routes/_authed/inventory/orders/$orderId.tsx](src/routes/_authed/inventory/orders/$orderId.tsx) (via [OrderDetail](src/components/apps/inventory/order-detail.tsx)).
+3. **Review in order view**: Display each order item's modifications in [src/routes/authed/inventory/orders/$orderId.tsx](src/routes/_authed/inventory/orders/$orderId.tsx) (via [OrderDetail](src/components/apps/inventory/order-detail.tsx)).
 
 ---
 
@@ -73,7 +73,6 @@ isProject: false
 
 ## 5. Files to touch (summary)
 
-
 | Area        | File                                                                                             | Change                                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
 | Schema      | [src/server/db/schema/inventory.ts](src/server/db/schema/inventory.ts)                           | Add `priceModifications` JSONB to `order_item`.                                                                 |
@@ -83,7 +82,6 @@ isProject: false
 | Client cart | Types, utils, form, items list, (new) row/popover                                                | Per-line `modifications` array; add/remove mods per line; submit `modifications` + computed `unitPriceTaxFree`. |
 | Order view  | [src/components/apps/inventory/order-detail.tsx](src/components/apps/inventory/order-detail.tsx) | For each item, show `priceModifications` when present (e.g. new column or line under product).                  |
 
-
 ---
 
 ## 6. Edge cases
@@ -91,4 +89,3 @@ isProject: false
 - **Existing orders**: No `price_modifications` data; column nullable. Order detail only shows modifications when `item.priceModifications?.length > 0`.
 - **Backward compatibility**: Create order still works if client sends only `unitPriceTaxFree` (no `modifications`); set `priceModifications` to null for those items.
 - **Validation**: Server can validate that stored `unitPriceTaxFree` matches recomputing from product base + `modifications` when `modifications` is provided; optional consistency check.
-
