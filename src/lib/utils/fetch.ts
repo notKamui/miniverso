@@ -1,6 +1,6 @@
 import { CustomFetch } from '@tanstack/react-start'
-import { ServerErrorEvent } from '../hooks/use-server-errors'
-import { tryInline } from './try'
+import { ServerErrorEvent } from '@/lib/hooks/use-server-errors'
+import { tryInline } from '@/lib/utils/try'
 
 async function treatError(error: unknown) {
   if (!(error instanceof Response)) {
