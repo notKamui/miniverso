@@ -3,13 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
-import { Time, UTCTime } from '@/lib/utils/time'
-import {
-  $updateTimeEntry,
-  getTimeEntriesByDayQueryOptions,
-  timeEntriesQueryKey,
-  timeStatsQueryKey,
-} from '@/server/functions/time-entry'
+import { Time } from '@/lib/utils/time'
+import { getTimeEntriesByDayQueryOptions } from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
   validateSearch: z.object({
@@ -20,24 +15,12 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
     const date = Time.from(day)
     const tzOffsetMinutes = search.tz ?? 0
 
-    const entries = await queryClient.fetchQuery(
+    await queryClient.fetchQuery(
       getTimeEntriesByDayQueryOptions({
         dayKey: date.formatDayKey(),
         tzOffsetMinutes,
       }),
     )
-
-    if (!date.isToday()) {
-      const notEnded = entries.filter((e) => !e.endedAt)
-      if (notEnded.length > 0) {
-        const dayEnd = UTCTime.localDayRange(date.formatDayKey(), tzOffsetMinutes).end
-        await Promise.all(
-          notEnded.map((e) => $updateTimeEntry({ data: { id: e.id, endedAt: dayEnd } })),
-        )
-        await queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey })
-        await queryClient.invalidateQueries({ queryKey: timeStatsQueryKey })
-      }
-    }
 
     return {
       time: date,

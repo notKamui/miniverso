@@ -16,6 +16,14 @@ function startedLocalExpr(tzOffsetMinutes: number) {
   return sql`(${timeEntry.startedAt} AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute')`
 }
 
+function effectiveEndedAtExpr(tzOffsetMinutes: number) {
+  const startedLocal = startedLocalExpr(tzOffsetMinutes)
+  const startDateLocal = sql`DATE(${startedLocal})`
+  const currentDateLocal = sql`DATE((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') - (${tzOffsetMinutes}::int * interval '1 minute'))`
+  const endOfStartDayUtc = sql`((${startDateLocal} + time '23:59:59.999999') + (${tzOffsetMinutes}::int * interval '1 minute')) AT TIME ZONE 'UTC'`
+  return sql`COALESCE(${timeEntry.endedAt}, CASE WHEN ${startDateLocal} < ${currentDateLocal} THEN ${endOfStartDayUtc} ELSE NULL END)`
+}
+
 export const timeEntriesQueryKey = ['time-entries'] as const
 export const timeStatsQueryKey = ['time-stats'] as const
 export const timeEntryTagsQueryKey = ['time-entry-tags'] as const
@@ -69,24 +77,55 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
     const { start: dayBegin, end: dayEnd } = range
 
-    const entries = await db
-      .select({
-        id: timeEntry.id,
-        userId: timeEntry.userId,
-        startedAt: timeEntry.startedAt,
-        endedAt: timeEntry.endedAt,
-        description: timeEntry.description,
-      })
-      .from(timeEntry)
-      .where(
-        and(
-          eq(timeEntry.userId, user.id),
-          gte(timeEntry.startedAt, dayBegin),
-          or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
-        ),
-      )
+    return db.transaction(async (tx) => {
+      let entries = await tx
+        .select({
+          id: timeEntry.id,
+          userId: timeEntry.userId,
+          startedAt: timeEntry.startedAt,
+          endedAt: timeEntry.endedAt,
+          description: timeEntry.description,
+        })
+        .from(timeEntry)
+        .where(
+          and(
+            eq(timeEntry.userId, user.id),
+            gte(timeEntry.startedAt, dayBegin),
+            or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
+          ),
+        )
 
-    return entries.toSorted((a, b) => b.startedAt.compare(a.startedAt))
+      const isPastDay = dayKey !== UTCTime.todayKey(tzOffsetMinutes)
+      if (isPastDay) {
+        const notEnded = entries.filter((e) => !e.endedAt)
+        for (const e of notEnded) {
+          await tx
+            .update(timeEntry)
+            .set({ endedAt: dayEnd })
+            .where(and(eq(timeEntry.id, e.id), eq(timeEntry.userId, user.id)))
+        }
+        if (notEnded.length > 0) {
+          entries = await tx
+            .select({
+              id: timeEntry.id,
+              userId: timeEntry.userId,
+              startedAt: timeEntry.startedAt,
+              endedAt: timeEntry.endedAt,
+              description: timeEntry.description,
+            })
+            .from(timeEntry)
+            .where(
+              and(
+                eq(timeEntry.userId, user.id),
+                gte(timeEntry.startedAt, dayBegin),
+                or(isNull(timeEntry.endedAt), lte(timeEntry.endedAt, dayEnd)),
+              ),
+            )
+        }
+      }
+
+      return entries.toSorted((a, b) => b.startedAt.compare(a.startedAt))
+    })
   })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
@@ -127,24 +166,36 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
     const dayOrMonthQuery = dayOrMonthExpr.mapWith(Number)
 
-    const totalQuery = sql`SUM(EXTRACT(EPOCH FROM (${timeEntry.endedAt} - ${timeEntry.startedAt})))`
+    const effectiveEndedAt = effectiveEndedAtExpr(tzOffsetMinutes)
+
+    const withEffective = db
+      .select({
+        startedAt: timeEntry.startedAt,
+        effectiveEndedAt: effectiveEndedAt.as('effectiveEndedAt'),
+        unit: unitQuery.as('unit'),
+        dayOrMonth: dayOrMonthQuery.as('dayOrMonth'),
+      })
+      .from(timeEntry)
+      .where(and(eq(timeEntry.userId, user.id), gte(timeEntry.startedAt, startDate)))
+      .as('with_effective')
 
     return db
       .select({
-        unit: unitQuery,
-        dayOrMonth: dayOrMonthQuery,
-        total: totalQuery.mapWith(Number),
+        unit: withEffective.unit,
+        dayOrMonth: withEffective.dayOrMonth,
+        total:
+          sql<number>`SUM(EXTRACT(EPOCH FROM (${withEffective.effectiveEndedAt} - ${withEffective.startedAt})))`.mapWith(
+            Number,
+          ),
       })
-      .from(timeEntry)
+      .from(withEffective)
       .where(
         and(
-          eq(timeEntry.userId, user.id),
-          isNotNull(timeEntry.endedAt),
-          gte(timeEntry.startedAt, startDate),
-          lte(timeEntry.endedAt, endDate),
+          isNotNull(withEffective.effectiveEndedAt),
+          lte(withEffective.effectiveEndedAt, endDate.toISOString()),
         ),
       )
-      .groupBy(sql`1`, sql`2`)
+      .groupBy(withEffective.unit, withEffective.dayOrMonth)
   })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })

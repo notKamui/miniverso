@@ -306,6 +306,14 @@ export namespace UTCTime {
     return { y, m, d }
   }
 
+  export function todayKey(tzOffsetMinutes: number): DayKey {
+    const virtualNow = new Date(Date.now() - tzOffsetMinutes * 60 * 1000)
+    const y = virtualNow.getUTCFullYear()
+    const m = String(virtualNow.getUTCMonth() + 1).padStart(2, '0')
+    const d = String(virtualNow.getUTCDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
   export function localDayRange(dayKey: string, tzOffsetMinutes: number) {
     const { y, m, d } = UTCTime.parseDayKey(dayKey)
     const offsetMs = tzOffsetMinutes * 60 * 1000
