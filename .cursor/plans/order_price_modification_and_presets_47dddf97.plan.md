@@ -15,9 +15,11 @@ isProject: false
 ## Target behavior
 
 1. **After choosing products**, user can apply a **price modification** to all line items:
-  - **Direction**: increase or decrease.
-  - **Kind**: flat (fixed amount per unit) or relative (percentage).
-  - **Value**: number (e.g. 5 for €5 or 10 for 10%).
+
+- **Direction**: increase or decrease.
+- **Kind**: flat (fixed amount per unit) or relative (percentage).
+- **Value**: number (e.g. 5 for €5 or 10 for 10%).
+
 2. Modified unit prices are shown in the items list and in totals; on submit, those prices are sent and stored.
 3. User can **save** the current modification as a **preset** (name) and later **select a preset** to apply (e.g. "Wholesale -15%", "Event +5€").
 
@@ -42,8 +44,6 @@ flowchart LR
   Submit --> CreateOrder
   PresetsCRUD --> Mod
 ```
-
-
 
 - **Client**: Holds optional per-item override `unitPriceTaxFree` (or a single modification that is applied to compute overrides). Submits `items: [{ productId, quantity, unitPriceTaxFree? }]`.
 - **Server**: Create order accepts optional `unitPriceTaxFree` per item; if present, use it (and product `vatPercent` for tax-incl); else use product `priceTaxFree`. Presets stored in DB; CRUD API for list/create/update/delete.
@@ -119,4 +119,3 @@ flowchart LR
 - **Empty cart**: Disable “Apply” / preset apply when there are no items.
 - **Rounding**: Store and display with 2 decimals (existing money scale). Use the same rounding when applying modification (e.g. `toFixed(2)` before storing in overrides).
 - **Preset delete**: If user deletes a preset, order cart only loses the preset option; any already-applied prices remain (they are stored as overrides on items).
-

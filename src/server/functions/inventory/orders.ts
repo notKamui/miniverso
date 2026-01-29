@@ -419,9 +419,7 @@ export const $createOrder = createServerFn({ method: 'POST' })
             400,
           )
         const unitPriceTaxFree = String(Number(priceTaxFree).toFixed(2))
-        const unitPriceTaxIncluded = String(
-          priceTaxIncluded(priceTaxFree, p.vatPercent).toFixed(2),
-        )
+        const unitPriceTaxIncluded = String(priceTaxIncluded(priceTaxFree, p.vatPercent).toFixed(2))
         await tx.insert(orderItem).values({
           orderId: newOrder.id,
           productId: i.productId,
