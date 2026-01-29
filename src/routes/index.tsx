@@ -67,6 +67,13 @@ const applications: Application[] = [
     },
   },
   {
+    title: 'Inventory',
+    description: 'Manage your inventory and customer orders',
+    link: {
+      to: '/inventory',
+    },
+  },
+  {
     title: 'Admin Dashboard',
     description: 'Manage users and system settings',
     condition: ({ user }) => user?.role === 'admin',

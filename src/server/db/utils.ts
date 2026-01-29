@@ -2,6 +2,9 @@ import type { AnyPgTable, PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { count, eq, getTableColumns, type InferSelectModel, type SQL, sql } from 'drizzle-orm'
 import { db } from '@/server/db'
 
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
+export type DbOrTransaction = Transaction | typeof db
+
 export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
   values: T,
 ) => T[number] | null

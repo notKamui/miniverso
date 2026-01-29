@@ -36,6 +36,55 @@
       "when": 1768948436300,
       "tag": "0004_add_time_entry_tags",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769263000165,
+      "tag": "0005_add_inventory",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769271224733,
+      "tag": "0006_inventory_reference_prefix_archived",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1769374639956,
+      "tag": "0007_add_inventory_cash",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769378033941,
+      "tag": "0008_inventory_add_setting_remove_prefix_sort_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1769618117009,
+      "tag": "0009_product_bundles",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1769679502893,
+      "tag": "0010_add_order_price_modification_preset",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1769696845325,
+      "tag": "0011_add_order_item_price_modifications",
+      "breakpoints": true
     }
   ]
 }

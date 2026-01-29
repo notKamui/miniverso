@@ -2,9 +2,18 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  type VisibilityState,
   type Row,
   useReactTable,
 } from '@tanstack/react-table'
+import * as React from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -23,6 +32,8 @@ export type DataTableProps<TData, TValue> = {
   className?: string
   onRowClick?: (row: TData) => void
   onRowDoubleClick?: (row: TData) => void
+  enableColumnHiding?: boolean
+  toolbarSlot?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -32,18 +43,59 @@ export function DataTable<TData, TValue>({
   className,
   onRowClick,
   onRowDoubleClick,
+  enableColumnHiding = true,
+  toolbarSlot,
 }: DataTableProps<TData, TValue>) {
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+
   const table = useReactTable({
     columns,
     data,
     getCoreRowModel: getCoreRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: { columnVisibility },
   })
 
   const headerGroups = table.getHeaderGroups()
   const rows = table.getRowModel().rows
+  const hideableColumns = enableColumnHiding
+    ? table.getAllLeafColumns().filter((c) => c.getCanHide())
+    : []
+  const showHeaderBar = Boolean(toolbarSlot) || hideableColumns.length > 0
 
   return (
     <div className={cn('rounded-md border', className)}>
+      {showHeaderBar && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
+          <div className="flex flex-wrap items-center gap-2">{toolbarSlot}</div>
+          {hideableColumns.length > 0 && (
+            <div className="shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {hideableColumns.map((col) => {
+                    const label =
+                      typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={col.id}
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(checked) => col.toggleVisibility(Boolean(checked))}
+                      >
+                        {label}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
+      )}
       <Table>
         <TableHeader>
           {headerGroups.map((group) => (

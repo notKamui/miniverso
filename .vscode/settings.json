@@ -1,5 +1,6 @@
 {
   "typescript.experimental.useTsgo": true,
+  "typescript.preferences.importModuleSpecifierPreference": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
@@ -24,6 +25,7 @@
   "biome.enabled": false,
   "oxc.enable": true,
   "oxc.typeAware": true,
+  "oxc.unusedDisableDirectives": "warn",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always",

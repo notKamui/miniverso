@@ -14,15 +14,26 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
 import { Route as AuthedTimeRouteRouteImport } from './routes/_authed/time/route'
+import { Route as AuthedInventoryRouteRouteImport } from './routes/_authed/inventory/route'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
+import { Route as AuthedInventoryIndexRouteImport } from './routes/_authed/inventory/index'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminImportRouteImport } from './routes/api/admin/import'
 import { Route as ApiAdminExportRouteImport } from './routes/api/admin/export'
 import { Route as AuthedTimeChar123DayChar125RouteImport } from './routes/_authed/time/{-$day}'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
+import { Route as AuthedInventoryStatsRouteImport } from './routes/_authed/inventory/stats'
+import { Route as AuthedInventorySettingsRouteImport } from './routes/_authed/inventory/settings'
+import { Route as AuthedInventoryCashRouteImport } from './routes/_authed/inventory/cash'
 import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
 import { Route as AuthedAdminExportRouteImport } from './routes/_authed/admin/export'
+import { Route as AuthedInventoryOrdersRouteRouteImport } from './routes/_authed/inventory/orders/route'
+import { Route as AuthedInventoryOrdersIndexRouteImport } from './routes/_authed/inventory/orders/index'
+import { Route as AuthedInventoryProductsNewRouteImport } from './routes/_authed/inventory/products/new'
+import { Route as AuthedInventoryProductsProductIdRouteImport } from './routes/_authed/inventory/products/$productId'
+import { Route as AuthedInventoryOrdersNewRouteImport } from './routes/_authed/inventory/orders/new'
+import { Route as AuthedInventoryOrdersOrderIdRouteImport } from './routes/_authed/inventory/orders/$orderId'
 
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
@@ -48,10 +59,20 @@ const AuthedTimeRouteRoute = AuthedTimeRouteRouteImport.update({
   path: '/time',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
+const AuthedInventoryRouteRoute = AuthedInventoryRouteRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AuthedRouteRoute,
+} as any)
 const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthedRouteRoute,
+} as any)
+const AuthedInventoryIndexRoute = AuthedInventoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedInventoryRouteRoute,
 } as any)
 const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   id: '/',
@@ -84,6 +105,21 @@ const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => AuthedTimeRouteRoute,
 } as any)
+const AuthedInventoryStatsRoute = AuthedInventoryStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
+const AuthedInventorySettingsRoute = AuthedInventorySettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
+const AuthedInventoryCashRoute = AuthedInventoryCashRouteImport.update({
+  id: '/cash',
+  path: '/cash',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
 const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -94,21 +130,68 @@ const AuthedAdminExportRoute = AuthedAdminExportRouteImport.update({
   path: '/export',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedInventoryOrdersRouteRoute =
+  AuthedInventoryOrdersRouteRouteImport.update({
+    id: '/orders',
+    path: '/orders',
+    getParentRoute: () => AuthedInventoryRouteRoute,
+  } as any)
+const AuthedInventoryOrdersIndexRoute =
+  AuthedInventoryOrdersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedInventoryOrdersRouteRoute,
+  } as any)
+const AuthedInventoryProductsNewRoute =
+  AuthedInventoryProductsNewRouteImport.update({
+    id: '/products/new',
+    path: '/products/new',
+    getParentRoute: () => AuthedInventoryRouteRoute,
+  } as any)
+const AuthedInventoryProductsProductIdRoute =
+  AuthedInventoryProductsProductIdRouteImport.update({
+    id: '/products/$productId',
+    path: '/products/$productId',
+    getParentRoute: () => AuthedInventoryRouteRoute,
+  } as any)
+const AuthedInventoryOrdersNewRoute =
+  AuthedInventoryOrdersNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthedInventoryOrdersRouteRoute,
+  } as any)
+const AuthedInventoryOrdersOrderIdRoute =
+  AuthedInventoryOrdersOrderIdRouteImport.update({
+    id: '/$orderId',
+    path: '/$orderId',
+    getParentRoute: () => AuthedInventoryOrdersRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AuthedAdminRouteRouteWithChildren
+  '/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/time': typeof AuthedTimeRouteRouteWithChildren
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
+  '/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
+  '/inventory/cash': typeof AuthedInventoryCashRoute
+  '/inventory/settings': typeof AuthedInventorySettingsRoute
+  '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
   '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AuthedAdminIndexRoute
+  '/inventory/': typeof AuthedInventoryIndexRoute
+  '/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
+  '/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
+  '/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
+  '/inventory/products/new': typeof AuthedInventoryProductsNewRoute
+  '/inventory/orders/': typeof AuthedInventoryOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,46 +200,77 @@ export interface FileRoutesByTo {
   '/auth/$pathname': typeof AuthPathnameRoute
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
+  '/inventory/cash': typeof AuthedInventoryCashRoute
+  '/inventory/settings': typeof AuthedInventorySettingsRoute
+  '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
   '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AuthedAdminIndexRoute
+  '/inventory': typeof AuthedInventoryIndexRoute
+  '/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
+  '/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
+  '/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
+  '/inventory/products/new': typeof AuthedInventoryProductsNewRoute
+  '/inventory/orders': typeof AuthedInventoryOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
+  '/_authed/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/_authed/time': typeof AuthedTimeRouteRouteWithChildren
   '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
+  '/_authed/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/_authed/admin/export': typeof AuthedAdminExportRoute
   '/_authed/admin/users': typeof AuthedAdminUsersRoute
+  '/_authed/inventory/cash': typeof AuthedInventoryCashRoute
+  '/_authed/inventory/settings': typeof AuthedInventorySettingsRoute
+  '/_authed/inventory/stats': typeof AuthedInventoryStatsRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
   '/_authed/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
+  '/_authed/inventory/': typeof AuthedInventoryIndexRoute
+  '/_authed/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
+  '/_authed/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
+  '/_authed/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
+  '/_authed/inventory/products/new': typeof AuthedInventoryProductsNewRoute
+  '/_authed/inventory/orders/': typeof AuthedInventoryOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/inventory'
     | '/time'
     | '/account/$pathname'
     | '/auth/$pathname'
+    | '/inventory/orders'
     | '/admin/export'
     | '/admin/users'
+    | '/inventory/cash'
+    | '/inventory/settings'
+    | '/inventory/stats'
     | '/time/stats'
     | '/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/admin/'
+    | '/inventory/'
+    | '/inventory/orders/$orderId'
+    | '/inventory/orders/new'
+    | '/inventory/products/$productId'
+    | '/inventory/products/new'
+    | '/inventory/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -165,28 +279,48 @@ export interface FileRouteTypes {
     | '/auth/$pathname'
     | '/admin/export'
     | '/admin/users'
+    | '/inventory/cash'
+    | '/inventory/settings'
+    | '/inventory/stats'
     | '/time/stats'
     | '/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/admin'
+    | '/inventory'
+    | '/inventory/orders/$orderId'
+    | '/inventory/orders/new'
+    | '/inventory/products/$productId'
+    | '/inventory/products/new'
+    | '/inventory/orders'
   id:
     | '__root__'
     | '/'
     | '/_authed'
     | '/_authed/admin'
+    | '/_authed/inventory'
     | '/_authed/time'
     | '/account/$pathname'
     | '/auth/$pathname'
+    | '/_authed/inventory/orders'
     | '/_authed/admin/export'
     | '/_authed/admin/users'
+    | '/_authed/inventory/cash'
+    | '/_authed/inventory/settings'
+    | '/_authed/inventory/stats'
     | '/_authed/time/stats'
     | '/_authed/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/_authed/admin/'
+    | '/_authed/inventory/'
+    | '/_authed/inventory/orders/$orderId'
+    | '/_authed/inventory/orders/new'
+    | '/_authed/inventory/products/$productId'
+    | '/_authed/inventory/products/new'
+    | '/_authed/inventory/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,12 +370,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedTimeRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
+    '/_authed/inventory': {
+      id: '/_authed/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AuthedInventoryRouteRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
     '/_authed/admin': {
       id: '/_authed/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthedAdminRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/inventory/': {
+      id: '/_authed/inventory/'
+      path: '/'
+      fullPath: '/inventory/'
+      preLoaderRoute: typeof AuthedInventoryIndexRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
     }
     '/_authed/admin/': {
       id: '/_authed/admin/'
@@ -285,6 +433,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedTimeStatsRouteImport
       parentRoute: typeof AuthedTimeRouteRoute
     }
+    '/_authed/inventory/stats': {
+      id: '/_authed/inventory/stats'
+      path: '/stats'
+      fullPath: '/inventory/stats'
+      preLoaderRoute: typeof AuthedInventoryStatsRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/settings': {
+      id: '/_authed/inventory/settings'
+      path: '/settings'
+      fullPath: '/inventory/settings'
+      preLoaderRoute: typeof AuthedInventorySettingsRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/cash': {
+      id: '/_authed/inventory/cash'
+      path: '/cash'
+      fullPath: '/inventory/cash'
+      preLoaderRoute: typeof AuthedInventoryCashRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
     '/_authed/admin/users': {
       id: '/_authed/admin/users'
       path: '/users'
@@ -298,6 +467,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/export'
       preLoaderRoute: typeof AuthedAdminExportRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
+    }
+    '/_authed/inventory/orders': {
+      id: '/_authed/inventory/orders'
+      path: '/orders'
+      fullPath: '/inventory/orders'
+      preLoaderRoute: typeof AuthedInventoryOrdersRouteRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/orders/': {
+      id: '/_authed/inventory/orders/'
+      path: '/'
+      fullPath: '/inventory/orders/'
+      preLoaderRoute: typeof AuthedInventoryOrdersIndexRouteImport
+      parentRoute: typeof AuthedInventoryOrdersRouteRoute
+    }
+    '/_authed/inventory/products/new': {
+      id: '/_authed/inventory/products/new'
+      path: '/products/new'
+      fullPath: '/inventory/products/new'
+      preLoaderRoute: typeof AuthedInventoryProductsNewRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/products/$productId': {
+      id: '/_authed/inventory/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/inventory/products/$productId'
+      preLoaderRoute: typeof AuthedInventoryProductsProductIdRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/orders/new': {
+      id: '/_authed/inventory/orders/new'
+      path: '/new'
+      fullPath: '/inventory/orders/new'
+      preLoaderRoute: typeof AuthedInventoryOrdersNewRouteImport
+      parentRoute: typeof AuthedInventoryOrdersRouteRoute
+    }
+    '/_authed/inventory/orders/$orderId': {
+      id: '/_authed/inventory/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/inventory/orders/$orderId'
+      preLoaderRoute: typeof AuthedInventoryOrdersOrderIdRouteImport
+      parentRoute: typeof AuthedInventoryOrdersRouteRoute
     }
   }
 }
@@ -317,6 +528,47 @@ const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
 const AuthedAdminRouteRouteWithChildren =
   AuthedAdminRouteRoute._addFileChildren(AuthedAdminRouteRouteChildren)
 
+interface AuthedInventoryOrdersRouteRouteChildren {
+  AuthedInventoryOrdersOrderIdRoute: typeof AuthedInventoryOrdersOrderIdRoute
+  AuthedInventoryOrdersNewRoute: typeof AuthedInventoryOrdersNewRoute
+  AuthedInventoryOrdersIndexRoute: typeof AuthedInventoryOrdersIndexRoute
+}
+
+const AuthedInventoryOrdersRouteRouteChildren: AuthedInventoryOrdersRouteRouteChildren =
+  {
+    AuthedInventoryOrdersOrderIdRoute: AuthedInventoryOrdersOrderIdRoute,
+    AuthedInventoryOrdersNewRoute: AuthedInventoryOrdersNewRoute,
+    AuthedInventoryOrdersIndexRoute: AuthedInventoryOrdersIndexRoute,
+  }
+
+const AuthedInventoryOrdersRouteRouteWithChildren =
+  AuthedInventoryOrdersRouteRoute._addFileChildren(
+    AuthedInventoryOrdersRouteRouteChildren,
+  )
+
+interface AuthedInventoryRouteRouteChildren {
+  AuthedInventoryOrdersRouteRoute: typeof AuthedInventoryOrdersRouteRouteWithChildren
+  AuthedInventoryCashRoute: typeof AuthedInventoryCashRoute
+  AuthedInventorySettingsRoute: typeof AuthedInventorySettingsRoute
+  AuthedInventoryStatsRoute: typeof AuthedInventoryStatsRoute
+  AuthedInventoryIndexRoute: typeof AuthedInventoryIndexRoute
+  AuthedInventoryProductsProductIdRoute: typeof AuthedInventoryProductsProductIdRoute
+  AuthedInventoryProductsNewRoute: typeof AuthedInventoryProductsNewRoute
+}
+
+const AuthedInventoryRouteRouteChildren: AuthedInventoryRouteRouteChildren = {
+  AuthedInventoryOrdersRouteRoute: AuthedInventoryOrdersRouteRouteWithChildren,
+  AuthedInventoryCashRoute: AuthedInventoryCashRoute,
+  AuthedInventorySettingsRoute: AuthedInventorySettingsRoute,
+  AuthedInventoryStatsRoute: AuthedInventoryStatsRoute,
+  AuthedInventoryIndexRoute: AuthedInventoryIndexRoute,
+  AuthedInventoryProductsProductIdRoute: AuthedInventoryProductsProductIdRoute,
+  AuthedInventoryProductsNewRoute: AuthedInventoryProductsNewRoute,
+}
+
+const AuthedInventoryRouteRouteWithChildren =
+  AuthedInventoryRouteRoute._addFileChildren(AuthedInventoryRouteRouteChildren)
+
 interface AuthedTimeRouteRouteChildren {
   AuthedTimeStatsRoute: typeof AuthedTimeStatsRoute
   AuthedTimeChar123DayChar125Route: typeof AuthedTimeChar123DayChar125Route
@@ -333,11 +585,13 @@ const AuthedTimeRouteRouteWithChildren = AuthedTimeRouteRoute._addFileChildren(
 
 interface AuthedRouteRouteChildren {
   AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
+  AuthedInventoryRouteRoute: typeof AuthedInventoryRouteRouteWithChildren
   AuthedTimeRouteRoute: typeof AuthedTimeRouteRouteWithChildren
 }
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
+  AuthedInventoryRouteRoute: AuthedInventoryRouteRouteWithChildren,
   AuthedTimeRouteRoute: AuthedTimeRouteRouteWithChildren,
 }
 
