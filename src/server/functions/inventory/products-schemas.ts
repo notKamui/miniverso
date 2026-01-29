@@ -14,9 +14,7 @@ export const productUpsertBaseSchema = z.object({
   kind: z.enum(['simple', 'bundle']).default('simple'),
   quantity: z.number().int().min(0),
   tagIds: z.array(z.uuid()).default([]),
-  productionCosts: z
-    .array(z.object({ labelId: z.uuid(), amount: z.number().min(0) }))
-    .default([]),
+  productionCosts: z.array(z.object({ labelId: z.uuid(), amount: z.number().min(0) })).default([]),
   bundleItems: z.array(bundleItemPayloadSchema).default([]),
 })
 

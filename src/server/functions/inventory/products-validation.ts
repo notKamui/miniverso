@@ -1,11 +1,7 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import type { DbOrTransaction } from '@/server/db'
-import {
-  inventoryProductionCostLabel,
-  inventoryTag,
-  product,
-} from '@/server/db/schema/inventory'
 import { badRequest } from '@/lib/utils/response'
+import { inventoryProductionCostLabel, inventoryTag, product } from '@/server/db/schema/inventory'
 
 export async function validateProductTagIds(
   dbOrTx: DbOrTransaction,
@@ -35,8 +31,7 @@ export async function validateProductionCostLabelIds(
         inArray(inventoryProductionCostLabel.id, labelIds),
       ),
     )
-  if (labels.length !== labelIds.length)
-    badRequest('Invalid production cost labelIds', 400)
+  if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
 }
 
 export async function validateBundleComponents(

@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { OrderDetail } from '@/components/apps/inventory/order-detail'
 import { title } from '@/components/ui/typography'
-import { getOrderQueryOptions } from '@/server/functions/inventory/orders'
+import { getOrderQueryOptions } from '@/server/functions/inventory/orders-queries'
 
 export const Route = createFileRoute('/_authed/inventory/orders/$orderId')({
   loader: async ({ context: { queryClient }, params: { orderId } }) => {

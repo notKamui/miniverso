@@ -12,7 +12,7 @@ import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { formatMoney } from '@/lib/utils/format-money'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
-import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/orders'
+import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/orders-queries'
 
 const searchSchema = z.object({
   page: z.number().int().min(1).default(1),

@@ -7,10 +7,8 @@ import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { title } from '@/components/ui/typography'
 import { getRange } from '@/lib/utils/date-range'
 import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventory/production-cost-labels'
-import {
-  getInventoryStatsQueryOptions,
-  getInventoryStockStatsQueryOptions,
-} from '@/server/functions/inventory/stats'
+import { getInventoryStatsQueryOptions } from '@/server/functions/inventory/stats-sales'
+import { getInventoryStockStatsQueryOptions } from '@/server/functions/inventory/stats-stock'
 
 const searchSchema = z.object({
   preset: z.enum(['today', 'week', 'month', 'year', 'lastYear']).default('month'),

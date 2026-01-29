@@ -15,9 +15,10 @@ import {
   orderPriceModificationPresetsQueryKey,
 } from '@/server/functions/inventory/order-price-modification-presets'
 import { getOrderReferencePrefixesQueryOptions } from '@/server/functions/inventory/order-reference-prefixes'
-import { $createOrder, ordersQueryKey } from '@/server/functions/inventory/orders'
+import { $createOrder } from '@/server/functions/inventory/orders-mutations'
+import { ordersQueryKey } from '@/server/functions/inventory/orders-queries'
 import { productsQueryKey } from '@/server/functions/inventory/products'
-import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
+import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats-stock'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 import { PrefixCombobox } from './comboboxes'
 import { NextReference } from './next-reference'

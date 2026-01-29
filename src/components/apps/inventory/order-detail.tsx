@@ -18,11 +18,10 @@ import {
   $deleteOrder,
   $markOrderPaid,
   $markOrderSent,
-  getOrderQueryOptions,
-  ordersQueryKey,
-} from '@/server/functions/inventory/orders'
+} from '@/server/functions/inventory/orders-mutations'
+import { getOrderQueryOptions, ordersQueryKey } from '@/server/functions/inventory/orders-queries'
 import { productsQueryKey } from '@/server/functions/inventory/products'
-import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats'
+import { inventoryStockStatsQueryKey } from '@/server/functions/inventory/stats-stock'
 
 type OrderItemMod = { type: string; kind: string; value: number }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { computeRequiredQuantities } from '@/server/functions/inventory/orders'
+import { computeRequiredQuantities } from '@/server/functions/inventory/orders-bundles'
 
 describe('computeRequiredQuantities', () => {
   it('returns quantity for simple product only', () => {
