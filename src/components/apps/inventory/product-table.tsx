@@ -78,6 +78,7 @@ export function ProductTable({
             to="/inventory/products/$productId"
             params={{ productId: p.id }}
             className="font-medium hover:underline"
+            title={p.name}
           >
             {p.name}
           </Link>

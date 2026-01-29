@@ -16,7 +16,7 @@ const searchSchema = z.object({
   page: z.number().int().min(1).default(1),
   size: z.number().int().min(1).max(100).default(20),
   q: z.string().optional(),
-  archived: z.enum(['all', 'active', 'archived']).default('all'),
+  archived: z.enum(['all', 'active', 'archived']).default('active'),
   tagIds: z.array(z.uuid()).optional(),
 })
 
