@@ -2,24 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { ProductFormValues } from '@/lib/forms/product'
-import type { DataFromQueryOptions, ReactForm } from '@/lib/utils/types'
+import type { ReactForm } from '@/lib/utils/types'
+import { ProductCombobox } from '@/components/apps/inventory/order-cart/comboboxes'
 import { Button } from '@/components/ui/button'
-import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { getProductsQueryOptions } from '@/server/functions/inventory/products'
 
-type ProductOption = DataFromQueryOptions<
-  ReturnType<typeof getProductsQueryOptions>
->['items'][number]
-
 type Props = {
   form: ReactForm<ProductFormValues>
   productId?: string
 }
-
-const ProductCombobox = createCombobox<ProductOption>()
 
 export function ProductFormBundleItems({ form, productId }: Props) {
   const [open, setOpen] = useState(false)
