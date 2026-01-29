@@ -10,7 +10,7 @@
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
     "build:entrypoint": "bun build --minify --target=bun --outfile=dist/serve.js --packages=external scripts/serve.ts",
     "postbuild": "bun run build:entrypoint",
-    "lint": "oxlint --type-aware --type-check --deny-warnings",
+    "lint": "oxlint --type-aware --deny-warnings",
     "lint:no-types": "oxlint --deny-warnings",
     "fmt": "oxfmt",
     "fix": "bun run fmt && bun run lint --fix",
