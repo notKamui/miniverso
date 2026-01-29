@@ -182,6 +182,15 @@ export const $getInventoryStockStats = createServerFn({ method: 'GET' })
         and(eq(product.userId, user.id), isNull(product.archivedAt), eq(product.kind, 'simple')),
       )
 
+    if (products.length === 0) {
+      return {
+        totalWorthExTax: 0,
+        totalWorthIncTax: 0,
+        totalProdCost: 0,
+        potentialBenefit: 0,
+      }
+    }
+
     const productIds = products.map((p) => p.id)
     const costConditions = [inArray(productProductionCost.productId, productIds)]
     if (labelIds != null && labelIds.length > 0) {

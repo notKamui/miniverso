@@ -38,7 +38,7 @@ describe('computeRequiredQuantities', () => {
     expect(result.get('p1')).toBe(2)
   })
 
-  it('mixed order: simple + bundle sharing a component deducts sum', () => {
+  it('mixed order: simple + bundle sharing a component adds quantities', () => {
     const items = [
       { productId: 'p1', quantity: 5 },
       { productId: 'bundle1', quantity: 2 },

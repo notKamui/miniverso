@@ -18,7 +18,7 @@ const TagCombobox = createCombobox<Tag, true>()
 export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
   return (
     <div className="space-y-2">
-      <Label htmlFor="tagsIds">Tags</Label>
+      <Label htmlFor="tagIds">Tags</Label>
       <form.Field name="tagIds">
         {(field) => {
           const tagIds = field.state.value ?? []
@@ -26,7 +26,7 @@ export function ProductFormTagIds({ form, tags, chipsAnchorRef }: Props) {
           return (
             <TagCombobox.Root
               name="tagIds"
-              id="tagsIds"
+              id="tagIds"
               multiple
               items={tags}
               value={selectedTags}
