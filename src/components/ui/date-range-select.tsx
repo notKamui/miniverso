@@ -1,5 +1,4 @@
 import { CalendarIcon } from 'lucide-react'
-import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -38,7 +37,6 @@ export function DateRangeSelect({
   showPresets = true,
   className,
 }: DateRangeSelectProps) {
-  const [open, setOpen] = React.useState(false)
   const from = startDate ? new Date(startDate) : undefined
   const to = endDate ? new Date(endDate) : undefined
 
@@ -53,7 +51,8 @@ export function DateRangeSelect({
         startDate: range.from.toISOString(),
         endDate: range.to.toISOString(),
       })
-      setOpen(false)
+    } else {
+      onChange({ startDate: '', endDate: '' })
     }
   }
 
@@ -77,7 +76,7 @@ export function DateRangeSelect({
           ))}
         </div>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
