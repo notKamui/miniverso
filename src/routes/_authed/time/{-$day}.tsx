@@ -3,8 +3,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
-import { Time } from '@/lib/utils/time'
-import { $deleteTimeEntries, getTimeEntriesByDayQueryOptions } from '@/server/functions/time-entry'
+import { Time, UTCTime } from '@/lib/utils/time'
+import {
+  $updateTimeEntry,
+  getTimeEntriesByDayQueryOptions,
+  timeEntriesQueryKey,
+  timeStatsQueryKey,
+} from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
   validateSearch: z.object({
@@ -25,7 +30,12 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
     if (!date.isToday()) {
       const notEnded = entries.filter((e) => !e.endedAt)
       if (notEnded.length > 0) {
-        await $deleteTimeEntries({ data: { ids: notEnded.map((e) => e.id) } })
+        const dayEnd = UTCTime.localDayRange(date.formatDayKey(), tzOffsetMinutes).end
+        await Promise.all(
+          notEnded.map((e) => $updateTimeEntry({ data: { id: e.id, endedAt: dayEnd } })),
+        )
+        await queryClient.invalidateQueries({ queryKey: timeEntriesQueryKey })
+        await queryClient.invalidateQueries({ queryKey: timeStatsQueryKey })
       }
     }
 
