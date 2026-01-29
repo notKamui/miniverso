@@ -462,109 +462,102 @@ export function OrderCart() {
               {hasItems && (
                 <div className="space-y-2">
                   <Label>Price modification</Label>
-                  <div className="flex flex-wrap items-end gap-2 rounded-md border p-3">
-                    <div className="flex flex-wrap items-end gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Preset</Label>
-                        <PresetCombobox.Root
-                          items={presets}
-                          value={selectedPreset}
-                          onValueChange={(p) => handleApplyPreset(p)}
-                          itemToStringLabel={presetLabel}
-                        >
-                          <PresetCombobox.Input placeholder="Apply preset…" className="w-44" />
-                          <PresetCombobox.Content>
-                            <PresetCombobox.List>
-                              {(p) => (
-                                <PresetCombobox.Item key={p.id} value={p}>
-                                  {presetLabel(p)}
-                                </PresetCombobox.Item>
-                              )}
-                            </PresetCombobox.List>
-                            <PresetCombobox.Empty>
-                              No presets. Add in Settings.
-                            </PresetCombobox.Empty>
-                          </PresetCombobox.Content>
-                        </PresetCombobox.Root>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Type</Label>
-                        <Select
-                          value={modification.type}
-                          onValueChange={(v) =>
-                            setModification((m) => ({ ...m, type: v as PriceModification['type'] }))
-                          }
-                        >
-                          <SelectTrigger className="w-28">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="increase">Increase</SelectItem>
-                            <SelectItem value="decrease">Decrease</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Kind</Label>
-                        <Select
-                          value={modification.kind}
-                          onValueChange={(v) =>
-                            setModification((m) => ({ ...m, kind: v as PriceModification['kind'] }))
-                          }
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="flat">Flat</SelectItem>
-                            <SelectItem value="relative">%</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Value</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          step={modification.kind === 'relative' ? 1 : 0.01}
-                          value={modification.value || ''}
-                          onChange={(e) =>
-                            setModification((m) => ({
-                              ...m,
-                              value: Number.parseFloat(e.target.value) || 0,
-                            }))
-                          }
-                          className="w-20"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={applyModification}
-                        disabled={list.length === 0}
+                  <div className="rounded-md border p-3">
+                    <div className="grid grid-cols-[auto_auto_auto_auto_1fr] items-center gap-x-2 gap-y-1">
+                      <Label className="text-xs text-muted-foreground">Preset</Label>
+                      <Label className="text-xs text-muted-foreground">Type</Label>
+                      <Label className="text-xs text-muted-foreground">Kind</Label>
+                      <Label className="text-xs text-muted-foreground">Value</Label>
+                      <div />
+                      <PresetCombobox.Root
+                        items={presets}
+                        value={selectedPreset}
+                        onValueChange={(p) => handleApplyPreset(p)}
+                        itemToStringLabel={presetLabel}
                       >
-                        Apply
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearModification}
-                        disabled={!list.some((i) => i.unitPriceTaxFree !== undefined)}
+                        <PresetCombobox.Input placeholder="Apply preset…" className="w-44" />
+                        <PresetCombobox.Content>
+                          <PresetCombobox.List>
+                            {(p) => (
+                              <PresetCombobox.Item key={p.id} value={p}>
+                                {presetLabel(p)}
+                              </PresetCombobox.Item>
+                            )}
+                          </PresetCombobox.List>
+                          <PresetCombobox.Empty>No presets. Add in Settings.</PresetCombobox.Empty>
+                        </PresetCombobox.Content>
+                      </PresetCombobox.Root>
+                      <Select
+                        value={modification.type}
+                        onValueChange={(v) =>
+                          setModification((m) => ({ ...m, type: v as PriceModification['type'] }))
+                        }
                       >
-                        Clear
-                      </Button>
-                      {list.some((i) => i.unitPriceTaxFree !== undefined) && (
+                        <SelectTrigger className="w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="increase">Increase</SelectItem>
+                          <SelectItem value="decrease">Decrease</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={modification.kind}
+                        onValueChange={(v) =>
+                          setModification((m) => ({ ...m, kind: v as PriceModification['kind'] }))
+                        }
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="flat">Flat</SelectItem>
+                          <SelectItem value="relative">%</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={modification.kind === 'relative' ? 1 : 0.01}
+                        value={modification.value || ''}
+                        onChange={(e) =>
+                          setModification((m) => ({
+                            ...m,
+                            value: Number.parseFloat(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20"
+                      />
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
-                          onClick={() => setSavePresetOpen(true)}
+                          onClick={applyModification}
+                          disabled={list.length === 0}
                         >
-                          Save as preset
+                          Apply
                         </Button>
-                      )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearModification}
+                          disabled={!list.some((i) => i.unitPriceTaxFree !== undefined)}
+                        >
+                          Clear
+                        </Button>
+                        {list.some((i) => i.unitPriceTaxFree !== undefined) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSavePresetOpen(true)}
+                          >
+                            Save as preset
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
