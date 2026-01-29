@@ -103,7 +103,7 @@ export function OrderPriceModificationPresetsSection() {
     })
   }
 
-  function handleCreate(e: React.FormEvent) {
+  function handleCreate(e: React.SubmitEvent) {
     e.preventDefault()
     const name = newPreset.name.trim()
     const value = Number.parseFloat(newPreset.value)
@@ -113,7 +113,7 @@ export function OrderPriceModificationPresetsSection() {
     })
   }
 
-  function handleUpdate(e: React.FormEvent) {
+  function handleUpdate(e: React.SubmitEvent) {
     e.preventDefault()
     if (!editingId) return
     const name = editForm.name.trim()
@@ -140,9 +140,13 @@ export function OrderPriceModificationPresetsSection() {
         </>
       }
     >
-      <form onSubmit={handleCreate} className="flex flex-wrap items-center gap-2">
-        <div className="space-y-2">
+      <form onSubmit={handleCreate}>
+        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-x-2 gap-y-1">
           <Label htmlFor="new-preset-name">Name</Label>
+          <Label>Type</Label>
+          <Label>Kind</Label>
+          <Label htmlFor="new-preset-value">Value</Label>
+          <div />
           <Input
             id="new-preset-name"
             value={newPreset.name}
@@ -150,9 +154,6 @@ export function OrderPriceModificationPresetsSection() {
             placeholder="e.g. Wholesale -15%"
             maxLength={200}
           />
-        </div>
-        <div className="space-y-2">
-          <Label>Type</Label>
           <Select
             value={newPreset.type}
             onValueChange={(v) => setNewPreset((p) => ({ ...p, type: v as PresetForm['type'] }))}
@@ -165,9 +166,6 @@ export function OrderPriceModificationPresetsSection() {
               <SelectItem value="decrease">Decrease</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Kind</Label>
           <Select
             value={newPreset.kind}
             onValueChange={(v) => setNewPreset((p) => ({ ...p, kind: v as PresetForm['kind'] }))}
@@ -180,9 +178,6 @@ export function OrderPriceModificationPresetsSection() {
               <SelectItem value="relative">%</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="new-preset-value">Value</Label>
           <Input
             id="new-preset-value"
             type="number"
@@ -193,19 +188,20 @@ export function OrderPriceModificationPresetsSection() {
             placeholder={newPreset.kind === 'relative' ? '10' : '5.00'}
             className="w-24"
           />
+          <Button
+            type="submit"
+            className="h-9"
+            disabled={
+              !newPreset.name.trim() ||
+              !newPreset.value ||
+              Number.parseFloat(newPreset.value) <= 0 ||
+              createMut.isPending
+            }
+          >
+            <PlusIcon className="size-4" />
+            Add
+          </Button>
         </div>
-        <Button
-          type="submit"
-          disabled={
-            !newPreset.name.trim() ||
-            !newPreset.value ||
-            Number.parseFloat(newPreset.value) <= 0 ||
-            createMut.isPending
-          }
-        >
-          <PlusIcon className="size-4" />
-          Add
-        </Button>
       </form>
 
       <Table>
