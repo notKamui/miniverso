@@ -65,7 +65,7 @@ function AddModificationPopover({
           Add modification
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start">
+      <PopoverContent className="w-96" align="start">
         <div className="space-y-3">
           <div className="space-y-1">
             <Label className="text-xs">Preset</Label>
@@ -94,7 +94,7 @@ function AddModificationPopover({
             </PresetCombobox.Root>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-1">
               <Label className="text-xs">Type</Label>
               <Select
                 value={mod.type}
@@ -102,7 +102,7 @@ function AddModificationPopover({
                   setMod((m) => ({ ...m, type: v as PriceModification['type'] }))
                 }
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 min-w-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -111,7 +111,7 @@ function AddModificationPopover({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-1">
               <Label className="text-xs">Kind</Label>
               <Select
                 value={mod.kind}
@@ -119,7 +119,7 @@ function AddModificationPopover({
                   setMod((m) => ({ ...m, kind: v as PriceModification['kind'] }))
                 }
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-9 min-w-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -128,7 +128,7 @@ function AddModificationPopover({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-1">
               <Label className="text-xs">Value</Label>
               <Input
                 type="number"
