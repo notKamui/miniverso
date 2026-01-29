@@ -5,7 +5,7 @@ import { and, asc, eq, exists, inArray, ilike, isNotNull, isNull, or } from 'dri
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
-import { db, paginated, takeUniqueOrNull } from '@/server/db'
+import { db, paginated, takeUniqueOr, takeUniqueOrNull } from '@/server/db'
 import {
   inventoryProductionCostLabel,
   inventoryTag,
@@ -14,9 +14,14 @@ import {
   productProductionCost,
   productTag,
 } from '@/server/db/schema/inventory'
-import { takeUniqueOr } from '@/server/db/utils'
 import { $$auth } from '@/server/middlewares/auth'
 import { $$rateLimit } from '@/server/middlewares/rate-limit'
+import { productCreateSchema, productUpdateSchema } from './products-schemas'
+import {
+  validateBundleComponents,
+  validateProductionCostLabelIds,
+  validateProductTagIds,
+} from './products-validation'
 
 export const productsQueryKey = ['products'] as const
 
@@ -188,70 +193,18 @@ export const $getProduct = createServerFn({ method: 'GET' })
     }
   })
 
-const bundleItemPayloadSchema = z.object({
-  productId: z.uuid(),
-  quantity: z.number().int().min(1),
-})
-
-const productUpsertBaseSchema = z.object({
-  name: z.string().min(1).max(2000),
-  description: z.string().max(10_000).optional(),
-  sku: z.string().min(1).max(200),
-  priceTaxFree: z.number().min(0),
-  vatPercent: z.number().min(0).max(100),
-  kind: z.enum(['simple', 'bundle']).default('simple'),
-  quantity: z.number().int().min(0),
-  tagIds: z.array(z.uuid()).default([]),
-  productionCosts: z.array(z.object({ labelId: z.uuid(), amount: z.number().min(0) })).default([]),
-  bundleItems: z.array(bundleItemPayloadSchema).default([]),
-})
-
-const productCreateSchema = productUpsertBaseSchema.refine(
-  (data) => data.kind !== 'bundle' || data.bundleItems.length > 0,
-  { message: 'Bundle must have at least one component', path: ['bundleItems'] },
-)
-
 export const $createProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(productCreateSchema))
   .handler(async ({ context: { user }, data }) => {
-    if (data.tagIds.length > 0) {
-      const tags = await db
-        .select({ id: inventoryTag.id })
-        .from(inventoryTag)
-        .where(and(eq(inventoryTag.userId, user.id), inArray(inventoryTag.id, data.tagIds)))
-      if (tags.length !== data.tagIds.length) badRequest('Invalid tagIds', 400)
-    }
-    const labelIds = [...new Set(data.productionCosts.map((c) => c.labelId))]
-    if (labelIds.length > 0) {
-      const labels = await db
-        .select({ id: inventoryProductionCostLabel.id })
-        .from(inventoryProductionCostLabel)
-        .where(
-          and(
-            eq(inventoryProductionCostLabel.userId, user.id),
-            inArray(inventoryProductionCostLabel.id, labelIds),
-          ),
-        )
-      if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
-    }
-
+    await validateProductTagIds(db, user.id, data.tagIds)
+    await validateProductionCostLabelIds(db, user.id, [
+      ...new Set(data.productionCosts.map((c) => c.labelId)),
+    ])
     if (data.kind === 'bundle') {
-      const componentIds = [...new Set(data.bundleItems.map((b) => b.productId))]
-      const components = await db
-        .select({ id: product.id, kind: product.kind })
-        .from(product)
-        .where(
-          and(
-            eq(product.userId, user.id),
-            inArray(product.id, componentIds),
-            isNull(product.archivedAt),
-          ),
-        )
-      if (components.length !== componentIds.length)
-        badRequest('Invalid bundle component productIds', 400)
-      const nonSimple = components.filter((c) => c.kind !== 'simple')
-      if (nonSimple.length > 0) badRequest('Bundle components must be simple products', 400)
+      await validateBundleComponents(db, user.id, [
+        ...new Set(data.bundleItems.map((b) => b.productId)),
+      ])
     }
 
     const quantity = data.kind === 'bundle' ? 0 : data.quantity
@@ -301,39 +254,6 @@ export const $createProduct = createServerFn({ method: 'POST' })
     })
   })
 
-const productUpdateSchema = productUpsertBaseSchema
-  .partial()
-  .extend({
-    id: z.uuid(),
-    archivedAt: z.boolean().optional(),
-  })
-  .superRefine((data, ctx) => {
-    // If switching to bundle, bundleItems must be provided and non-empty.
-    if (data.kind === 'bundle') {
-      if (!data.bundleItems || data.bundleItems.length === 0) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Bundle must have at least one component',
-          path: ['bundleItems'],
-        })
-      }
-      if (data.bundleItems?.some((b) => b.productId === data.id)) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Bundle cannot contain itself',
-          path: ['bundleItems'],
-        })
-      }
-    } else if (data.bundleItems?.some((b) => b.productId === data.id)) {
-      // Even if kind isn't present, never allow self-reference when bundleItems are provided.
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Bundle cannot contain itself',
-        path: ['bundleItems'],
-      })
-    }
-  })
-
 export const $updateProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
   .inputValidator(validate(productUpdateSchema))
@@ -379,21 +299,7 @@ export const $updateProduct = createServerFn({ method: 'POST' })
       if (bundleItems.length === 0) badRequest('Bundle must have at least one component', 400)
       if (bundleItems.some((b) => b.productId === id))
         badRequest('Bundle cannot contain itself', 400)
-      const componentIds = [...new Set(bundleItems.map((b) => b.productId))]
-      const components = await db
-        .select({ id: product.id, kind: product.kind })
-        .from(product)
-        .where(
-          and(
-            eq(product.userId, user.id),
-            inArray(product.id, componentIds),
-            isNull(product.archivedAt),
-          ),
-        )
-      if (components.length !== componentIds.length)
-        badRequest('Invalid bundle component productIds', 400)
-      const nonSimple = components.filter((c) => c.kind !== 'simple')
-      if (nonSimple.length > 0) badRequest('Bundle components must be simple products', 400)
+      await validateBundleComponents(db, user.id, [...new Set(bundleItems.map((b) => b.productId))])
     }
 
     return await db.transaction(async (tx) => {
@@ -420,11 +326,7 @@ export const $updateProduct = createServerFn({ method: 'POST' })
       if (tagIds !== undefined) {
         await tx.delete(productTag).where(eq(productTag.productId, id))
         if (tagIds.length > 0) {
-          const tags = await tx
-            .select({ id: inventoryTag.id })
-            .from(inventoryTag)
-            .where(and(eq(inventoryTag.userId, user.id), inArray(inventoryTag.id, tagIds)))
-          if (tags.length !== tagIds.length) badRequest('Invalid tagIds', 400)
+          await validateProductTagIds(tx, user.id, tagIds)
           await tx.insert(productTag).values(tagIds.map((tagId) => ({ productId: id, tagId })))
         }
       }
@@ -432,16 +334,7 @@ export const $updateProduct = createServerFn({ method: 'POST' })
         await tx.delete(productProductionCost).where(eq(productProductionCost.productId, id))
         if (productionCosts.length > 0) {
           const labelIds = [...new Set(productionCosts.map((c) => c.labelId))]
-          const labels = await tx
-            .select({ id: inventoryProductionCostLabel.id })
-            .from(inventoryProductionCostLabel)
-            .where(
-              and(
-                eq(inventoryProductionCostLabel.userId, user.id),
-                inArray(inventoryProductionCostLabel.id, labelIds),
-              ),
-            )
-          if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
+          await validateProductionCostLabelIds(tx, user.id, labelIds)
           await tx.insert(productProductionCost).values(
             productionCosts.map((c) => ({
               productId: id,
