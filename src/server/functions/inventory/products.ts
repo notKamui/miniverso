@@ -255,48 +255,50 @@ export const $createProduct = createServerFn({ method: 'POST' })
     }
 
     const quantity = data.kind === 'bundle' ? 0 : data.quantity
-    const p = await db
-      .insert(product)
-      .values({
-        userId: user.id,
-        name: data.name,
-        description: data.description ?? null,
-        sku: data.sku,
-        priceTaxFree: String(data.priceTaxFree.toFixed(2)),
-        vatPercent: String(data.vatPercent.toFixed(2)),
-        quantity,
-        kind: data.kind,
-      })
-      .returning(productListFields)
-      .then(
-        takeUniqueOr(() => {
-          throw notFound()
-        }),
-      )
+    return await db.transaction(async (tx) => {
+      const p = await tx
+        .insert(product)
+        .values({
+          userId: user.id,
+          name: data.name,
+          description: data.description ?? null,
+          sku: data.sku,
+          priceTaxFree: String(data.priceTaxFree.toFixed(2)),
+          vatPercent: String(data.vatPercent.toFixed(2)),
+          quantity,
+          kind: data.kind,
+        })
+        .returning(productListFields)
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
 
-    if (data.tagIds.length > 0) {
-      await db.insert(productTag).values(data.tagIds.map((tagId) => ({ productId: p.id, tagId })))
-    }
-    if (data.productionCosts.length > 0) {
-      await db.insert(productProductionCost).values(
-        data.productionCosts.map((c) => ({
-          productId: p.id,
-          productionCostLabelId: c.labelId,
-          amount: String(c.amount.toFixed(2)),
-        })),
-      )
-    }
-    if (data.kind === 'bundle' && data.bundleItems.length > 0) {
-      await db.insert(productBundleItem).values(
-        data.bundleItems.map((b) => ({
-          bundleId: p.id,
-          productId: b.productId,
-          quantity: b.quantity,
-        })),
-      )
-    }
+      if (data.tagIds.length > 0) {
+        await tx.insert(productTag).values(data.tagIds.map((tagId) => ({ productId: p.id, tagId })))
+      }
+      if (data.productionCosts.length > 0) {
+        await tx.insert(productProductionCost).values(
+          data.productionCosts.map((c) => ({
+            productId: p.id,
+            productionCostLabelId: c.labelId,
+            amount: String(c.amount.toFixed(2)),
+          })),
+        )
+      }
+      if (data.kind === 'bundle' && data.bundleItems.length > 0) {
+        await tx.insert(productBundleItem).values(
+          data.bundleItems.map((b) => ({
+            bundleId: p.id,
+            productId: b.productId,
+            quantity: b.quantity,
+          })),
+        )
+      }
 
-    return p
+      return p
+    })
   })
 
 const productUpdateSchema = productUpsertBaseSchema
@@ -394,68 +396,70 @@ export const $updateProduct = createServerFn({ method: 'POST' })
       if (nonSimple.length > 0) badRequest('Bundle components must be simple products', 400)
     }
 
-    if (Object.keys(set).length > 0) {
-      await db
-        .update(product)
-        .set(set)
-        .where(and(eq(product.id, id), eq(product.userId, user.id)))
-    }
-
-    if (kind !== undefined || bundleItems !== undefined) {
-      await db.delete(productBundleItem).where(eq(productBundleItem.bundleId, id))
-      if (kind === 'bundle' && bundleItems && bundleItems.length > 0) {
-        await db.insert(productBundleItem).values(
-          bundleItems.map((b) => ({
-            bundleId: id,
-            productId: b.productId,
-            quantity: b.quantity,
-          })),
-        )
+    return await db.transaction(async (tx) => {
+      if (Object.keys(set).length > 0) {
+        await tx
+          .update(product)
+          .set(set)
+          .where(and(eq(product.id, id), eq(product.userId, user.id)))
       }
-    }
 
-    if (tagIds !== undefined) {
-      await db.delete(productTag).where(eq(productTag.productId, id))
-      if (tagIds.length > 0) {
-        const tags = await db
-          .select({ id: inventoryTag.id })
-          .from(inventoryTag)
-          .where(and(eq(inventoryTag.userId, user.id), inArray(inventoryTag.id, tagIds)))
-        if (tags.length !== tagIds.length) badRequest('Invalid tagIds', 400)
-        await db.insert(productTag).values(tagIds.map((tagId) => ({ productId: id, tagId })))
-      }
-    }
-    if (productionCosts !== undefined) {
-      await db.delete(productProductionCost).where(eq(productProductionCost.productId, id))
-      if (productionCosts.length > 0) {
-        const labelIds = [...new Set(productionCosts.map((c) => c.labelId))]
-        const labels = await db
-          .select({ id: inventoryProductionCostLabel.id })
-          .from(inventoryProductionCostLabel)
-          .where(
-            and(
-              eq(inventoryProductionCostLabel.userId, user.id),
-              inArray(inventoryProductionCostLabel.id, labelIds),
-            ),
+      if (kind !== undefined || bundleItems !== undefined) {
+        await tx.delete(productBundleItem).where(eq(productBundleItem.bundleId, id))
+        if (kind === 'bundle' && bundleItems && bundleItems.length > 0) {
+          await tx.insert(productBundleItem).values(
+            bundleItems.map((b) => ({
+              bundleId: id,
+              productId: b.productId,
+              quantity: b.quantity,
+            })),
           )
-        if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
-        await db.insert(productProductionCost).values(
-          productionCosts.map((c) => ({
-            productId: id,
-            productionCostLabelId: c.labelId,
-            amount: String(c.amount.toFixed(2)),
-          })),
-        )
+        }
       }
-    }
 
-    const out = await db
-      .select(productListFields)
-      .from(product)
-      .where(and(eq(product.id, id), eq(product.userId, user.id)))
-      .then(takeUniqueOrNull)
-    if (!out) throw notFound()
-    return out
+      if (tagIds !== undefined) {
+        await tx.delete(productTag).where(eq(productTag.productId, id))
+        if (tagIds.length > 0) {
+          const tags = await tx
+            .select({ id: inventoryTag.id })
+            .from(inventoryTag)
+            .where(and(eq(inventoryTag.userId, user.id), inArray(inventoryTag.id, tagIds)))
+          if (tags.length !== tagIds.length) badRequest('Invalid tagIds', 400)
+          await tx.insert(productTag).values(tagIds.map((tagId) => ({ productId: id, tagId })))
+        }
+      }
+      if (productionCosts !== undefined) {
+        await tx.delete(productProductionCost).where(eq(productProductionCost.productId, id))
+        if (productionCosts.length > 0) {
+          const labelIds = [...new Set(productionCosts.map((c) => c.labelId))]
+          const labels = await tx
+            .select({ id: inventoryProductionCostLabel.id })
+            .from(inventoryProductionCostLabel)
+            .where(
+              and(
+                eq(inventoryProductionCostLabel.userId, user.id),
+                inArray(inventoryProductionCostLabel.id, labelIds),
+              ),
+            )
+          if (labels.length !== labelIds.length) badRequest('Invalid production cost labelIds', 400)
+          await tx.insert(productProductionCost).values(
+            productionCosts.map((c) => ({
+              productId: id,
+              productionCostLabelId: c.labelId,
+              amount: String(c.amount.toFixed(2)),
+            })),
+          )
+        }
+      }
+
+      const out = await tx
+        .select(productListFields)
+        .from(product)
+        .where(and(eq(product.id, id), eq(product.userId, user.id)))
+        .then(takeUniqueOrNull)
+      if (!out) throw notFound()
+      return out
+    })
   })
 
 export const $deleteProduct = createServerFn({ method: 'POST' })

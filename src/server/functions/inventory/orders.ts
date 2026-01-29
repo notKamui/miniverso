@@ -486,30 +486,30 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
       }
     }
 
-    await db
-      .update(order)
-      .set({ status: 'paid', paidAt: new Date() })
-      .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
+    return await db.transaction(async (tx) => {
+      await tx
+        .update(order)
+        .set({ status: 'paid', paidAt: new Date() })
+        .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
 
-    // Deduct stock from simple products only (bundles are expanded)
-    for (const [productId, quantity] of requiredQuantities.entries()) {
-      await db
-        .update(product)
-        .set({ quantity: sql`${product.quantity} - ${quantity}` })
-        .where(eq(product.id, productId))
-    }
+      // Deduct stock from simple products only (bundles are expanded)
+      for (const [productId, quantity] of requiredQuantities.entries()) {
+        await tx
+          .update(product)
+          .set({ quantity: sql`${product.quantity} - ${quantity}` })
+          .where(eq(product.id, productId))
+      }
 
-    const updated = await db
-      .select(orderListFields)
-      .from(order)
-      .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
-      .then(
-        takeUniqueOr(() => {
-          throw notFound()
-        }),
-      )
-
-    return updated
+      return await tx
+        .select(orderListFields)
+        .from(order)
+        .where(and(eq(order.id, orderId), eq(order.userId, user.id)))
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
+    })
   })
 
 export const $markOrderSent = createServerFn({ method: 'POST' })

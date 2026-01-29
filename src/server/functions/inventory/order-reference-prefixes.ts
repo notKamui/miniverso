@@ -45,31 +45,33 @@ export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
   .inputValidator(validate(z.object({ prefix: prefixSchema })))
   .handler(async ({ context: { user }, data: { prefix } }) => {
     const p = prefix.trim()
-    const existing = await db
-      .select()
-      .from(inventoryOrderReferencePrefix)
-      .where(
-        and(
-          eq(inventoryOrderReferencePrefix.userId, user.id),
-          eq(inventoryOrderReferencePrefix.prefix, p),
-        ),
-      )
-      .then(takeUniqueOrNull)
-    if (existing) badRequest('Prefix already exists', 400)
+    return await db.transaction(async (tx) => {
+      const existing = await tx
+        .select()
+        .from(inventoryOrderReferencePrefix)
+        .where(
+          and(
+            eq(inventoryOrderReferencePrefix.userId, user.id),
+            eq(inventoryOrderReferencePrefix.prefix, p),
+          ),
+        )
+        .then(takeUniqueOrNull)
+      if (existing) badRequest('Prefix already exists', 400)
 
-    return db
-      .insert(inventoryOrderReferencePrefix)
-      .values({ userId: user.id, prefix: p })
-      .returning({
-        id: inventoryOrderReferencePrefix.id,
-        userId: inventoryOrderReferencePrefix.userId,
-        prefix: inventoryOrderReferencePrefix.prefix,
-      })
-      .then(
-        takeUniqueOr(() => {
-          throw notFound()
-        }),
-      )
+      return tx
+        .insert(inventoryOrderReferencePrefix)
+        .values({ userId: user.id, prefix: p })
+        .returning({
+          id: inventoryOrderReferencePrefix.id,
+          userId: inventoryOrderReferencePrefix.userId,
+          prefix: inventoryOrderReferencePrefix.prefix,
+        })
+        .then(
+          takeUniqueOr(() => {
+            throw notFound()
+          }),
+        )
+    })
   })
 
 export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })

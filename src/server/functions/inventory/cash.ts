@@ -168,14 +168,16 @@ export const $reorderCashRow = createServerFn({ method: 'POST' })
     const currSort = Number(row.sortOrder)
     const otherSort = Number(neighbour.sortOrder)
 
-    await db
-      .update(inventoryCash)
-      .set({ sortOrder: otherSort })
-      .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
-    await db
-      .update(inventoryCash)
-      .set({ sortOrder: currSort })
-      .where(and(eq(inventoryCash.id, neighbour.id), eq(inventoryCash.userId, user.id)))
+    await db.transaction(async (tx) => {
+      await tx
+        .update(inventoryCash)
+        .set({ sortOrder: otherSort })
+        .where(and(eq(inventoryCash.id, id), eq(inventoryCash.userId, user.id)))
+      await tx
+        .update(inventoryCash)
+        .set({ sortOrder: currSort })
+        .where(and(eq(inventoryCash.id, neighbour.id), eq(inventoryCash.userId, user.id)))
+    })
   })
 
 export const $deleteCash = createServerFn({ method: 'POST' })
