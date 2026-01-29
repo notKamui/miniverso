@@ -8,7 +8,7 @@ export const $$zodCapture = createMiddleware({ type: 'function' })
       return await next()
     } catch (error) {
       if (error instanceof z.ZodError) {
-        window?.dispatchEvent(new ServerErrorEvent(error, { sendToast: true }))
+        globalThis.window?.dispatchEvent(new ServerErrorEvent(error, { sendToast: true }))
       } else if (error instanceof DOMException && error.name === 'AbortError') {
         // Ignore abort errors
       }

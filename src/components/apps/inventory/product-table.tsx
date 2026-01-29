@@ -162,6 +162,7 @@ export function ProductTable({
           <div
             className="flex justify-end"
             onClick={(e) => e.stopPropagation()}
+            tabIndex={0}
             role="button"
             onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}
           >

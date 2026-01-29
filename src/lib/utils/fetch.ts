@@ -18,12 +18,12 @@ async function treatError(error: unknown) {
   if (raw) {
     throw raw
   }
-  window?.dispatchEvent(new ServerErrorEvent({ body: parsed }, { sendToast: true }))
+  globalThis.window?.dispatchEvent(new ServerErrorEvent({ body: parsed }, { sendToast: true }))
   throw new Error(parsed.error)
 }
 
 export const $fetch: CustomFetch = async (input, init) => {
-  const response = await window.fetch(input, init)
+  const response = await globalThis.fetch(input, init)
   if (!response.ok) {
     await treatError(response)
   }
@@ -31,7 +31,7 @@ export const $fetch: CustomFetch = async (input, init) => {
 }
 
 $fetch.preconnect = async (url) => {
-  return window.fetch(url, {
+  return globalThis.fetch(url, {
     method: 'HEAD',
     mode: 'no-cors',
   })
