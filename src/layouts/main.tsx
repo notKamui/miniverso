@@ -38,8 +38,8 @@ export function MainLayout({ children }: { children: ReactNode }) {
     >
       <AppSidebar />
       <SidebarInset>
-        <header className="flex flex-row items-center justify-between border-b bg-background pr-1.5 pl-4">
-          <div className="flex h-16 shrink-0 items-center gap-2">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 flex-row items-center justify-between border-b bg-background pr-1.5 pl-4 max-sm:bg-background/95 max-sm:backdrop-blur supports-backdrop-filter:max-sm:bg-background/80">
+          <div className="flex items-center gap-2">
             <SidebarTrigger className="z-50 -ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
@@ -74,7 +74,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
             />
           </div>
         </header>
-        <main className="h-[calc(100vh-(--spacing(16)))] space-y-8 overflow-auto p-4 max-sm:w-screen">
+        <main className="space-y-8 p-4 max-sm:h-auto max-sm:min-h-0 max-sm:w-screen max-sm:overflow-visible md:h-[calc(100vh-(--spacing(16)))] md:overflow-auto">
           {children}
         </main>
       </SidebarInset>
