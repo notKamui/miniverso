@@ -142,7 +142,7 @@ export function OrderPriceModificationPresetsSection() {
     >
       <form onSubmit={handleCreate}>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-[1fr_auto_auto_auto_auto] md:grid-rows-[auto_auto] md:items-center md:gap-x-2 md:gap-y-1">
-          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+          <div className="space-y-1.5 md:space-y-0 md:row-span-2 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
             <Label htmlFor="new-preset-name">Name</Label>
             <Input
               id="new-preset-name"
@@ -152,7 +152,7 @@ export function OrderPriceModificationPresetsSection() {
               maxLength={200}
             />
           </div>
-          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+          <div className="space-y-1.5 md:space-y-0 md:row-span-2 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
             <Label htmlFor="new-preset-type">Type</Label>
             <Select
               name="new-preset-type"
@@ -168,7 +168,7 @@ export function OrderPriceModificationPresetsSection() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+          <div className="space-y-1.5 md:space-y-0 md:row-span-2 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
             <Label htmlFor="new-preset-kind">Kind</Label>
             <Select
               name="new-preset-kind"
@@ -184,7 +184,7 @@ export function OrderPriceModificationPresetsSection() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+          <div className="space-y-1.5 md:space-y-0 md:row-span-2 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
             <Label htmlFor="new-preset-value">Value</Label>
             <Input
               id="new-preset-value"
