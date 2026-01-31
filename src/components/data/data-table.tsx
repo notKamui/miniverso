@@ -66,8 +66,8 @@ export function DataTable<TData, TValue>({
   return (
     <div className={cn('rounded-md border', className)}>
       {showHeaderBar && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
-          <div className="flex flex-wrap items-center gap-2">{toolbarSlot}</div>
+        <div className="flex flex-col flex-wrap justify-between gap-2 border-b p-2 md:flex-row md:items-center">
+          {toolbarSlot}
           {hideableColumns.length > 0 && (
             <div className="shrink-0">
               <DropdownMenu>

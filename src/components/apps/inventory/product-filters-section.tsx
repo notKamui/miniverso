@@ -43,13 +43,13 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
   }, [debouncedQ, search, navigate])
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2 md:flex-row md:items-center">
       <Input
         name="q"
         placeholder="Search by name or SKU…"
         value={qInput}
         onChange={(e) => setQInput(e.target.value)}
-        className="max-w-lg min-w-sm"
+        className="md:min-w-sm"
       />
       <Select
         name="archived"
@@ -61,7 +61,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
           })
         }
       >
-        <SelectTrigger className="min-w-32">
+        <SelectTrigger className="w-full md:min-w-32">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -85,7 +85,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
         <div className="flex items-center gap-1">
           <TagCombobox.Chips
             ref={tagFilterAnchorRef}
-            className="h-9 max-w-64 min-w-0 flex-nowrap overflow-hidden"
+            className="h-9 min-w-0 flex-nowrap overflow-hidden max-md:w-full md:max-w-64"
           >
             {visibleTags.map((t) => (
               <TagCombobox.Chip
