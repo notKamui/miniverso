@@ -1,6 +1,6 @@
 {
   "name": "miniverso",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "fmt": "oxfmt",
     "fix": "bun run fmt && bun run lint --fix",
     "type-check": "tsgo --noEmit",
+    "check": "bun run lint && bun run fmt && bun run type-check",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",
     "migrate": "bun db migrate",

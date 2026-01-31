@@ -211,6 +211,7 @@ export function ProductTable({
         columns={columns}
         data={products}
         emptyMessage={emptyMessage}
+        columnVisibilityStorageKey="inventory-products"
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
           navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })

@@ -274,6 +274,7 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
             className="w-full"
             columns={columnsWithActions}
             data={entries}
+            columnVisibilityStorageKey="time-recorder"
             onRowDoubleClick={(entry) => setSelectedEntry(entry)}
           />
         </div>

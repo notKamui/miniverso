@@ -137,6 +137,7 @@ function RouteComponent() {
         columns={columns}
         data={orders}
         emptyMessage="No orders yet."
+        columnVisibilityStorageKey="inventory-orders"
         toolbarSlot={
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
