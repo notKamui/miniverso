@@ -141,10 +141,10 @@ export function OrderPriceModificationPresetsSection() {
       }
     >
       <form onSubmit={handleCreate}>
-        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-x-2 gap-y-1">
+        <div className="grid items-center gap-x-2 gap-y-1 md:grid-cols-[1fr_auto_auto_auto_auto]">
           <Label htmlFor="new-preset-name">Name</Label>
-          <Label>Type</Label>
-          <Label>Kind</Label>
+          <Label htmlFor="new-preset-type">Type</Label>
+          <Label htmlFor="new-preset-kind">Kind</Label>
           <Label htmlFor="new-preset-value">Value</Label>
           <div />
           <Input
@@ -155,6 +155,7 @@ export function OrderPriceModificationPresetsSection() {
             maxLength={200}
           />
           <Select
+            name="new-preset-type"
             value={newPreset.type}
             onValueChange={(v) => setNewPreset((p) => ({ ...p, type: v as PresetForm['type'] }))}
           >
@@ -167,6 +168,7 @@ export function OrderPriceModificationPresetsSection() {
             </SelectContent>
           </Select>
           <Select
+            name="new-preset-kind"
             value={newPreset.kind}
             onValueChange={(v) => setNewPreset((p) => ({ ...p, kind: v as PresetForm['kind'] }))}
           >
@@ -180,6 +182,7 @@ export function OrderPriceModificationPresetsSection() {
           </Select>
           <Input
             id="new-preset-value"
+            name="new-preset-value"
             type="number"
             min={0}
             step={newPreset.kind === 'relative' ? 1 : 0.01}
