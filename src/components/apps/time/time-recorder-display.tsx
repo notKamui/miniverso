@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useHydrated, useRouter } from '@tanstack/react-router'
 import {
@@ -52,6 +52,7 @@ type RecorderDisplayProps = {
   time: Time
   entries: TimeEntry[]
   tzOffset: number
+  columnVisibilityTimeRecorder?: VisibilityState
 }
 
 const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
@@ -81,7 +82,12 @@ const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
 
 const MotionDialog = m.create(EditEntryDialog)
 
-export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProps) {
+export function RecorderDisplay({
+  time,
+  entries,
+  tzOffset,
+  columnVisibilityTimeRecorder,
+}: RecorderDisplayProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [selectedRows, setSelectedRows] = useState<Record<string, TimeEntry>>({})
@@ -141,6 +147,7 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
   const columnsWithActions: ReturnType<typeof timeTableColumns> = [
     {
       id: 'select',
+      enableHiding: false,
       header: () => {
         const checked =
           (entries.length > 0 && entries.every((entry) => selectedRows[entry.id])) ||
@@ -183,6 +190,8 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
     ...timeTableColumns(tzOffset),
     {
       id: 'actions',
+      enableHiding: false,
+      meta: { stickyRight: true },
       cell: ({ row }) => {
         const entry = row.original
 
@@ -274,6 +283,8 @@ export function RecorderDisplay({ time, entries, tzOffset }: RecorderDisplayProp
             className="w-full"
             columns={columnsWithActions}
             data={entries}
+            columnVisibilityStorageKey="time-recorder"
+            initialColumnVisibility={columnVisibilityTimeRecorder}
             onRowDoubleClick={(entry) => setSelectedEntry(entry)}
           />
         </div>

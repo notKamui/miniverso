@@ -1,7 +1,7 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Archive, ArchiveRestore, MoreVertical } from 'lucide-react'
+import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,7 @@ type ProductTableProps = {
   page: number
   totalPages: number
   search: Record<string, unknown>
+  columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
   navigate: (opts: {
     to: string
@@ -53,6 +54,7 @@ export function ProductTable({
   page,
   totalPages,
   search,
+  columnVisibilityProducts,
   toolbarSlot,
   navigate,
   emptyMessage = 'No products yet. Add one to get started.',
@@ -155,6 +157,7 @@ export function ProductTable({
       header: '',
       size: 40,
       enableHiding: false,
+      meta: { stickyRight: true },
       cell: ({ row }) => {
         const p = row.original
         const isArchived = Boolean(p.archivedAt)
@@ -173,6 +176,14 @@ export function ProductTable({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    navigate({ to: '/inventory/products/new', search: { duplicateFrom: p.id } })
+                  }
+                >
+                  <Copy className="size-4" />
+                  Duplicate
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => updateMut.mutate({ data: { id: p.id, archivedAt: !isArchived } })}
                   disabled={updateMut.isPending}
@@ -203,6 +214,8 @@ export function ProductTable({
         columns={columns}
         data={products}
         emptyMessage={emptyMessage}
+        columnVisibilityStorageKey="inventory-products"
+        initialColumnVisibility={columnVisibilityProducts}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
           navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })

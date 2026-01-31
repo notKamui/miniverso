@@ -2,7 +2,7 @@ import { ArchiveIcon } from 'lucide-react'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
 import { Button } from '@/components/ui/button'
-import type { ProductFormExisting } from './types'
+import { ProductFormExisting } from '.'
 
 type UpdateMutation = {
   mutate: (opts: { data: { id: string; archivedAt?: boolean } }) => void
