@@ -147,6 +147,7 @@ export function RecorderDisplay({
   const columnsWithActions: ReturnType<typeof timeTableColumns> = [
     {
       id: 'select',
+      enableHiding: false,
       header: () => {
         const checked =
           (entries.length > 0 && entries.every((entry) => selectedRows[entry.id])) ||
@@ -189,6 +190,7 @@ export function RecorderDisplay({
     ...timeTableColumns(tzOffset),
     {
       id: 'actions',
+      enableHiding: false,
       cell: ({ row }) => {
         const entry = row.original
 
