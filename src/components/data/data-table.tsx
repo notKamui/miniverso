@@ -123,17 +123,24 @@ export function DataTable<TData, TValue>({
         <TableHeader>
           {headerGroups.map((group) => (
             <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={{ width: header.column.columnDef.size }}
-                  className="text-nowrap"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
+              {group.headers.map((header) => {
+                const meta = header.column.columnDef.meta as { stickyRight?: boolean } | undefined
+                const isStickyRight = meta?.stickyRight === true
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{ width: header.column.columnDef.size }}
+                    className={cn(
+                      'text-nowrap',
+                      isStickyRight && 'sticky right-0 z-10 border-l bg-background',
+                    )}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                )
+              })}
             </TableRow>
           ))}
         </TableHeader>
@@ -178,13 +185,24 @@ function DataRow<TData>({
       onDoubleClick={() => onRowDoubleClick?.(row.original)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      className={cn((onRowClick || onRowDoubleClick) && 'cursor-pointer')}
+      className={cn('group', (onRowClick || onRowDoubleClick) && 'cursor-pointer')}
     >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id} className="max-w-0 overflow-hidden whitespace-nowrap">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const meta = cell.column.columnDef.meta as { stickyRight?: boolean } | undefined
+        const isStickyRight = meta?.stickyRight === true
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn(
+              'max-w-0 overflow-hidden whitespace-nowrap',
+              isStickyRight &&
+                'sticky right-0 z-10 shrink-0 border-l bg-background group-hover:bg-muted/50 max-md:min-w-12',
+            )}
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }

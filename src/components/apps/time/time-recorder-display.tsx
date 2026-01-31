@@ -191,6 +191,7 @@ export function RecorderDisplay({
     {
       id: 'actions',
       enableHiding: false,
+      meta: { stickyRight: true },
       cell: ({ row }) => {
         const entry = row.original
 
