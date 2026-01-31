@@ -7,6 +7,7 @@ import { ProductStatsSection } from '@/components/apps/inventory/product-stats-s
 import { ProductTable } from '@/components/apps/inventory/product-table'
 import { Button } from '@/components/ui/button'
 import { title } from '@/components/ui/typography'
+import { getColumnVisibilityQueryOptions } from '@/server/functions/column-visibility'
 import { getInventoryTagsQueryOptions } from '@/server/functions/inventory/inventory-tags'
 import { getProductsQueryOptions } from '@/server/functions/inventory/products'
 
@@ -24,7 +25,8 @@ export const Route = createFileRoute('/_authed/inventory/')({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps: { search }, context: { queryClient } }) => {
-    await Promise.all([
+    const [columnVisibilityProducts] = await Promise.all([
+      queryClient.fetchQuery(getColumnVisibilityQueryOptions('inventory-products')),
       queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
       queryClient.ensureQueryData(
         getProductsQueryOptions({
@@ -36,7 +38,7 @@ export const Route = createFileRoute('/_authed/inventory/')({
         }),
       ),
     ])
-    return { crumb: 'Products' }
+    return { crumb: 'Products', columnVisibilityProducts }
   },
   component: RouteComponent,
 })
@@ -44,6 +46,9 @@ export const Route = createFileRoute('/_authed/inventory/')({
 function RouteComponent() {
   const navigate = useNavigate()
   const search = Route.useSearch()
+  const { columnVisibilityProducts } = Route.useLoaderData({
+    select: ({ columnVisibilityProducts }) => ({ columnVisibilityProducts }),
+  })
   const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: productsPage } = useSuspenseQuery(
     getProductsQueryOptions({
@@ -80,6 +85,7 @@ function RouteComponent() {
         page={page}
         totalPages={totalPages}
         search={search}
+        columnVisibilityProducts={columnVisibilityProducts}
         toolbarSlot={<ProductFiltersSection search={search} navigate={navigate} tags={tags} />}
         navigate={navigate}
         emptyMessage="No products yet. Add one to get started."

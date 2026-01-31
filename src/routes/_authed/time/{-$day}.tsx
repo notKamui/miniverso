@@ -4,6 +4,7 @@ import * as z from 'zod'
 import { RecorderDisplay } from '@/components/apps/time/time-recorder-display'
 import { title } from '@/components/ui/typography'
 import { Time } from '@/lib/utils/time'
+import { getColumnVisibilityQueryOptions } from '@/server/functions/column-visibility'
 import { getTimeEntriesByDayQueryOptions } from '@/server/functions/time-entry'
 
 export const Route = createFileRoute('/_authed/time/{-$day}')({
@@ -15,24 +16,28 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
     const date = Time.from(day)
     const tzOffsetMinutes = search.tz ?? 0
 
-    await queryClient.fetchQuery(
-      getTimeEntriesByDayQueryOptions({
-        dayKey: date.formatDayKey(),
-        tzOffsetMinutes,
-      }),
-    )
+    const [columnVisibilityTimeRecorder] = await Promise.all([
+      queryClient.fetchQuery(getColumnVisibilityQueryOptions('time-recorder')),
+      queryClient.ensureQueryData(
+        getTimeEntriesByDayQueryOptions({
+          dayKey: date.formatDayKey(),
+          tzOffsetMinutes,
+        }),
+      ),
+    ])
 
     return {
       time: date,
       crumb: date.isToday() ? undefined : date.formatDayNumber(),
+      columnVisibilityTimeRecorder,
     }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { time } = Route.useLoaderData({
-    select: ({ time }) => ({ time }),
+  const { time, columnVisibilityTimeRecorder } = Route.useLoaderData({
+    select: ({ time, columnVisibilityTimeRecorder }) => ({ time, columnVisibilityTimeRecorder }),
   })
   const { tz = 0 } = Route.useSearch()
 
@@ -46,7 +51,12 @@ function RouteComponent() {
   return (
     <div className="space-y-8">
       <h2 className={title({ h: 2 })}>Time recorder</h2>
-      <RecorderDisplay time={time} entries={entries} tzOffset={tz} />
+      <RecorderDisplay
+        time={time}
+        entries={entries}
+        tzOffset={tz}
+        columnVisibilityTimeRecorder={columnVisibilityTimeRecorder}
+      />
     </div>
   )
 }

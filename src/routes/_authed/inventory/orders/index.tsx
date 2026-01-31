@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { title } from '@/components/ui/typography'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { formatMoney } from '@/lib/utils/format-money'
+import { getColumnVisibilityQueryOptions } from '@/server/functions/column-visibility'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/orders-queries'
 
@@ -26,16 +27,19 @@ export const Route = createFileRoute('/_authed/inventory/orders/')({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps: { search }, context: { queryClient } }) => {
-    await queryClient.ensureQueryData(
-      getOrdersQueryOptions({
-        page: search.page,
-        size: search.size,
-        reference: search.reference?.trim() || undefined,
-        startDate: search.startDate?.trim() || undefined,
-        endDate: search.endDate?.trim() || undefined,
-      }),
-    )
-    return {}
+    const [columnVisibilityOrders] = await Promise.all([
+      queryClient.fetchQuery(getColumnVisibilityQueryOptions('inventory-orders')),
+      queryClient.ensureQueryData(
+        getOrdersQueryOptions({
+          page: search.page,
+          size: search.size,
+          reference: search.reference?.trim() || undefined,
+          startDate: search.startDate?.trim() || undefined,
+          endDate: search.endDate?.trim() || undefined,
+        }),
+      ),
+    ])
+    return { columnVisibilityOrders }
   },
   component: RouteComponent,
 })
@@ -45,6 +49,9 @@ type OrderRow = Awaited<ReturnType<typeof $getOrders>>['items'][number]
 function RouteComponent() {
   const navigate = useNavigate()
   const search = Route.useSearch()
+  const { columnVisibilityOrders } = Route.useLoaderData({
+    select: ({ columnVisibilityOrders }) => ({ columnVisibilityOrders }),
+  })
   const [refInput, setRefInput] = useState(search.reference ?? '')
 
   const debouncedRef = useDebounce(refInput, 300)
@@ -138,6 +145,7 @@ function RouteComponent() {
         data={orders}
         emptyMessage="No orders yet."
         columnVisibilityStorageKey="inventory-orders"
+        initialColumnVisibility={columnVisibilityOrders}
         toolbarSlot={
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input

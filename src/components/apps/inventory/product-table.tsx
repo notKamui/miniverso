@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
@@ -38,6 +38,7 @@ type ProductTableProps = {
   page: number
   totalPages: number
   search: Record<string, unknown>
+  columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
   navigate: (opts: {
     to: string
@@ -53,6 +54,7 @@ export function ProductTable({
   page,
   totalPages,
   search,
+  columnVisibilityProducts,
   toolbarSlot,
   navigate,
   emptyMessage = 'No products yet. Add one to get started.',
@@ -212,6 +214,7 @@ export function ProductTable({
         data={products}
         emptyMessage={emptyMessage}
         columnVisibilityStorageKey="inventory-products"
+        initialColumnVisibility={columnVisibilityProducts}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
           navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })

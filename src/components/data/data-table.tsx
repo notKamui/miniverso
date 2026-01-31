@@ -1,3 +1,4 @@
+import { useServerFn } from '@tanstack/react-start'
 import {
   type ColumnDef,
   flexRender,
@@ -24,33 +25,7 @@ import {
 } from '@/components/ui/table'
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { cn } from '@/lib/utils/cn'
-
-const COLUMN_VISIBILITY_STORAGE_PREFIX = 'data-table-column-visibility:'
-
-function readColumnVisibility(storageKey: string): VisibilityState {
-  if (typeof window === 'undefined') return {}
-  try {
-    const raw = localStorage.getItem(storageKey)
-    if (raw == null) return {}
-    const parsed = JSON.parse(raw) as unknown
-    if (typeof parsed !== 'object' || parsed === null) return {}
-    const result: VisibilityState = {}
-    for (const [k, v] of Object.entries(parsed)) {
-      if (typeof v === 'boolean') result[k] = v
-    }
-    return result
-  } catch {
-    return {}
-  }
-}
-
-function writeColumnVisibility(storageKey: string, state: VisibilityState): void {
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(state))
-  } catch {
-    /* ignore */
-  }
-}
+import { $setColumnVisibility } from '@/server/functions/column-visibility'
 
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]
@@ -61,6 +36,7 @@ export type DataTableProps<TData, TValue> = {
   onRowDoubleClick?: (row: TData) => void
   enableColumnHiding?: boolean
   columnVisibilityStorageKey?: string
+  initialColumnVisibility?: VisibilityState
   toolbarSlot?: React.ReactNode
 }
 
@@ -73,28 +49,26 @@ export function DataTable<TData, TValue>({
   onRowDoubleClick,
   enableColumnHiding = true,
   columnVisibilityStorageKey,
+  initialColumnVisibility,
   toolbarSlot,
 }: DataTableProps<TData, TValue>) {
-  const storageKey =
-    columnVisibilityStorageKey != null
-      ? `${COLUMN_VISIBILITY_STORAGE_PREFIX}${columnVisibilityStorageKey}`
-      : undefined
+  const setColumnVisibility = useServerFn($setColumnVisibility)
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() =>
-    storageKey ? readColumnVisibility(storageKey) : {},
+  const [columnVisibility, setColumnVisibility_] = useState<VisibilityState>(
+    () => initialColumnVisibility ?? {},
   )
 
   const onColumnVisibilityChange = useCallback(
     (updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
-      setColumnVisibility((prev) => {
+      setColumnVisibility_((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
-        if (storageKey && typeof window !== 'undefined') {
-          writeColumnVisibility(storageKey, next)
+        if (columnVisibilityStorageKey) {
+          void setColumnVisibility({ data: { key: columnVisibilityStorageKey, state: next } })
         }
         return next
       })
     },
-    [storageKey],
+    [columnVisibilityStorageKey, setColumnVisibility],
   )
 
   const table = useReactTable({
