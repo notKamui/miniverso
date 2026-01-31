@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Archive, ArchiveRestore, MoreVertical } from 'lucide-react'
+import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
@@ -173,6 +173,14 @@ export function ProductTable({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    navigate({ to: '/inventory/products/new', search: { duplicateFrom: p.id } })
+                  }
+                >
+                  <Copy className="size-4" />
+                  Duplicate
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => updateMut.mutate({ data: { id: p.id, archivedAt: !isArchived } })}
                   disabled={updateMut.isPending}
