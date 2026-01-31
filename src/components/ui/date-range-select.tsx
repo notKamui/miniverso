@@ -62,15 +62,15 @@ export function DateRangeSelect({
   return (
     <div className={cn('flex flex-col gap-2 md:flex-row md:items-center', className)}>
       {showPresets && (
-        <div className="flex flex-col gap-1 md:flex-row">
-          {presets.map((p) => (
+        <div className="grid grid-cols-2 gap-1">
+          {presets.map((p, i) => (
             <Button
               key={p}
               type="button"
               variant="outline"
               size="sm"
               onClick={() => handlePreset(p)}
-              className="w-full md:w-auto"
+              className={cn(i === 0 && presets.length % 2 === 1 && 'col-span-2')}
             >
               {PRESET_LABELS[p]}
             </Button>
