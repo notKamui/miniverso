@@ -66,7 +66,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col flex-wrap justify-between gap-4 md:flex-row md:items-center">
         <h2 className={title({ h: 2 })}>Statistics</h2>
         <DateRangeSelect
           startDate={effective.startDate}
