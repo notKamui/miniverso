@@ -17,7 +17,7 @@ import { $getOrders, getOrdersQueryOptions } from '@/server/functions/inventory/
 
 const searchSchema = z.object({
   page: z.number().int().min(1).default(1),
-  size: z.number().int().min(1).max(100).default(20),
+  size: z.number().int().min(1).max(100).default(5),
   reference: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
