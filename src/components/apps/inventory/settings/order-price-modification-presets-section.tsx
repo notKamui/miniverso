@@ -141,59 +141,66 @@ export function OrderPriceModificationPresetsSection() {
       }
     >
       <form onSubmit={handleCreate}>
-        <div className="grid items-center gap-x-2 gap-y-1 md:grid-cols-[1fr_auto_auto_auto_auto]">
-          <Label htmlFor="new-preset-name">Name</Label>
-          <Label htmlFor="new-preset-type">Type</Label>
-          <Label htmlFor="new-preset-kind">Kind</Label>
-          <Label htmlFor="new-preset-value">Value</Label>
-          <div />
-          <Input
-            id="new-preset-name"
-            value={newPreset.name}
-            onChange={(e) => setNewPreset((p) => ({ ...p, name: e.target.value }))}
-            placeholder="e.g. Wholesale -15%"
-            maxLength={200}
-          />
-          <Select
-            name="new-preset-type"
-            value={newPreset.type}
-            onValueChange={(v) => setNewPreset((p) => ({ ...p, type: v as PresetForm['type'] }))}
-          >
-            <SelectTrigger className="h-9 w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="increase">Increase</SelectItem>
-              <SelectItem value="decrease">Decrease</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            name="new-preset-kind"
-            value={newPreset.kind}
-            onValueChange={(v) => setNewPreset((p) => ({ ...p, kind: v as PresetForm['kind'] }))}
-          >
-            <SelectTrigger className="h-9 w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="flat">Flat</SelectItem>
-              <SelectItem value="relative">%</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            id="new-preset-value"
-            name="new-preset-value"
-            type="number"
-            min={0}
-            step={newPreset.kind === 'relative' ? 1 : 0.01}
-            value={newPreset.value}
-            onChange={(e) => setNewPreset((p) => ({ ...p, value: e.target.value }))}
-            placeholder={newPreset.kind === 'relative' ? '10' : '5.00'}
-            className="w-24"
-          />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-[1fr_auto_auto_auto_auto] md:grid-rows-[auto_auto] md:items-center md:gap-x-2 md:gap-y-1">
+          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+            <Label htmlFor="new-preset-name">Name</Label>
+            <Input
+              id="new-preset-name"
+              value={newPreset.name}
+              onChange={(e) => setNewPreset((p) => ({ ...p, name: e.target.value }))}
+              placeholder="e.g. Wholesale -15%"
+              maxLength={200}
+            />
+          </div>
+          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+            <Label htmlFor="new-preset-type">Type</Label>
+            <Select
+              name="new-preset-type"
+              value={newPreset.type}
+              onValueChange={(v) => setNewPreset((p) => ({ ...p, type: v as PresetForm['type'] }))}
+            >
+              <SelectTrigger id="new-preset-type" className="h-9 w-full md:w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="increase">Increase</SelectItem>
+                <SelectItem value="decrease">Decrease</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+            <Label htmlFor="new-preset-kind">Kind</Label>
+            <Select
+              name="new-preset-kind"
+              value={newPreset.kind}
+              onValueChange={(v) => setNewPreset((p) => ({ ...p, kind: v as PresetForm['kind'] }))}
+            >
+              <SelectTrigger id="new-preset-kind" className="h-9 w-full md:w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="flat">Flat</SelectItem>
+                <SelectItem value="relative">%</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-1 md:grid-rows-2 md:items-center">
+            <Label htmlFor="new-preset-value">Value</Label>
+            <Input
+              id="new-preset-value"
+              name="new-preset-value"
+              type="number"
+              min={0}
+              step={newPreset.kind === 'relative' ? 1 : 0.01}
+              value={newPreset.value}
+              onChange={(e) => setNewPreset((p) => ({ ...p, value: e.target.value }))}
+              placeholder={newPreset.kind === 'relative' ? '10' : '5.00'}
+              className="w-full md:w-24"
+            />
+          </div>
           <Button
             type="submit"
-            className="h-9"
+            className="h-9 col-span-2 md:col-span-1 md:col-start-5 md:row-start-2"
             disabled={
               !newPreset.name.trim() ||
               !newPreset.value ||
