@@ -138,13 +138,13 @@ function RouteComponent() {
         data={orders}
         emptyMessage="No orders yet."
         toolbarSlot={
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
               name="reference"
               placeholder="Filter by reference…"
               value={refInput}
               onChange={(e) => setRefInput(e.target.value)}
-              className="h-8 max-w-xs"
+              className="h-8 md:max-w-xs"
             />
             <DateRangeSelect
               startDate={search.startDate ?? ''}

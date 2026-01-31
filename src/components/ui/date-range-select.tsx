@@ -60,9 +60,9 @@ export function DateRangeSelect({
     startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'Select date range'
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex flex-col gap-2 md:flex-row md:items-center', className)}>
       {showPresets && (
-        <div className="flex gap-1">
+        <div className="flex flex-col gap-1 md:flex-row">
           {presets.map((p) => (
             <Button
               key={p}
@@ -70,6 +70,7 @@ export function DateRangeSelect({
               variant="outline"
               size="sm"
               onClick={() => handlePreset(p)}
+              className="w-full md:w-auto"
             >
               {PRESET_LABELS[p]}
             </Button>
