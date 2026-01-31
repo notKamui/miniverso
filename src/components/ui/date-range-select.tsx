@@ -62,7 +62,7 @@ export function DateRangeSelect({
   return (
     <div className={cn('flex flex-col gap-2 md:flex-row md:items-center', className)}>
       {showPresets && (
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-2 gap-1 md:flex md:flex-row md:gap-1">
           {presets.map((p, i) => (
             <Button
               key={p}
@@ -70,7 +70,7 @@ export function DateRangeSelect({
               variant="outline"
               size="sm"
               onClick={() => handlePreset(p)}
-              className={cn(i === 0 && presets.length % 2 === 1 && 'col-span-2')}
+              className={cn(i === 0 && presets.length % 2 === 1 && 'col-span-2 md:col-span-1')}
             >
               {PRESET_LABELS[p]}
             </Button>
