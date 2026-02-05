@@ -49,7 +49,11 @@ export function StockStatsSection({
               onValueChange={(v) =>
                 navigate({
                   to: '.',
-                  search: { ...search, labelIds: v.length > 0 ? v.map((l) => l.id) : undefined },
+                  search: {
+                    ...search,
+                    labelIds: v.length > 0 ? v.map((l) => l.id) : undefined,
+                  },
+                  replace: true,
                 })
               }
               itemToStringLabel={(l) => l.name}

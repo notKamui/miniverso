@@ -17,7 +17,7 @@ const TagCombobox = createCombobox<InventoryTag, true>()
 
 type ProductFiltersSectionProps = {
   search: { q?: string; archived: string; tagIds?: string[]; page: number; size: number }
-  navigate: (opts: { to: string; search: Record<string, unknown> }) => void
+  navigate: (opts: { to: string; search: Record<string, unknown>; replace?: boolean }) => void
   tags: InventoryTag[]
 }
 
@@ -38,6 +38,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
       void navigate({
         to: '.',
         search: { ...search, q: debouncedQ || undefined, page: 1 },
+        replace: true,
       })
     }
   }, [debouncedQ, search, navigate])
@@ -58,6 +59,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
           navigate({
             to: '.',
             search: { ...search, archived: v, page: 1 },
+            replace: true,
           })
         }
       >
@@ -77,7 +79,12 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
         onValueChange={(v) =>
           navigate({
             to: '.',
-            search: { ...search, tagIds: v.length > 0 ? v.map((t) => t.id) : undefined, page: 1 },
+            search: {
+              ...search,
+              tagIds: v.length > 0 ? v.map((t) => t.id) : undefined,
+              page: 1,
+            },
+            replace: true,
           })
         }
         itemToStringLabel={(t) => t.name}
@@ -117,7 +124,11 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
               size="icon-xs"
               className="h-9 w-9"
               onClick={() =>
-                navigate({ to: '.', search: { ...search, tagIds: undefined, page: 1 } })
+                navigate({
+                  to: '.',
+                  search: { ...search, tagIds: undefined, page: 1 },
+                  replace: true,
+                })
               }
               aria-label="Clear tag filter"
               title="Clear tag filter"

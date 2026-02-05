@@ -72,6 +72,7 @@ function RouteComponent() {
       void navigate({
         to: '.',
         search: { ...search, reference: debouncedRef || undefined, page: 1 },
+        replace: true,
       })
     }
   }, [debouncedRef, search, navigate])
@@ -169,6 +170,7 @@ function RouteComponent() {
                 navigate({
                   to: '.',
                   search: { ...search, startDate, endDate, page: 1 },
+                  replace: true,
                 })
               }
             />
