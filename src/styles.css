@@ -100,6 +100,18 @@ code {
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Number input: hide native spinners (clean look, no overlap). Value has room via padding. */
+input[type='number'] {
+  -moz-appearance: textfield;
+  padding-right: 0.75rem;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
