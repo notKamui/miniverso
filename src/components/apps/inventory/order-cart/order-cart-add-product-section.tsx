@@ -25,6 +25,8 @@ export function OrderCartAddProductSection({
     page: 1,
     size: 50,
     archived: 'active' as const,
+    orderBy: 'name' as const,
+    order: 'asc' as const,
     ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }),
   }
   const { data: productsPage, isFetching: productsLoading } = useQuery(
