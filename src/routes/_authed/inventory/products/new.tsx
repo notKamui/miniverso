@@ -13,6 +13,8 @@ const searchSchema = z.object({
   q: z.string().optional(),
   archived: z.enum(['all', 'active', 'archived']).optional(),
   tagIds: z.array(z.uuid()).optional(),
+  orderBy: z.enum(['name', 'price', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
 })
 
 export const Route = createFileRoute('/_authed/inventory/products/new')({

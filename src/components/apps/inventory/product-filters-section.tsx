@@ -16,7 +16,15 @@ type InventoryTag = { id: string; name: string; color: string }
 const TagCombobox = createCombobox<InventoryTag, true>()
 
 type ProductFiltersSectionProps = {
-  search: { q?: string; archived: string; tagIds?: string[]; page: number; size: number }
+  search: {
+    q?: string
+    archived: string
+    tagIds?: string[]
+    page: number
+    size: number
+    orderBy: 'name' | 'price' | 'updatedAt'
+    order: 'asc' | 'desc'
+  }
   navigate: (opts: { to: string; search: Record<string, unknown>; replace?: boolean }) => void
   tags: InventoryTag[]
 }

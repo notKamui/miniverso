@@ -19,6 +19,8 @@ const searchSchema = z.object({
   q: z.string().optional(),
   archived: z.enum(['all', 'active', 'archived']).default('active'),
   tagIds: z.array(z.uuid()).optional(),
+  orderBy: z.enum(['name', 'price', 'updatedAt']).default('name'),
+  order: z.enum(['asc', 'desc']).default('asc'),
 })
 
 export const Route = createFileRoute('/_authed/inventory/')({
@@ -35,6 +37,8 @@ export const Route = createFileRoute('/_authed/inventory/')({
           search: search.q?.trim() || undefined,
           archived: search.archived,
           tagIds: search.tagIds,
+          orderBy: search.orderBy,
+          order: search.order,
         }),
       ),
     ])
@@ -57,6 +61,8 @@ function RouteComponent() {
       search: search.q?.trim() || undefined,
       archived: search.archived,
       tagIds: search.tagIds,
+      orderBy: search.orderBy,
+      order: search.order,
     }),
   )
 

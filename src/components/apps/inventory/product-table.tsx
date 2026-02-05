@@ -1,7 +1,15 @@
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
+import {
+  Archive,
+  ArchiveRestore,
+  Copy,
+  MoreVertical,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
@@ -30,13 +38,13 @@ type Product = {
   archivedAt?: string | Date | null
   tags?: { id: string; name: string; color: string }[]
   totalProductionCost?: number
+  updatedAt: string | Date
 }
 
 type ProductTableProps = {
   products: Product[]
   total: number
   page: number
-  // Full search object from the products list route (page, size, q, archived, tagIds, ...)
   search: Record<string, unknown>
   columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
@@ -69,10 +77,50 @@ export function ProductTable({
     },
   })
 
+  const orderBy = (search.orderBy as 'name' | 'price' | 'updatedAt') ?? 'name'
+  const order = (search.order as 'asc' | 'desc') ?? 'asc'
+
+  function getNextOrder(column: 'name' | 'price' | 'updatedAt') {
+    if (orderBy === column) {
+      return order === 'asc' ? 'desc' : 'asc'
+    }
+    return 'asc'
+  }
+
+  function OrderIndicator({ column }: { column: 'name' | 'price' | 'updatedAt' }) {
+    if (orderBy !== column) {
+      return <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" aria-hidden />
+    }
+    if (order === 'asc') {
+      return <ArrowUp className="ml-1 size-3.5" aria-hidden />
+    }
+    return <ArrowDown className="ml-1 size-3.5" aria-hidden />
+  }
+
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: () => (
+        <button
+          type="button"
+          className="inline-flex items-center text-sm font-medium"
+          onClick={() =>
+            navigate({
+              to: '.',
+              search: {
+                ...search,
+                orderBy: 'name',
+                order: getNextOrder('name'),
+                page: 1,
+              },
+              replace: true,
+            })
+          }
+        >
+          Name
+          <OrderIndicator column="name" />
+        </button>
+      ),
       cell: ({ row }) => {
         const p = row.original
         return (
@@ -94,7 +142,27 @@ export function ProductTable({
     },
     {
       accessorKey: 'priceTaxFree',
-      header: 'Price (ex. tax)',
+      header: () => (
+        <button
+          type="button"
+          className="inline-flex items-center text-sm font-medium"
+          onClick={() =>
+            navigate({
+              to: '.',
+              search: {
+                ...search,
+                orderBy: 'price',
+                order: getNextOrder('price'),
+                page: 1,
+              },
+              replace: true,
+            })
+          }
+        >
+          Price (ex. tax)
+          <OrderIndicator column="price" />
+        </button>
+      ),
       cell: ({ row }) => {
         const p = row.original
         return formatMoney(Number(p.priceTaxFree), currency)
@@ -141,6 +209,39 @@ export function ProductTable({
               </span>
             ))}
           </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: () => (
+        <button
+          type="button"
+          className="inline-flex items-center text-sm font-medium"
+          onClick={() =>
+            navigate({
+              to: '.',
+              search: {
+                ...search,
+                orderBy: 'updatedAt',
+                order: getNextOrder('updatedAt'),
+                page: 1,
+              },
+              replace: true,
+            })
+          }
+        >
+          Last updated
+          <OrderIndicator column="updatedAt" />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const p = row.original
+        const d = new Date(p.updatedAt)
+        return (
+          <span className="text-sm whitespace-nowrap text-muted-foreground">
+            {d.toLocaleDateString()}
+          </span>
         )
       },
     },
