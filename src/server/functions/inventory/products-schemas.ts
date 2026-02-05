@@ -5,6 +5,11 @@ export const bundleItemPayloadSchema = z.object({
   quantity: z.number().int().min(1),
 })
 
+export const productionCostPayloadSchema = z.object({
+  labelId: z.uuid(),
+  amount: z.number().min(0),
+})
+
 export const productUpsertBaseSchema = z.object({
   name: z.string().min(1).max(2000),
   description: z.string().max(10_000).optional(),
@@ -14,7 +19,7 @@ export const productUpsertBaseSchema = z.object({
   kind: z.enum(['simple', 'bundle']).default('simple'),
   quantity: z.number().int().min(0),
   tagIds: z.array(z.uuid()).default([]),
-  productionCosts: z.array(z.object({ labelId: z.uuid(), amount: z.number().min(0) })).default([]),
+  productionCosts: z.array(productionCostPayloadSchema).default([]),
   bundleItems: z.array(bundleItemPayloadSchema).default([]),
 })
 
@@ -28,6 +33,9 @@ export const productUpdateSchema = productUpsertBaseSchema
   .extend({
     id: z.uuid(),
     archivedAt: z.boolean().optional(),
+    tagIds: z.array(z.uuid()).optional(),
+    productionCosts: z.array(productionCostPayloadSchema).optional(),
+    bundleItems: z.array(bundleItemPayloadSchema).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.kind === 'bundle') {

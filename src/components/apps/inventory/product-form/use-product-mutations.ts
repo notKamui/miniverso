@@ -11,25 +11,48 @@ export function useProductMutations(productId: string | undefined, onSuccess?: (
 
   const createMut = useMutation({
     mutationFn: $createProduct,
+    onMutate: async () => {
+      await queryClient.invalidateQueries({ queryKey: productsQueryKey })
+      const previousData = queryClient.getQueryData(productsQueryKey)
+      return { previousData }
+    },
     onSuccess: async () => {
+      toast.success('Product created')
+      onSuccess?.()
+    },
+    onError: (_error, _variables, context) => {
+      queryClient.setQueryData(productsQueryKey, context?.previousData)
+    },
+    onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: productsQueryKey }),
         queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] }),
       ])
-      toast.success('Product created')
-      onSuccess?.()
     },
   })
 
   const updateMut = useMutation({
     mutationFn: $updateProduct,
-    onSuccess: async () => {
+    onMutate: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: productsQueryKey }),
         queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] }),
       ])
+      const previousData = queryClient.getQueryData(productsQueryKey)
+      return { previousData }
+    },
+    onSuccess: async () => {
       toast.success('Product updated')
       onSuccess?.()
+    },
+    onError: (_error, _variables, context) => {
+      queryClient.setQueryData(productsQueryKey, context?.previousData)
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: productsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: [...productsQueryKey, productId] }),
+      ])
     },
   })
 
