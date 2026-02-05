@@ -80,14 +80,15 @@ export function ProductTable({
   const orderBy = (search.orderBy as 'name' | 'price' | 'updatedAt') ?? 'name'
   const order = (search.order as 'asc' | 'desc') ?? 'asc'
 
-  function getNextOrder(column: 'name' | 'price' | 'updatedAt') {
+  type SortColumn = 'name' | 'price' | 'updatedAt'
+  function getNextOrder(column: SortColumn) {
     if (orderBy === column) {
       return order === 'asc' ? 'desc' : 'asc'
     }
     return 'asc'
   }
 
-  function OrderIndicator({ column }: { column: 'name' | 'price' | 'updatedAt' }) {
+  function OrderIndicator({ column }: { column: SortColumn }) {
     if (orderBy !== column) {
       return <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" aria-hidden />
     }
@@ -97,30 +98,29 @@ export function ProductTable({
     return <ArrowDown className="ml-1 size-3.5" aria-hidden />
   }
 
+  function SortableHeader({ column, label }: { column: SortColumn; label: string }) {
+    return (
+      <button
+        type="button"
+        className="inline-flex items-center text-sm font-medium"
+        onClick={() =>
+          navigate({
+            to: '.',
+            search: { ...search, orderBy: column, order: getNextOrder(column), page: 1 },
+            replace: true,
+          })
+        }
+      >
+        {label}
+        <OrderIndicator column={column} />
+      </button>
+    )
+  }
+
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: 'name',
-      header: () => (
-        <button
-          type="button"
-          className="inline-flex items-center text-sm font-medium"
-          onClick={() =>
-            navigate({
-              to: '.',
-              search: {
-                ...search,
-                orderBy: 'name',
-                order: getNextOrder('name'),
-                page: 1,
-              },
-              replace: true,
-            })
-          }
-        >
-          Name
-          <OrderIndicator column="name" />
-        </button>
-      ),
+      header: () => <SortableHeader column="name" label="Name" />,
       cell: ({ row }) => {
         const p = row.original
         return (
@@ -142,27 +142,7 @@ export function ProductTable({
     },
     {
       accessorKey: 'priceTaxFree',
-      header: () => (
-        <button
-          type="button"
-          className="inline-flex items-center text-sm font-medium"
-          onClick={() =>
-            navigate({
-              to: '.',
-              search: {
-                ...search,
-                orderBy: 'price',
-                order: getNextOrder('price'),
-                page: 1,
-              },
-              replace: true,
-            })
-          }
-        >
-          Price (ex. tax)
-          <OrderIndicator column="price" />
-        </button>
-      ),
+      header: () => <SortableHeader column="price" label="Price (ex. tax)" />,
       cell: ({ row }) => {
         const p = row.original
         return formatMoney(Number(p.priceTaxFree), currency)
@@ -214,27 +194,7 @@ export function ProductTable({
     },
     {
       accessorKey: 'updatedAt',
-      header: () => (
-        <button
-          type="button"
-          className="inline-flex items-center text-sm font-medium"
-          onClick={() =>
-            navigate({
-              to: '.',
-              search: {
-                ...search,
-                orderBy: 'updatedAt',
-                order: getNextOrder('updatedAt'),
-                page: 1,
-              },
-              replace: true,
-            })
-          }
-        >
-          Last updated
-          <OrderIndicator column="updatedAt" />
-        </button>
-      ),
+      header: () => <SortableHeader column="updatedAt" label="Last updated" />,
       cell: ({ row }) => {
         const p = row.original
         const d = new Date(p.updatedAt)
