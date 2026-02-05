@@ -19,6 +19,8 @@ const searchSchema = z.object({
   q: z.string().optional(),
   archived: z.enum(['all', 'active', 'archived']).default('active'),
   tagIds: z.array(z.uuid()).optional(),
+  orderBy: z.enum(['name', 'price', 'updatedAt']).default('name'),
+  order: z.enum(['asc', 'desc']).default('asc'),
 })
 
 export const Route = createFileRoute('/_authed/inventory/')({
@@ -35,6 +37,8 @@ export const Route = createFileRoute('/_authed/inventory/')({
           search: search.q?.trim() || undefined,
           archived: search.archived,
           tagIds: search.tagIds,
+          orderBy: search.orderBy,
+          order: search.order,
         }),
       ),
     ])
@@ -57,11 +61,13 @@ function RouteComponent() {
       search: search.q?.trim() || undefined,
       archived: search.archived,
       tagIds: search.tagIds,
+      orderBy: search.orderBy,
+      order: search.order,
     }),
   )
 
   const products = productsPage.items
-  const { total, page, totalPages } = productsPage
+  const { total, page } = productsPage
   const lowStock = products.filter(
     (p) => p.kind === 'simple' && p.quantity < LOW_STOCK_THRESHOLD,
   ).length
@@ -71,7 +77,7 @@ function RouteComponent() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className={title({ h: 2 })}>Products</h2>
         <Button asChild>
-          <Link to="/inventory/products/new">
+          <Link to="/inventory/products/new" search={search}>
             <Plus className="size-4" />
             Add product
           </Link>
@@ -83,7 +89,6 @@ function RouteComponent() {
         products={products}
         total={total}
         page={page}
-        totalPages={totalPages}
         search={search}
         columnVisibilityProducts={columnVisibilityProducts}
         toolbarSlot={<ProductFiltersSection search={search} navigate={navigate} tags={tags} />}

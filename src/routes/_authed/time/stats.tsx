@@ -205,6 +205,7 @@ function RouteComponent() {
             await navigate({
               to: '.',
               search: { day: Time.from(date).formatDayKey(), type, tz },
+              replace: true,
             })
           }
           className="max-lg:w-full"
@@ -215,6 +216,7 @@ function RouteComponent() {
             await navigate({
               to: '.',
               search: { day: time.formatDayKey(), type, tz },
+              replace: true,
             })
           }
         >

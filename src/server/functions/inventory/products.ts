@@ -1,7 +1,7 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, eq, exists, inArray, ilike, isNotNull, isNull, or } from 'drizzle-orm'
+import { and, asc, desc, eq, exists, inArray, ilike, isNotNull, isNull, or } from 'drizzle-orm'
 import * as z from 'zod'
 import { badRequest } from '@/lib/utils/response'
 import { validate } from '@/lib/utils/validate'
@@ -46,6 +46,8 @@ const getProductsSchema = z.object({
   search: z.string().trim().min(1).max(500).optional(),
   archived: z.enum(['all', 'active', 'archived']).default('all'),
   tagIds: z.array(z.uuid()).optional(),
+  orderBy: z.enum(['name', 'price', 'updatedAt']).default('name'),
+  order: z.enum(['asc', 'desc']).default('asc'),
 })
 
 export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema>) {
@@ -60,80 +62,94 @@ export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema
 export const $getProducts = createServerFn({ method: 'GET' })
   .middleware([$$auth])
   .inputValidator(validate(getProductsSchema))
-  .handler(async ({ context: { user }, data: { page, size, search, archived, tagIds } }) => {
-    const conditions: Parameters<typeof and>[0][] = [eq(product.userId, user.id)]
-    if (search) {
-      const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
-      conditions.push(or(ilike(product.name, `%${pattern}%`), ilike(product.sku, `%${pattern}%`)))
-    }
-    if (archived === 'active') conditions.push(isNull(product.archivedAt))
-    else if (archived === 'archived') conditions.push(isNotNull(product.archivedAt))
-    if (tagIds?.length) {
-      conditions.push(
-        exists(
-          db
-            .select()
-            .from(productTag)
-            .where(and(eq(productTag.productId, product.id), inArray(productTag.tagId, tagIds))),
-        ),
-      )
-    }
-
-    const pageResult = await paginated({
-      table: product,
-      where: and(...conditions),
-      orderBy: asc(product.name),
-      page,
-      size,
-    })
-
-    const productIds = pageResult.items.map((p) => p.id)
-    if (productIds.length === 0) {
-      return {
-        ...pageResult,
-        items: pageResult.items.map((p) => ({ ...p, tags: [], totalProductionCost: 0 })),
+  .handler(
+    async ({
+      context: { user },
+      data: { page, size, search, archived, tagIds, orderBy, order },
+    }) => {
+      const conditions: Parameters<typeof and>[0][] = [eq(product.userId, user.id)]
+      if (search) {
+        const pattern = search.replaceAll(/[%_]/g, String.raw`\$&`)
+        conditions.push(or(ilike(product.name, `%${pattern}%`), ilike(product.sku, `%${pattern}%`)))
       }
-    }
+      if (archived === 'active') conditions.push(isNull(product.archivedAt))
+      else if (archived === 'archived') conditions.push(isNotNull(product.archivedAt))
+      if (tagIds?.length) {
+        conditions.push(
+          exists(
+            db
+              .select()
+              .from(productTag)
+              .where(and(eq(productTag.productId, product.id), inArray(productTag.tagId, tagIds))),
+          ),
+        )
+      }
 
-    const [tagsRows, costsRows] = await Promise.all([
-      db
-        .select({
-          productId: productTag.productId,
-          id: inventoryTag.id,
-          name: inventoryTag.name,
-          color: inventoryTag.color,
-        })
-        .from(productTag)
-        .innerJoin(inventoryTag, eq(productTag.tagId, inventoryTag.id))
-        .where(inArray(productTag.productId, productIds)),
-      db
-        .select({
-          productId: productProductionCost.productId,
-          amount: productProductionCost.amount,
-        })
-        .from(productProductionCost)
-        .where(inArray(productProductionCost.productId, productIds)),
-    ])
+      const orderColumn =
+        orderBy === 'price'
+          ? product.priceTaxFree
+          : orderBy === 'updatedAt'
+            ? product.updatedAt
+            : product.name
 
-    const tagsByProduct: Record<string, { id: string; name: string; color: string }[]> = {}
-    for (const r of tagsRows) {
-      if (!tagsByProduct[r.productId]) tagsByProduct[r.productId] = []
-      tagsByProduct[r.productId].push({ id: r.id, name: r.name, color: r.color })
-    }
+      const direction = order === 'desc' ? desc(orderColumn) : asc(orderColumn)
 
-    const costByProduct: Record<string, number> = {}
-    for (const r of costsRows) {
-      costByProduct[r.productId] = (costByProduct[r.productId] ?? 0) + Number(r.amount)
-    }
+      const pageResult = await paginated({
+        table: product,
+        where: and(...conditions),
+        orderBy: direction,
+        page,
+        size,
+      })
 
-    const items = pageResult.items.map((p) => ({
-      ...p,
-      tags: tagsByProduct[p.id] ?? [],
-      totalProductionCost: costByProduct[p.id] ?? 0,
-    }))
+      const productIds = pageResult.items.map((p) => p.id)
+      if (productIds.length === 0) {
+        return {
+          ...pageResult,
+          items: pageResult.items.map((p) => ({ ...p, tags: [], totalProductionCost: 0 })),
+        }
+      }
 
-    return { ...pageResult, items }
-  })
+      const [tagsRows, costsRows] = await Promise.all([
+        db
+          .select({
+            productId: productTag.productId,
+            id: inventoryTag.id,
+            name: inventoryTag.name,
+            color: inventoryTag.color,
+          })
+          .from(productTag)
+          .innerJoin(inventoryTag, eq(productTag.tagId, inventoryTag.id))
+          .where(inArray(productTag.productId, productIds)),
+        db
+          .select({
+            productId: productProductionCost.productId,
+            amount: productProductionCost.amount,
+          })
+          .from(productProductionCost)
+          .where(inArray(productProductionCost.productId, productIds)),
+      ])
+
+      const tagsByProduct: Record<string, { id: string; name: string; color: string }[]> = {}
+      for (const r of tagsRows) {
+        if (!tagsByProduct[r.productId]) tagsByProduct[r.productId] = []
+        tagsByProduct[r.productId].push({ id: r.id, name: r.name, color: r.color })
+      }
+
+      const costByProduct: Record<string, number> = {}
+      for (const r of costsRows) {
+        costByProduct[r.productId] = (costByProduct[r.productId] ?? 0) + Number(r.amount)
+      }
+
+      const items = pageResult.items.map((p) => ({
+        ...p,
+        tags: tagsByProduct[p.id] ?? [],
+        totalProductionCost: costByProduct[p.id] ?? 0,
+      }))
+
+      return { ...pageResult, items }
+    },
+  )
 
 export function getProductQueryOptions(productId: string) {
   return queryOptions({

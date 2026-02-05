@@ -72,7 +72,11 @@ function RouteComponent() {
           startDate={effective.startDate}
           endDate={effective.endDate}
           onChange={({ startDate, endDate }) =>
-            navigate({ to: '.', search: { ...search, startDate, endDate } })
+            navigate({
+              to: '.',
+              search: { ...search, startDate, endDate },
+              replace: true,
+            })
           }
         />
       </div>

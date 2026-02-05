@@ -4,6 +4,7 @@ import * as z from 'zod'
 import { Time } from '@/lib/utils/time'
 import { buildConflictUpdateColumns, db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
+import { product } from '@/server/db/schema/inventory'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
@@ -32,6 +33,25 @@ const TimeRecorderTimeEntryLineSchemaV1 = z.strictObject({
 
 type TimeRecorderTimeEntryLineV1 = z.infer<typeof TimeRecorderTimeEntryLineSchemaV1>
 
+const InventoryProductLineSchemaV1 = z.strictObject({
+  type: z.literal('inventory.product'),
+  version: z.literal(1),
+  sourceId: z.string().min(1),
+  userEmail: z.email().trim(),
+  name: z.string().min(1),
+  description: z.string().nullable(),
+  sku: z.string().nullable(),
+  priceTaxFree: z.string().min(1),
+  vatPercent: z.string().min(1),
+  quantity: z.number().int(),
+  kind: z.enum(['simple', 'bundle']),
+  archivedAt: z.string().min(1).nullable(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+})
+
+type InventoryProductLineV1 = z.infer<typeof InventoryProductLineSchemaV1>
+
 type ImportSummaryV1 = {
   ok: true
   version: 1
@@ -39,6 +59,7 @@ type ImportSummaryV1 = {
   processedLines: number
   importedTimeEntries: number
   skippedUnknownUser: number
+  importedInventoryProducts: number
 }
 
 async function* readNdjsonLines(body: ReadableStream<Uint8Array>) {
@@ -113,7 +134,7 @@ export const Route = createFileRoute('/api/admin/import')({
   server: {
     middleware: [$$adminApi],
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request, context }) => {
         const url = new URL(request.url)
         const rawApps = url.searchParams
           .getAll('apps')
@@ -132,8 +153,14 @@ export const Route = createFileRoute('/api/admin/import')({
         const apps = parsedQuery.data.apps.length > 0 ? parsedQuery.data.apps : ['timeRecorder']
 
         const includeTimeRecorder = apps.includes('timeRecorder')
+        const includeInventory = apps.includes('inventory')
+        const currentUserId =
+          (context && typeof context === 'object' && 'user' in context
+            ? // @ts-expect-error - context shape provided by adminApiGuard
+              context.user?.id
+            : null) ?? null
 
-        if (!includeTimeRecorder) {
+        if (!includeTimeRecorder && !includeInventory) {
           return Response.json(
             { error: 'Select at least one application to import' },
             { status: 400 },
@@ -149,9 +176,11 @@ export const Route = createFileRoute('/api/admin/import')({
         let processedLines = 0
         let importedTimeEntries = 0
         let skippedUnknownUser = 0
+        let importedInventoryProducts = 0
         let sawMeta = false
 
         const bufferTimeEntries: TimeRecorderTimeEntryLineV1[] = []
+        const bufferInventoryProducts: InventoryProductLineV1[] = []
 
         async function resolvePendingEmails() {
           if (pendingEmails.size === 0) return
@@ -189,6 +218,68 @@ export const Route = createFileRoute('/api/admin/import')({
           importedTimeEntries += result.imported
           skippedUnknownUser += result.skippedUnknownUser
           bufferTimeEntries.length = 0
+        }
+
+        async function flushInventoryProducts() {
+          if (bufferInventoryProducts.length === 0) return
+
+          // Ensure every email seen in this batch is resolved (or marked unknown)
+          await resolvePendingEmails()
+
+          const values: (typeof product.$inferInsert)[] = []
+
+          for (const row of bufferInventoryProducts) {
+            let userId = userIdByEmail.get(row.userEmail)
+            if (!userId && currentUserId) {
+              // Fallback: assign to the current admin user when the original
+              // user email does not exist in this environment.
+              userId = currentUserId
+            }
+            if (!userId) {
+              skippedUnknownUser++
+              continue
+            }
+
+            values.push({
+              id: row.sourceId,
+              userId,
+              name: row.name,
+              description: row.description,
+              sku: row.sku,
+              priceTaxFree: row.priceTaxFree,
+              vatPercent: row.vatPercent,
+              quantity: row.quantity,
+              kind: row.kind,
+              archivedAt: row.archivedAt ? new Date(row.archivedAt) : null,
+              createdAt: new Date(row.createdAt),
+              updatedAt: new Date(row.updatedAt),
+            })
+          }
+
+          if (values.length > 0) {
+            await db
+              .insert(product)
+              .values(values)
+              .onConflictDoUpdate({
+                target: product.id,
+                set: buildConflictUpdateColumns(product, [
+                  'userId',
+                  'name',
+                  'description',
+                  'sku',
+                  'priceTaxFree',
+                  'vatPercent',
+                  'quantity',
+                  'kind',
+                  'archivedAt',
+                  'createdAt',
+                  'updatedAt',
+                ]),
+              })
+          }
+
+          importedInventoryProducts += values.length
+          bufferInventoryProducts.length = 0
         }
 
         try {
@@ -254,20 +345,57 @@ export const Route = createFileRoute('/api/admin/import')({
               if (bufferTimeEntries.length >= BATCH_SIZE) {
                 await flushTimeRecorder()
               }
+            } else if (
+              typeof value === 'object' &&
+              value !== null &&
+              'type' in value &&
+              (value as any).type === 'inventory.product'
+            ) {
+              if (!includeInventory) continue
+
+              const parsedLine = InventoryProductLineSchemaV1.safeParse(value)
+
+              if (!parsedLine.success) {
+                return Response.json(
+                  {
+                    error: parsedLine.error.issues[0]?.message ?? 'Invalid inventory product line',
+                    processedLines,
+                  },
+                  { status: 400 },
+                )
+              }
+
+              bufferInventoryProducts.push(parsedLine.data)
+
+              if (!userIdByEmail.has(parsedLine.data.userEmail)) {
+                pendingEmails.add(parsedLine.data.userEmail)
+                if (pendingEmails.size >= EMAIL_RESOLVE_BATCH_SIZE) {
+                  await resolvePendingEmails()
+                }
+              }
+
+              if (bufferInventoryProducts.length >= BATCH_SIZE) {
+                await flushInventoryProducts()
+              }
             }
             // Unknown line type: ignore (forward-compatible)
           }
 
           await resolvePendingEmails()
           await flushTimeRecorder()
+          await flushInventoryProducts()
 
           const summary: ImportSummaryV1 = {
             ok: true,
             version: 1,
-            apps: includeTimeRecorder ? ['timeRecorder'] : [],
+            apps: [
+              ...(includeTimeRecorder ? ['timeRecorder'] : []),
+              ...(includeInventory ? ['inventory'] : []),
+            ],
             processedLines,
             importedTimeEntries,
             skippedUnknownUser,
+            importedInventoryProducts,
           }
 
           // If the file had no meta and no known records, return a helpful error.

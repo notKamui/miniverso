@@ -8,6 +8,13 @@ import { getProductQueryOptions } from '@/server/functions/inventory/products'
 
 const searchSchema = z.object({
   duplicateFrom: z.uuid().optional(),
+  page: z.number().int().min(1).optional(),
+  size: z.number().int().min(1).max(100).optional(),
+  q: z.string().optional(),
+  archived: z.enum(['all', 'active', 'archived']).optional(),
+  tagIds: z.array(z.uuid()).optional(),
+  orderBy: z.enum(['name', 'price', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
 })
 
 export const Route = createFileRoute('/_authed/inventory/products/new')({
@@ -28,13 +35,16 @@ export const Route = createFileRoute('/_authed/inventory/products/new')({
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const listSearch = Route.useSearch({
+    select: ({ duplicateFrom: _duplicateFrom, ...search }) => ({ ...search }),
+  })
   const { duplicateFromData } = Route.useLoaderData()
   return (
     <div className="flex flex-col gap-6">
       <h2 className={title({ h: 2 })}>New product</h2>
       <ProductForm
         duplicateFrom={duplicateFromData}
-        onSuccess={() => navigate({ to: '/inventory' })}
+        onSuccess={() => navigate({ to: '/inventory', search: listSearch, replace: true })}
       />
     </div>
   )

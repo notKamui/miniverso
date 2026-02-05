@@ -59,6 +59,7 @@ function AdminDashboard() {
         size,
         ...next,
       },
+      replace: true,
     })
   }
 

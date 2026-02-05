@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'
+import { SortableColumnHeader } from '@/components/data/sortable-column-header'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -30,13 +31,13 @@ type Product = {
   archivedAt?: string | Date | null
   tags?: { id: string; name: string; color: string }[]
   totalProductionCost?: number
+  updatedAt: string | Date
 }
 
 type ProductTableProps = {
   products: Product[]
   total: number
   page: number
-  totalPages: number
   search: Record<string, unknown>
   columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
@@ -44,6 +45,7 @@ type ProductTableProps = {
     to: string
     search?: Record<string, unknown>
     params?: { productId: string }
+    replace?: boolean
   }) => void
   emptyMessage?: string
 }
@@ -52,7 +54,6 @@ export function ProductTable({
   products,
   total,
   page,
-  totalPages,
   search,
   columnVisibilityProducts,
   toolbarSlot,
@@ -69,10 +70,30 @@ export function ProductTable({
     },
   })
 
+  type ProductSortColumn = 'name' | 'price' | 'updatedAt'
+  const orderBy = (search.orderBy as ProductSortColumn) ?? 'name'
+  const order = (search.order as 'asc' | 'desc') ?? 'asc'
+
+  function handleSort(column: ProductSortColumn, nextOrder: 'asc' | 'desc') {
+    navigate({
+      to: '.',
+      search: { ...search, orderBy: column, order: nextOrder, page: 1 },
+      replace: true,
+    })
+  }
+
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: () => (
+        <SortableColumnHeader
+          column="name"
+          label="Name"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
       cell: ({ row }) => {
         const p = row.original
         return (
@@ -94,7 +115,15 @@ export function ProductTable({
     },
     {
       accessorKey: 'priceTaxFree',
-      header: 'Price (ex. tax)',
+      header: () => (
+        <SortableColumnHeader
+          column="price"
+          label="Price (ex. tax)"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
       cell: ({ row }) => {
         const p = row.original
         return formatMoney(Number(p.priceTaxFree), currency)
@@ -145,6 +174,27 @@ export function ProductTable({
       },
     },
     {
+      accessorKey: 'updatedAt',
+      header: () => (
+        <SortableColumnHeader
+          column="updatedAt"
+          label="Last updated"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
+      cell: ({ row }) => {
+        const p = row.original
+        const d = new Date(p.updatedAt)
+        return (
+          <span className="text-sm whitespace-nowrap text-muted-foreground">
+            {d.toLocaleDateString()}
+          </span>
+        )
+      },
+    },
+    {
       accessorKey: 'totalProductionCost',
       header: 'Prod. cost',
       cell: ({ row }) => {
@@ -178,7 +228,10 @@ export function ProductTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() =>
-                    navigate({ to: '/inventory/products/new', search: { duplicateFrom: p.id } })
+                    navigate({
+                      to: '/inventory/products/new',
+                      search: { ...search, duplicateFrom: p.id },
+                    })
                   }
                 >
                   <Copy className="size-4" />
@@ -216,37 +269,23 @@ export function ProductTable({
         emptyMessage={emptyMessage}
         columnVisibilityStorageKey="inventory-products"
         initialColumnVisibility={columnVisibilityProducts}
+        pagination={{
+          page,
+          pageSize: (search as { size?: number }).size ?? 5,
+          total,
+          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p }, replace: true }),
+          onPageSizeChange: (size) =>
+            navigate({ to: '.', search: { ...search, size, page: 1 }, replace: true }),
+        }}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
-          navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })
+          navigate({
+            to: '/inventory/products/$productId',
+            params: { productId: row.id },
+            search,
+          })
         }
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Page {page} / {totalPages} · {total} products
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page - 1 } })}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page + 1 } })}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   )
 }

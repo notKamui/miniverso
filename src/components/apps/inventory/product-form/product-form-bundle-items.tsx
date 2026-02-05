@@ -24,6 +24,8 @@ export function ProductFormBundleItems({ form, productId }: Props) {
     page: 1,
     size: 25,
     archived: 'active' as const,
+    orderBy: 'name' as const,
+    order: 'asc' as const,
     ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }),
   }
 

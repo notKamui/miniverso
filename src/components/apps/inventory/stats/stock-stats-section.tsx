@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { type useNavigate } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createCombobox } from '@/components/ui/combobox'
 import { contrastTextForHex } from '@/lib/utils/color'
@@ -20,7 +21,7 @@ type StockStatsSectionProps = {
   stockStats: StockStats
   labels: ProductionCostLabel[]
   search: Record<string, unknown>
-  navigate: (opts: { to: string; search: Record<string, unknown> }) => void
+  navigate: ReturnType<typeof useNavigate>
 }
 
 export function StockStatsSection({
@@ -49,7 +50,11 @@ export function StockStatsSection({
               onValueChange={(v) =>
                 navigate({
                   to: '.',
-                  search: { ...search, labelIds: v.length > 0 ? v.map((l) => l.id) : undefined },
+                  search: {
+                    ...search,
+                    labelIds: v.length > 0 ? v.map((l) => l.id) : undefined,
+                  },
+                  replace: true,
                 })
               }
               itemToStringLabel={(l) => l.name}
