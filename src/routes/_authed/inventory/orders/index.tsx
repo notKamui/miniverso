@@ -77,7 +77,6 @@ function RouteComponent() {
   }, [debouncedRef, search, navigate])
 
   const orders = ordersPage.items
-  const { total, page, totalPages } = ordersPage
 
   const columns: ColumnDef<OrderRow>[] = [
     {
@@ -146,6 +145,13 @@ function RouteComponent() {
         emptyMessage="No orders yet."
         columnVisibilityStorageKey="inventory-orders"
         initialColumnVisibility={columnVisibilityOrders}
+        pagination={{
+          page: search.page,
+          pageSize: search.size,
+          total: ordersPage.total,
+          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p } }),
+          onPageSizeChange: (size) => navigate({ to: '.', search: { ...search, size, page: 1 } }),
+        }}
         toolbarSlot={
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <Input
@@ -171,32 +177,6 @@ function RouteComponent() {
           navigate({ to: '/inventory/orders/$orderId', params: { orderId: row.id } })
         }
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Page {page} / {totalPages} · {total} orders
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page - 1 } })}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page + 1 } })}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

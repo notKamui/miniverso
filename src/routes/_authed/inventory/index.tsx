@@ -61,7 +61,7 @@ function RouteComponent() {
   )
 
   const products = productsPage.items
-  const { total, page, totalPages } = productsPage
+  const { total, page } = productsPage
   const lowStock = products.filter(
     (p) => p.kind === 'simple' && p.quantity < LOW_STOCK_THRESHOLD,
   ).length
@@ -83,7 +83,6 @@ function RouteComponent() {
         products={products}
         total={total}
         page={page}
-        totalPages={totalPages}
         search={search}
         columnVisibilityProducts={columnVisibilityProducts}
         toolbarSlot={<ProductFiltersSection search={search} navigate={navigate} tags={tags} />}

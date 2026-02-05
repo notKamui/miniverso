@@ -36,8 +36,7 @@ type ProductTableProps = {
   products: Product[]
   total: number
   page: number
-  totalPages: number
-  search: Record<string, unknown>
+  search: { size?: number }
   columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
   navigate: (opts: {
@@ -52,7 +51,6 @@ export function ProductTable({
   products,
   total,
   page,
-  totalPages,
   search,
   columnVisibilityProducts,
   toolbarSlot,
@@ -216,37 +214,18 @@ export function ProductTable({
         emptyMessage={emptyMessage}
         columnVisibilityStorageKey="inventory-products"
         initialColumnVisibility={columnVisibilityProducts}
+        pagination={{
+          page,
+          pageSize: search.size ?? 5,
+          total,
+          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p } }),
+          onPageSizeChange: (size) => navigate({ to: '.', search: { ...search, size, page: 1 } }),
+        }}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
           navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })
         }
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Page {page} / {totalPages} · {total} products
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page - 1 } })}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => navigate({ to: '.', search: { ...search, page: page + 1 } })}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   )
 }
