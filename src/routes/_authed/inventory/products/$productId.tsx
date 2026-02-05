@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_authed/inventory/products/$productId')({
   validateSearch: searchSchema,
   loader: async ({ context: { queryClient }, params: { productId } }) => {
     const [productData] = await Promise.all([
-      queryClient.ensureQueryData(getProductQueryOptions(productId)),
+      queryClient.fetchQuery(getProductQueryOptions(productId)),
       queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
       queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
     ])
@@ -31,7 +31,7 @@ function RouteComponent() {
   const navigate = useNavigate()
   const search = Route.useSearch()
   const { productId } = Route.useParams()
-  const { productData } = Route.useLoaderData()
+  const productData = Route.useLoaderData({ select: (data) => data.productData })
   return (
     <div className="flex flex-col gap-6">
       <h2 className={title({ h: 2 })}>{productData.product.name}</h2>
