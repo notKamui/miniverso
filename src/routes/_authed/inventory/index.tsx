@@ -71,7 +71,7 @@ function RouteComponent() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className={title({ h: 2 })}>Products</h2>
         <Button asChild>
-          <Link to="/inventory/products/new">
+          <Link to="/inventory/products/new" search={search}>
             <Plus className="size-4" />
             Add product
           </Link>

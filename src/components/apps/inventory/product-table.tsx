@@ -36,7 +36,8 @@ type ProductTableProps = {
   products: Product[]
   total: number
   page: number
-  search: { size?: number }
+  // Full search object from the products list route (page, size, q, archived, tagIds, ...)
+  search: Record<string, unknown>
   columnVisibilityProducts?: VisibilityState
   toolbarSlot?: React.ReactNode
   navigate: (opts: {
@@ -177,7 +178,10 @@ export function ProductTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() =>
-                    navigate({ to: '/inventory/products/new', search: { duplicateFrom: p.id } })
+                    navigate({
+                      to: '/inventory/products/new',
+                      search: { ...search, duplicateFrom: p.id },
+                    })
                   }
                 >
                   <Copy className="size-4" />
@@ -217,7 +221,7 @@ export function ProductTable({
         initialColumnVisibility={columnVisibilityProducts}
         pagination={{
           page,
-          pageSize: search.size ?? 5,
+          pageSize: (search as { size?: number }).size ?? 5,
           total,
           onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p }, replace: true }),
           onPageSizeChange: (size) =>
@@ -225,7 +229,11 @@ export function ProductTable({
         }}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>
-          navigate({ to: '/inventory/products/$productId', params: { productId: row.id } })
+          navigate({
+            to: '/inventory/products/$productId',
+            params: { productId: row.id },
+            search,
+          })
         }
       />
     </>
