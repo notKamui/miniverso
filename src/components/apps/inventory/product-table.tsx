@@ -1,17 +1,10 @@
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import {
-  Archive,
-  ArchiveRestore,
-  Copy,
-  MoreVertical,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react'
+import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'
+import { SortableColumnHeader } from '@/components/data/sortable-column-header'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -77,50 +70,30 @@ export function ProductTable({
     },
   })
 
-  const orderBy = (search.orderBy as 'name' | 'price' | 'updatedAt') ?? 'name'
+  type ProductSortColumn = 'name' | 'price' | 'updatedAt'
+  const orderBy = (search.orderBy as ProductSortColumn) ?? 'name'
   const order = (search.order as 'asc' | 'desc') ?? 'asc'
 
-  type SortColumn = 'name' | 'price' | 'updatedAt'
-  function getNextOrder(column: SortColumn) {
-    if (orderBy === column) {
-      return order === 'asc' ? 'desc' : 'asc'
-    }
-    return 'asc'
-  }
-
-  function OrderIndicator({ column }: { column: SortColumn }) {
-    if (orderBy !== column) {
-      return <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" aria-hidden />
-    }
-    if (order === 'asc') {
-      return <ArrowUp className="ml-1 size-3.5" aria-hidden />
-    }
-    return <ArrowDown className="ml-1 size-3.5" aria-hidden />
-  }
-
-  function SortableHeader({ column, label }: { column: SortColumn; label: string }) {
-    return (
-      <button
-        type="button"
-        className="inline-flex items-center text-sm font-medium"
-        onClick={() =>
-          navigate({
-            to: '.',
-            search: { ...search, orderBy: column, order: getNextOrder(column), page: 1 },
-            replace: true,
-          })
-        }
-      >
-        {label}
-        <OrderIndicator column={column} />
-      </button>
-    )
+  function handleSort(column: ProductSortColumn, nextOrder: 'asc' | 'desc') {
+    navigate({
+      to: '.',
+      search: { ...search, orderBy: column, order: nextOrder, page: 1 },
+      replace: true,
+    })
   }
 
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: 'name',
-      header: () => <SortableHeader column="name" label="Name" />,
+      header: () => (
+        <SortableColumnHeader
+          column="name"
+          label="Name"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
       cell: ({ row }) => {
         const p = row.original
         return (
@@ -142,7 +115,15 @@ export function ProductTable({
     },
     {
       accessorKey: 'priceTaxFree',
-      header: () => <SortableHeader column="price" label="Price (ex. tax)" />,
+      header: () => (
+        <SortableColumnHeader
+          column="price"
+          label="Price (ex. tax)"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
       cell: ({ row }) => {
         const p = row.original
         return formatMoney(Number(p.priceTaxFree), currency)
@@ -194,7 +175,15 @@ export function ProductTable({
     },
     {
       accessorKey: 'updatedAt',
-      header: () => <SortableHeader column="updatedAt" label="Last updated" />,
+      header: () => (
+        <SortableColumnHeader
+          column="updatedAt"
+          label="Last updated"
+          activeOrderBy={orderBy}
+          activeOrder={order}
+          onSort={handleSort}
+        />
+      ),
       cell: ({ row }) => {
         const p = row.original
         const d = new Date(p.updatedAt)
