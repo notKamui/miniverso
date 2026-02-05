@@ -94,7 +94,9 @@ function RouteComponent() {
         <div className="flex flex-col gap-2">
           <h4 className={title({ h: 4 })}>Import</h4>
           <p className={text({ variant: 'muted' })}>
-            Upload a previous export file. Entries with unknown users are ignored.
+            Choose a previous export file from your device (.ndjson). Check the same application(s)
+            that were included in the export. Entries for users that don’t exist in this environment
+            are skipped (inventory products may be assigned to you).
           </p>
 
           <div className="flex flex-col gap-2">
@@ -103,7 +105,7 @@ function RouteComponent() {
               ref={importInputRef}
               id="import-file"
               type="file"
-              accept=".ndjson,application/x-ndjson"
+              accept=".ndjson,application/x-ndjson,application/ndjson"
               className="hidden"
               onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
             />
@@ -247,6 +249,10 @@ function useImportNdjson(args: {
 
       toast.success(
         `Import done: ${importedTime} time entries, ${importedInventory} inventory products, ${skipped} skipped, ${processed} lines processed`,
+      )
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Import failed (network or server error)',
       )
     } finally {
       setIsImporting(false)
