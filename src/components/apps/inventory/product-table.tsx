@@ -12,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils/cn'
 import { contrastTextForHex } from '@/lib/utils/color'
 import { formatMoney } from '@/lib/utils/format-money'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
@@ -68,7 +70,17 @@ export function ProductTable({
       await queryClient.invalidateQueries({ queryKey: productsQueryKey })
       toast.success('Product updated')
     },
+    onError: () => {
+      toast.error('Failed to update product')
+    },
   })
+
+  function handleStockBlur(product: Product, value: string) {
+    if (product.kind === 'bundle') return
+    const n = Math.floor(Number.parseFloat(value))
+    if (!Number.isNaN(n) && n >= 0 && n !== product.quantity)
+      updateMut.mutate({ data: { id: product.id, quantity: n } })
+  }
 
   type ProductSortColumn = 'name' | 'price' | 'updatedAt'
   const orderBy = (search.orderBy as ProductSortColumn) ?? 'name'
@@ -145,7 +157,28 @@ export function ProductTable({
         if (p.kind === 'bundle') return '—'
         const q = p.quantity
         return (
-          <span className={q < LOW_STOCK_THRESHOLD ? 'font-medium text-destructive' : ''}>{q}</span>
+          <div
+            className="flex items-center"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              defaultValue={q}
+              onBlur={(e) => handleStockBlur(p, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur()
+                }
+              }}
+              className={cn(
+                'h-8 w-16 border-0 bg-transparent px-2 py-1 text-right focus-visible:ring-1',
+                q < LOW_STOCK_THRESHOLD && 'font-medium text-destructive',
+              )}
+            />
+          </div>
         )
       },
     },
