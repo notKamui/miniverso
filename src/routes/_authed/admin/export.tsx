@@ -15,6 +15,7 @@ export const Route = createFileRoute('/_authed/admin/export')({
 
 function RouteComponent() {
   const [includeTimeRecorder, setIncludeTimeRecorder] = useState(true)
+  const [includeInventory, setIncludeInventory] = useState(false)
   const [userEmail, setUserEmail] = useState('')
   const [importFile, setImportFile] = useState<File | null>(null)
   const importInputRef = useRef<HTMLInputElement | null>(null)
@@ -24,11 +25,13 @@ function RouteComponent() {
 
   const { isExporting, downloadExport } = useExportDownload({
     includeTimeRecorder,
+    includeInventory,
     userEmail: effectiveUserEmail,
   })
 
   const { isImporting, importData } = useImportNdjson({
     includeTimeRecorder,
+    includeInventory,
     importFile,
   })
 
@@ -50,6 +53,13 @@ function RouteComponent() {
               onCheckedChange={(checked) => setIncludeTimeRecorder(checked === true)}
             />
             <span>Time recorder</span>
+          </Label>
+          <Label className="flex items-center gap-2">
+            <Checkbox
+              checked={includeInventory}
+              onCheckedChange={(checked) => setIncludeInventory(checked === true)}
+            />
+            <span>Inventory</span>
           </Label>
         </div>
 
@@ -149,12 +159,16 @@ function parseErrorMessage(text: string) {
   }
 }
 
-function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: string }) {
-  const { includeTimeRecorder, userEmail } = args
+function useExportDownload(args: {
+  includeTimeRecorder: boolean
+  includeInventory: boolean
+  userEmail?: string
+}) {
+  const { includeTimeRecorder, includeInventory, userEmail } = args
   const [isExporting, setIsExporting] = useState(false)
 
   function downloadExport() {
-    if (!includeTimeRecorder) {
+    if (!includeTimeRecorder && !includeInventory) {
       toast.error('Select at least one application to export')
       return
     }
@@ -163,6 +177,7 @@ function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: str
     try {
       const url = new URL('/api/admin/export', location.origin)
       if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+      if (includeInventory) url.searchParams.append('apps', 'inventory')
       if (userEmail) url.searchParams.set('userEmail', userEmail)
 
       const a = document.createElement('a')
@@ -180,12 +195,16 @@ function useExportDownload(args: { includeTimeRecorder: boolean; userEmail?: str
   return { isExporting, downloadExport }
 }
 
-function useImportNdjson(args: { includeTimeRecorder: boolean; importFile: File | null }) {
-  const { includeTimeRecorder, importFile } = args
+function useImportNdjson(args: {
+  includeTimeRecorder: boolean
+  includeInventory: boolean
+  importFile: File | null
+}) {
+  const { includeTimeRecorder, includeInventory, importFile } = args
   const [isImporting, setIsImporting] = useState(false)
 
   async function importData() {
-    if (!includeTimeRecorder) {
+    if (!includeTimeRecorder && !includeInventory) {
       toast.error('Select at least one application to import')
       return
     }
@@ -198,6 +217,7 @@ function useImportNdjson(args: { includeTimeRecorder: boolean; importFile: File 
     try {
       const url = new URL('/api/admin/import', location.origin)
       if (includeTimeRecorder) url.searchParams.append('apps', 'timeRecorder')
+      if (includeInventory) url.searchParams.append('apps', 'inventory')
 
       const res = await fetch(url.toString(), {
         method: 'POST',
@@ -216,15 +236,17 @@ function useImportNdjson(args: { includeTimeRecorder: boolean; importFile: File 
       const summary = (await res.json()) as {
         processedLines?: number
         importedTimeEntries?: number
+        importedInventoryProducts?: number
         skippedUnknownUser?: number
       }
 
       const processed = summary.processedLines ?? 0
-      const imported = summary.importedTimeEntries ?? 0
+      const importedTime = summary.importedTimeEntries ?? 0
+      const importedInventory = summary.importedInventoryProducts ?? 0
       const skipped = summary.skippedUnknownUser ?? 0
 
       toast.success(
-        `Import done: ${imported} imported, ${skipped} skipped, ${processed} lines processed`,
+        `Import done: ${importedTime} time entries, ${importedInventory} inventory products, ${skipped} skipped, ${processed} lines processed`,
       )
     } finally {
       setIsImporting(false)

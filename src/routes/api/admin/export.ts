@@ -4,6 +4,7 @@ import * as z from 'zod'
 import type { Time } from '@/lib/utils/time'
 import { db } from '@/server/db'
 import { user } from '@/server/db/schema/auth'
+import { product } from '@/server/db/schema/inventory'
 import { timeEntry } from '@/server/db/schema/time'
 import { $$adminApi } from '@/server/middlewares/admin'
 
@@ -34,6 +35,23 @@ type TimeRecorderTimeEntryLineV1 = {
   startedAt: string
   endedAt: string | null
   description: string | null
+}
+
+type InventoryProductLineV1 = {
+  type: 'inventory.product'
+  version: 1
+  sourceId: string
+  userEmail: string
+  name: string
+  description: string | null
+  sku: string | null
+  priceTaxFree: string
+  vatPercent: string
+  quantity: number
+  kind: 'simple' | 'bundle'
+  archivedAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 async function exportTimeRecorderNdjsonV1(args: {
@@ -105,6 +123,69 @@ async function exportTimeRecorderNdjsonV1(args: {
   }
 }
 
+async function exportInventoryNdjsonV1(args: {
+  controller: ReadableStreamDefaultController<Uint8Array>
+  encoder: TextEncoder
+  userEmail?: string
+}) {
+  const { controller, encoder, userEmail } = args
+
+  const whereParts = [] as any[]
+  if (userEmail) {
+    whereParts.push(eq(user.email, userEmail))
+  }
+
+  const rows = await db
+    .select({
+      id: product.id,
+      userEmail: user.email,
+      name: product.name,
+      description: product.description,
+      sku: product.sku,
+      priceTaxFree: product.priceTaxFree,
+      vatPercent: product.vatPercent,
+      quantity: product.quantity,
+      kind: product.kind,
+      archivedAt: product.archivedAt,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+    })
+    .from(product)
+    .innerJoin(user, eq(product.userId, user.id))
+    .where(whereParts.length > 0 ? and(...whereParts) : undefined)
+    .orderBy(asc(product.createdAt), asc(product.id))
+
+  let buffer = ''
+  for (const row of rows) {
+    const line: InventoryProductLineV1 = {
+      type: 'inventory.product',
+      version: 1,
+      sourceId: row.id,
+      userEmail: row.userEmail,
+      name: row.name,
+      description: row.description ?? null,
+      sku: row.sku ?? null,
+      priceTaxFree: String(row.priceTaxFree),
+      vatPercent: String(row.vatPercent),
+      quantity: row.quantity,
+      kind: row.kind,
+      archivedAt: row.archivedAt ? row.archivedAt.toISOString() : null,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+    }
+    buffer += `${JSON.stringify(line)}\n`
+
+    if (buffer.length > MAX_BUFFER_SIZE) {
+      controller.enqueue(encoder.encode(buffer))
+      buffer = ''
+    }
+  }
+
+  if (buffer.length > 0) {
+    controller.enqueue(encoder.encode(buffer))
+  }
+}
+
 export const Route = createFileRoute('/api/admin/export')({
   server: {
     middleware: [$$adminApi],
@@ -158,6 +239,13 @@ export const Route = createFileRoute('/api/admin/export')({
                   controller,
                   encoder,
                   userEmail: parsed.data.userEmail,
+                })
+              }
+              if (apps.includes('inventory')) {
+                await exportInventoryNdjsonV1({
+                  controller,
+                  encoder,
+                  userEmail: parsed.data.userEmail ?? undefined,
                 })
               }
               controller.close()
