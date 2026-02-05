@@ -43,6 +43,7 @@ type ProductTableProps = {
     to: string
     search?: Record<string, unknown>
     params?: { productId: string }
+    replace?: boolean
   }) => void
   emptyMessage?: string
 }
@@ -218,8 +219,9 @@ export function ProductTable({
           page,
           pageSize: search.size ?? 5,
           total,
-          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p } }),
-          onPageSizeChange: (size) => navigate({ to: '.', search: { ...search, size, page: 1 } }),
+          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p }, replace: true }),
+          onPageSizeChange: (size) =>
+            navigate({ to: '.', search: { ...search, size, page: 1 }, replace: true }),
         }}
         toolbarSlot={toolbarSlot}
         onRowClick={(row) =>

@@ -149,8 +149,9 @@ function RouteComponent() {
           page: search.page,
           pageSize: search.size,
           total: ordersPage.total,
-          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p } }),
-          onPageSizeChange: (size) => navigate({ to: '.', search: { ...search, size, page: 1 } }),
+          onPageChange: (p) => navigate({ to: '.', search: { ...search, page: p }, replace: true }),
+          onPageSizeChange: (size) =>
+            navigate({ to: '.', search: { ...search, size, page: 1 }, replace: true }),
         }}
         toolbarSlot={
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
