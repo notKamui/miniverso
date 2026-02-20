@@ -1,4 +1,3 @@
-import type { InferSelectModel } from 'drizzle-orm'
 import {
   type ColumnDef,
   flexRender,
@@ -9,9 +8,9 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table'
+import type { InferSelectModel } from 'drizzle-orm'
 import { ChevronDown, ChevronLeft, ChevronRight, MoreVerticalIcon, Trash2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { user } from '@/server/db/schema'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -40,6 +39,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useDebouncedEffect } from '@/lib/hooks/use-debounce'
 import { Time } from '@/lib/utils/time'
+import type { user } from '@/server/db/schema'
 
 function formatDate(date: string | Date) {
   return Time.from(date).formatDay({ short: true })

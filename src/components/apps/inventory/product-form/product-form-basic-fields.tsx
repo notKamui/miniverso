@@ -1,9 +1,9 @@
-import type { ProductFormValues } from '@/lib/forms/product'
-import type { ReactForm } from '@/lib/utils/types'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import type { ProductFormValues } from '@/lib/forms/product'
+import type { ReactForm } from '@/lib/utils/types'
 
 type Props = { form: ReactForm<ProductFormValues> }
 

@@ -1,6 +1,6 @@
-import type { OxlintConfig } from 'oxlint'
+import { defineConfig } from 'oxlint'
 
-export default {
+export default defineConfig({
   plugins: [
     'oxc',
     'typescript',
@@ -321,4 +321,4 @@ export default {
     'unicorn/text-encoding-identifier-case': 'error',
     'unicorn/throw-new-error': 'error',
   },
-} as const satisfies OxlintConfig
+})

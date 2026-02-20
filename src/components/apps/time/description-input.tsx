@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { TimeEntry } from '@/server/db/schema/time'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $createTimeEntryTag,
   getTimeEntryTagsQueryOptions,

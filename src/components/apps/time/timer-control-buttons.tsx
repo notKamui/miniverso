@@ -1,6 +1,6 @@
-import type { TimeEntry, TimeEntryTag } from '@/server/db/schema/time'
 import { AnimatedSpinner } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
+import type { TimeEntry, TimeEntryTag } from '@/server/db/schema/time'
 import { TagSelector } from './tag-selector'
 
 type TimerControlButtonsProps = {

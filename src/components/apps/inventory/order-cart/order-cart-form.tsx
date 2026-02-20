@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form'
-import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -25,7 +25,7 @@ import { NextReference } from './next-reference'
 import { OrderCartAddProductSection } from './order-cart-add-product-section'
 import { OrderCartItemsList } from './order-cart-items-list'
 import { OrderCartSavePresetDialog } from './order-cart-save-preset-dialog'
-import { CartItem, defaultValues } from './types'
+import { type CartItem, defaultValues } from './types'
 import { effectivePriceTaxFree } from './utils'
 
 export function OrderCartForm() {

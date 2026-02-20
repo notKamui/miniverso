@@ -1,6 +1,6 @@
-import type { ComponentProps, ReactNode } from 'react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
+import type { ComponentProps, ReactNode } from 'react'
 import { Spinner } from '@/components/ui/spinner'
 
 const fadeScale = {

@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import type { ReactFormField } from '@/lib/utils/types'
 import { text } from '@/components/ui/typography'
+import type { ReactFormField } from '@/lib/utils/types'
 
 export function FieldInfo({ field }: { field: ReactFormField }) {
   return (

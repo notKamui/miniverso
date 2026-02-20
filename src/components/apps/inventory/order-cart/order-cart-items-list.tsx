@@ -1,7 +1,7 @@
-import type { ReactForm } from '@/lib/utils/types'
 import { Label } from '@/components/ui/label'
-import type { CartItem, OrderCartFormValues, Preset, PriceModification } from './types'
+import type { ReactForm } from '@/lib/utils/types'
 import { OrderCartItemRow } from './order-cart-item-row'
+import type { CartItem, OrderCartFormValues, Preset, PriceModification } from './types'
 
 export function OrderCartItemsList({
   form,

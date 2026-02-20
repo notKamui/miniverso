@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import type { Product } from '@/components/apps/inventory/order-cart/types'
-import type { ProductFormValues } from '@/lib/forms/product'
-import type { ReactForm } from '@/lib/utils/types'
 import { ProductCombobox } from '@/components/apps/inventory/order-cart/comboboxes'
+import type { Product } from '@/components/apps/inventory/order-cart/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { ProductFormValues } from '@/lib/forms/product'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import type { ReactForm } from '@/lib/utils/types'
 import {
   getProductQueryOptions,
   getProductsQueryOptions,
