@@ -1,7 +1,7 @@
 import { ArchiveIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { ProductFormValues } from '@/lib/forms/product'
 import type { ReactForm } from '@/lib/utils/types'
-import { Button } from '@/components/ui/button'
 import { ProductFormExisting } from '.'
 
 type UpdateMutation = {
@@ -28,7 +28,7 @@ export function ProductFormActions({
 }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
-      <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
+      <form.Subscribe<[boolean, boolean]> selector={(s) => [s.canSubmit, s.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (
           <Button type="submit" disabled={!canSubmit || isSubmitting}>
             {isSubmitting ? '…' : isEdit ? 'Update' : 'Create'}

@@ -1,7 +1,5 @@
-import type { MaybePromise } from 'bun'
 import { useForm } from '@tanstack/react-form'
-import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/schema/time'
+import type { MaybePromise } from 'bun'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -16,6 +14,8 @@ import {
 } from '@/components/ui/dialog'
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
+import type { PartialExcept } from '@/lib/utils/types'
+import type { TimeEntry } from '@/server/db/schema/time'
 
 export function EditEntryDialog({
   entry,
@@ -94,7 +94,7 @@ export function EditEntryDialog({
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">
-            <form.Subscribe selector={(state) => state.canSubmit}>
+            <form.Subscribe<boolean> selector={(state) => state.canSubmit}>
               {(canSubmit) => (
                 <Button type="submit" disabled={!canSubmit} className="max-sm:grow">
                   Save

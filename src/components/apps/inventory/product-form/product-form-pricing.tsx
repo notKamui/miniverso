@@ -1,9 +1,9 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import type { ProductFormValues } from '@/lib/forms/product'
-import type { ReactForm } from '@/lib/utils/types'
 import { FormInput } from '@/components/form/form-input'
 import { Label } from '@/components/ui/label'
+import type { ProductFormValues } from '@/lib/forms/product'
 import { formatMoney, getCurrencySymbol } from '@/lib/utils/format-money'
+import type { ReactForm } from '@/lib/utils/types'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
@@ -32,7 +32,9 @@ export function ProductFormPricing({ form }: Props) {
         max={100}
         required
       />
-      <form.Subscribe selector={(s) => [s.values.priceTaxFree, s.values.vatPercent]}>
+      <form.Subscribe<[number | string, number | string]>
+        selector={(s) => [s.values.priceTaxFree, s.values.vatPercent]}
+      >
         {([ptf, vat]) => {
           const priceExcl = Number.parseFloat(String(ptf ?? '')) || 0
           const vatNum = Number.parseFloat(String(vat ?? '')) || 0
