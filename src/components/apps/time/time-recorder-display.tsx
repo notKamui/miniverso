@@ -1,6 +1,6 @@
-import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useHydrated, useRouter } from '@tanstack/react-router'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -12,8 +12,6 @@ import {
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
-import type { PartialExcept } from '@/lib/utils/types'
-import type { TimeEntry } from '@/server/db/schema/time'
 import { AddEntryDialog } from '@/components/apps/time/add-entry-dialog'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
@@ -36,6 +34,8 @@ import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-muta
 import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
+import type { PartialExcept } from '@/lib/utils/types'
+import type { TimeEntry } from '@/server/db/schema/time'
 import {
   $deleteTimeEntries,
   $updateTimeEntry,

@@ -1,6 +1,6 @@
-import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
 import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/data/data-table'

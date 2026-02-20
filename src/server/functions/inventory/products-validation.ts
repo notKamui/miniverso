@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm'
-import type { DbOrTransaction } from '@/server/db'
 import { badRequest } from '@/lib/utils/response'
+import type { DbOrTransaction } from '@/server/db'
 import { inventoryProductionCostLabel, inventoryTag, product } from '@/server/db/schema/inventory'
 
 export async function validateProductTagIds(

@@ -1,10 +1,10 @@
 import { PlusIcon, Trash2Icon } from 'lucide-react'
-import type { ProductFormValues } from '@/lib/forms/product'
-import type { ReactForm } from '@/lib/utils/types'
 import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { ProductFormValues } from '@/lib/forms/product'
+import type { ReactForm } from '@/lib/utils/types'
 
 type LabelOption = { id: string; name: string; color: string }
 

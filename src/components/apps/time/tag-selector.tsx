@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TagIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
-import type { TimeEntryTag } from '@/server/db/schema/time'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils/cn'
+import type { TimeEntryTag } from '@/server/db/schema/time'
 import {
   $deleteTimeEntryTag,
   getTimeEntryTagsQueryOptions,

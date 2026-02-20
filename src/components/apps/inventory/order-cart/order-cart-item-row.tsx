@@ -2,8 +2,8 @@ import { Trash2Icon, XIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatMoney } from '@/lib/utils/format-money'
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
-import type { CartItem, Preset, PriceModification } from './types'
 import { AddModificationPopover } from './add-modification-popover'
+import type { CartItem, Preset, PriceModification } from './types'
 import { effectivePriceTaxFree, modificationLabel } from './utils'
 
 export function OrderCartItemRow({

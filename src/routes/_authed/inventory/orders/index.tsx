@@ -1,6 +1,6 @@
-import type { ColumnDef } from '@tanstack/react-table'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 import { PlusIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import * as z from 'zod'

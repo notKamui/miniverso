@@ -1,9 +1,9 @@
 import type { RefObject } from 'react'
-import type { ProductFormValues } from '@/lib/forms/product'
-import type { ReactForm } from '@/lib/utils/types'
 import { createCombobox } from '@/components/ui/combobox'
 import { Label } from '@/components/ui/label'
+import type { ProductFormValues } from '@/lib/forms/product'
 import { contrastTextForHex } from '@/lib/utils/color'
+import type { ReactForm } from '@/lib/utils/types'
 
 type Tag = { id: string; name: string; color: string }
 

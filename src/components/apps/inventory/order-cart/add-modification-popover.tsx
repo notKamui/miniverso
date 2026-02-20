@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { CartItem, Preset, PriceModification } from './types'
 import { PresetCombobox } from './comboboxes'
+import type { CartItem, Preset, PriceModification } from './types'
 import { presetLabel, presetToModification } from './utils'
 
 export function AddModificationPopover({
