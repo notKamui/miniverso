@@ -25,7 +25,7 @@ import { NextReference } from './next-reference'
 import { OrderCartAddProductSection } from './order-cart-add-product-section'
 import { OrderCartItemsList } from './order-cart-items-list'
 import { OrderCartSavePresetDialog } from './order-cart-save-preset-dialog'
-import { type CartItem, defaultValues, type Prefix } from './types'
+import { type CartItem, defaultValues } from './types'
 import { effectivePriceTaxFree } from './utils'
 
 export function OrderCartForm() {
@@ -198,7 +198,7 @@ export function OrderCartForm() {
                     <PrefixCombobox.Empty>No prefixes. Add one in Settings.</PrefixCombobox.Empty>
                   </PrefixCombobox.Content>
                 </PrefixCombobox.Root>
-                <form.Subscribe<Prefix | null> selector={(s) => s.values.prefix}>
+                <form.Subscribe selector={(s) => s.values.prefix}>
                   {(prefix) => (prefix?.id ? <NextReference prefixId={prefix.id} /> : null)}
                 </form.Subscribe>
               </>
@@ -208,7 +208,7 @@ export function OrderCartForm() {
         <FormInput form={form} name="description" label="Description (optional)" />
       </div>
 
-      <form.Subscribe<string> selector={(s) => s.values.productSearch ?? ''}>
+      <form.Subscribe selector={(s) => s.values.productSearch ?? ''}>
         {(productSearch) => (
           <OrderCartAddProductSection
             form={form}
@@ -226,7 +226,7 @@ export function OrderCartForm() {
         onSavePresetClick={openSavePresetDialog}
       />
 
-      <form.Subscribe<CartItem[]> selector={(s) => s.values.items}>
+      <form.Subscribe selector={(s) => s.values.items}>
         {(items) => {
           const list = items ?? []
           const totalTaxFree = list.reduce((s, i) => s + effectivePriceTaxFree(i) * i.quantity, 0)
@@ -260,7 +260,7 @@ export function OrderCartForm() {
         isPending={createPresetMut.isPending}
       />
 
-      <form.Subscribe<{ items: CartItem[]; prefix: Prefix | null }>
+      <form.Subscribe
         selector={(s) => ({
           items: s.values.items,
           prefix: s.values.prefix,

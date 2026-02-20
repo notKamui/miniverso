@@ -49,7 +49,7 @@ export function ProductFormBasicFields({ form }: Props) {
         )}
       </form.Field>
 
-      <form.Subscribe<'bundle' | 'simple' | undefined> selector={(s) => s.values.kind}>
+      <form.Subscribe selector={(s) => s.values.kind}>
         {(kind) =>
           kind === 'simple' ? (
             <FormInput

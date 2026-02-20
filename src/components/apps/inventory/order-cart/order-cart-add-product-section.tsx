@@ -93,15 +93,7 @@ export function OrderCartAddProductSection({
             />
           )}
         </form.Field>
-        <form.Subscribe<null | {
-          id: string
-          name: string
-          sku?: string | null
-          kind: 'bundle' | 'simple'
-          quantity: number
-        }>
-          selector={(s) => s.values.addProduct}
-        >
+        <form.Subscribe selector={(s) => s.values.addProduct}>
           {(addProduct) => (
             <Button type="button" onClick={onAddItem} disabled={!addProduct}>
               <PlusIcon className="size-4" />

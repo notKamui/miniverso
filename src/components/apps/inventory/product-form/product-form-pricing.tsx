@@ -32,9 +32,7 @@ export function ProductFormPricing({ form }: Props) {
         max={100}
         required
       />
-      <form.Subscribe<[number | string, number | string]>
-        selector={(s) => [s.values.priceTaxFree, s.values.vatPercent]}
-      >
+      <form.Subscribe selector={(s) => [s.values.priceTaxFree, s.values.vatPercent]}>
         {([ptf, vat]) => {
           const priceExcl = Number.parseFloat(String(ptf ?? '')) || 0
           const vatNum = Number.parseFloat(String(vat ?? '')) || 0

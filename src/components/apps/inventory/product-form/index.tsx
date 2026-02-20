@@ -115,7 +115,7 @@ export function ProductForm({ productId, existing, duplicateFrom, onSuccess }: P
     >
       <ProductFormBasicFields form={form} />
       <ProductFormPricing form={form} />
-      <form.Subscribe<'simple' | 'bundle' | undefined> selector={(s) => s.values.kind}>
+      <form.Subscribe selector={(s) => s.values.kind}>
         {(kind) =>
           kind === 'bundle' ? <ProductFormBundleItems form={form} productId={productId} /> : null
         }

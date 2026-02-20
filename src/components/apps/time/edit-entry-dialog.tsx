@@ -94,7 +94,7 @@ export function EditEntryDialog({
           />
 
           <DialogFooter className="max-sm:flex max-sm:flex-row max-sm:gap-4">
-            <form.Subscribe<boolean> selector={(state) => state.canSubmit}>
+            <form.Subscribe selector={(state) => state.canSubmit}>
               {(canSubmit) => (
                 <Button type="submit" disabled={!canSubmit} className="max-sm:grow">
                   Save
