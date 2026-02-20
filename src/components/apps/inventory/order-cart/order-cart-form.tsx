@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form'
-import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -229,7 +229,10 @@ export function OrderCartForm() {
       <form.Subscribe selector={(s) => s.values.items}>
         {(items) => {
           const list = items ?? []
-          const totalTaxFree = list.reduce((s, i) => s + effectivePriceTaxFree(i) * i.quantity, 0)
+          const totalTaxFree = list.reduce((s, i) => {
+            const a = s + effectivePriceTaxFree(i) * i.quantity
+            return a
+          }, 0)
           const totalTaxIncluded = list.reduce(
             (s, i) => s + priceTaxIncluded(effectivePriceTaxFree(i), i.vatPercent) * i.quantity,
             0,
