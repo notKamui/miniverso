@@ -2,6 +2,7 @@
   "typescript.experimental.useTsgo": true,
   "typescript.preferences.importModuleSpecifierPreference": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
+
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
   },
@@ -13,6 +14,7 @@
   },
 
   "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
+
   "tailwindCSS.emmetCompletions": true,
   "tailwindCSS.classAttributes": ["classnames", "classNames", "className", "clsx"],
   "tailwindCSS.experimental.classRegex": [
@@ -20,17 +22,10 @@
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
   ],
 
-  "prettier.enable": false,
-  "eslint.enable": false,
-  "biome.enabled": false,
   "oxc.enable": true,
   "oxc.typeAware": true,
   "oxc.unusedDisableDirectives": "warn",
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "always",
-    "source.fixAll.oxc": "always"
-  },
   "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
@@ -64,5 +59,9 @@
       "source.organizeImports": "never",
       "source.fixAll": "never"
     }
-  }
+  },
+
+  "prettier.enable": false,
+  "eslint.enable": false,
+  "biome.enabled": false
 }
