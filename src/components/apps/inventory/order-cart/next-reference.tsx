@@ -4,7 +4,7 @@ import { $getNextOrderReference } from '@/server/functions/inventory/order-refer
 export function NextReference({ prefixId }: { prefixId: string }) {
   const { data } = useQuery({
     queryKey: ['next-order-ref', prefixId],
-    queryFn: () => $getNextOrderReference({ data: { prefixId } }),
+    queryFn: ({ signal }) => $getNextOrderReference({ data: { prefixId }, signal }),
   })
   return data ? <p className="text-xs text-muted-foreground">Next reference: {data}</p> : null
 }

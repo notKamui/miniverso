@@ -1,7 +1,7 @@
+import type { VisibilityState } from '@tanstack/react-table'
 import { queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie, setCookie } from '@tanstack/react-start/server'
-import type { VisibilityState } from '@tanstack/react-table'
 import * as z from 'zod'
 import { env } from '@/lib/env/server'
 import { tryInline } from '@/lib/utils/try'
@@ -25,7 +25,7 @@ function parseVisibilityState(raw: unknown): VisibilityState {
 export function getColumnVisibilityQueryOptions(key: string) {
   return queryOptions({
     queryKey: ['columnVisibility', key] as const,
-    queryFn: () => $getColumnVisibility({ data: { key } }),
+    queryFn: ({ signal }) => $getColumnVisibility({ data: { key }, signal }),
     staleTime: 1000 * 60 * 5,
   })
 }
