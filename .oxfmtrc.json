@@ -8,8 +8,8 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "lf",
-  "experimentalSortImports": { "newlinesBetween": false },
-  "experimentalTailwindcss": {
+  "sortImports": { "newlinesBetween": false },
+  "sortTailwindcss": {
     "stylesheet": "./src/styles.css",
     "attributes": ["classnames", "classNames", "className", "clsx", "class"],
     "functions": ["clsx", "cn", "cva"],

@@ -25,7 +25,7 @@ function parseVisibilityState(raw: unknown): VisibilityState {
 export function getColumnVisibilityQueryOptions(key: string) {
   return queryOptions({
     queryKey: ['columnVisibility', key] as const,
-    queryFn: () => $getColumnVisibility({ data: { key } }),
+    queryFn: ({ signal }) => $getColumnVisibility({ data: { key }, signal }),
     staleTime: 1000 * 60 * 5,
   })
 }
