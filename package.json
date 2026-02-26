@@ -10,8 +10,8 @@
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
     "build:entrypoint": "bun build --minify --target=bun --outfile=dist/serve.js --packages=external scripts/serve.ts",
     "postbuild": "bun run build:entrypoint",
-    "lint": "oxlint --type-aware --deny-warnings",
-    "lint:no-types": "oxlint --deny-warnings",
+    "lint": "bunx -b oxlint --type-aware --deny-warnings",
+    "lint:no-types": "bunx -b oxlint --deny-warnings",
     "fmt": "oxfmt",
     "fix": "bun run fmt && bun run lint --fix",
     "type-check": "tsgo --noEmit",
@@ -23,7 +23,7 @@
     "auth:secret": "bunx @better-auth/cli@latest secret",
     "auth:generate": "bunx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && bun run fix ./src/server/db/schema/auth.ts",
     "deploy": "sh ./deployment/_.deploy.sh",
-    "up": "bunx taze@latest major -lI"
+    "up": "bunx -b taze@latest major -lI"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -81,7 +81,7 @@
     "@types/node": "^25.3.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260225.1",
+    "@typescript/native-preview": "7.0.0-dev.20260226.1",
     "@vitejs/plugin-react": "^5.1.4",
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.9",
