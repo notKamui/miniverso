@@ -1,6 +1,6 @@
 {
   "name": "miniverso",
-  "version": "1.9.4",
+  "version": "1.10.0",
   "private": true,
   "type": "module",
   "scripts": {
