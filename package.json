@@ -23,7 +23,7 @@
     "db": "drizzle-kit",
     "migrate": "bun db migrate",
     "auth:secret": "bunx @better-auth/cli@latest secret",
-    "auth:generate": "bunx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && bun run fix ./src/server/db/schema/auth.ts",
+    "auth:generate": "bunx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && bun run fix",
     "deploy": "sh ./deployment/_.deploy.sh",
     "up": "bunx -b taze@latest major -lI"
   },
