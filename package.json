@@ -12,6 +12,7 @@
     "postbuild": "bun run build:entrypoint",
     "test": "bun -b vitest",
     "test:run": "bun -b vitest run",
+    "t": "bun test:run",
     "lint": "bunx -b oxlint --type-aware --deny-warnings",
     "lint:no-types": "bunx -b oxlint --deny-warnings",
     "fmt": "oxfmt",
