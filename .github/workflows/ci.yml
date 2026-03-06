@@ -58,4 +58,4 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - name: Run tests
-        run: bun test
+        run: bun test:run

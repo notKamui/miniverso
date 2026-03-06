@@ -1,5 +1,11 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Time } from '@/lib/utils/time'
+
+declare global {
+  interface RequestInit {
+    duplex?: 'half'
+  }
+}
 
 // Install shared mocks once.
 await import('@/../test/helpers/mock-auth')
@@ -21,7 +27,7 @@ function makeNdjsonStream(text: string) {
 }
 
 // Ensure admin middleware is importable without real env/auth.
-await mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
+vi.mock('@/server/middlewares/auth', () => ({ $$auth: {} }))
 
 const importRouteMod = await import('@/routes/api/admin/import')
 const POST = (importRouteMod.Route.options.server?.handlers as any)?.POST as (args: {
@@ -95,6 +101,7 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
         method: 'POST',
         body: stream,
+        duplex: 'half',
       }),
     })
 
@@ -136,9 +143,9 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import', {
         method: 'POST',
         body: makeNdjsonStream(ndjson),
+        duplex: 'half',
       }),
     })
-
     expect(res.status).toBe(200)
     const summary = await res.json()
     expect(summary.apps).toEqual(['timeRecorder'])
@@ -150,6 +157,7 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=otherApp', {
         method: 'POST',
         body: makeNdjsonStream(''),
+        duplex: 'half',
       }),
     })
     expect(res.status).toBe(400)
@@ -167,6 +175,7 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
         method: 'POST',
         body: makeNdjsonStream(`${JSON.stringify(badMeta)}\n`),
+        duplex: 'half',
       }),
     })
     expect(res.status).toBe(400)
@@ -200,6 +209,7 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
         method: 'POST',
         body: makeNdjsonStream(ndjson),
+        duplex: 'half',
       }),
     })
     expect(res.status).toBe(200)
@@ -214,6 +224,7 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
         method: 'POST',
         body: makeNdjsonStream(''),
+        duplex: 'half',
       }),
     })
     expect(res.status).toBe(400)
@@ -229,9 +240,9 @@ describe('/api/admin/import', () => {
       request: new Request('http://localhost/api/admin/import?apps=timeRecorder', {
         method: 'POST',
         body: makeNdjsonStream(ndjson),
+        duplex: 'half',
       }),
     })
-
     expect(res.status).toBe(400)
     const body = await res.json()
     expect(body.error).toBe('Invalid JSON line')

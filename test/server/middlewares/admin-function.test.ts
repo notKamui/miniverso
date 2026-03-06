@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { adminFnGuard } from '@/server/middlewares/admin-guards'
 
 describe('$$admin', () => {
@@ -23,10 +23,10 @@ describe('$$admin', () => {
     expect(err?.message).toBe('403:Admin access required')
   })
 
-  it('denies when user is not admin', () => {
+  it('denies when user is not admin', async () => {
     let nextCalled = false
 
-    expect(
+    await expect(
       adminFnGuard({
         user: { role: 'user' },
         next: () => {

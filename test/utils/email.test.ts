@@ -1,11 +1,11 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 
 // Prepare mocks before importing the module under test
-const sendMock = mock((args: any) => ({ ok: true, args }))
+const sendMock = vi.fn((args: any) => ({ ok: true, args }))
 let constructedApiKey: string | undefined
 
 // Mock env module used by email.tsx
-await mock.module('@/lib/env/server', () => ({
+vi.mock('@/lib/env/server', () => ({
   env: {
     RESEND_API_KEY: 'test-resend-key',
     RESEND_MAIL_DOMAIN: 'example.com',
@@ -14,7 +14,7 @@ await mock.module('@/lib/env/server', () => ({
 }))
 
 // Mock Resend SDK
-await mock.module('resend', () => ({
+vi.mock('resend', () => ({
   Resend: class Resend {
     emails = { send: sendMock }
     constructor(apiKey: string) {
@@ -24,7 +24,7 @@ await mock.module('resend', () => ({
 }))
 
 // Mock EmailTemplate to a simple factory that exposes props for inspection
-await mock.module('@daveyplate/better-auth-ui/server', () => ({
+vi.mock('@daveyplate/better-auth-ui/server', () => ({
   EmailTemplate: (props: any) => ({ __type: 'EmailTemplate', props }),
 }))
 

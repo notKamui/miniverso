@@ -1,13 +1,13 @@
-import { jest } from 'bun:test'
+import { vi } from 'vitest'
 
 export function installFakeTime() {
-  jest.useFakeTimers()
+  vi.useFakeTimers()
   function advance(ms: number) {
-    jest.advanceTimersByTime(ms)
+    vi.advanceTimersByTime(ms)
     return Date.now()
   }
   function restore() {
-    jest.useRealTimers()
+    vi.useRealTimers()
   }
   return { advance, restore }
 }

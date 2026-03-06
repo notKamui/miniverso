@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { tryAsync, tryInline } from '../../src/lib/utils/try'
 
 class CustomError extends Error {}
@@ -43,9 +43,9 @@ describe('tryAsync', () => {
     expect(err?.message).toBe('bad')
   })
 
-  it('rethrows when rejected error is not catchable', () => {
-    expect(
-      async () => await tryAsync(Promise.reject(new OtherError('ouch')), [CustomError]),
-    ).toThrow()
+  it('rethrows when rejected error is not catchable', async () => {
+    await expect(tryAsync(Promise.reject(new OtherError('ouch')), [CustomError])).rejects.toThrow(
+      OtherError,
+    )
   })
 })

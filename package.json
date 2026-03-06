@@ -10,6 +10,8 @@
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
     "build:entrypoint": "bun build --minify --target=bun --outfile=dist/serve.js --packages=external scripts/serve.ts",
     "postbuild": "bun run build:entrypoint",
+    "test": "bun -b vitest",
+    "test:run": "bun -b vitest run",
     "lint": "bunx -b oxlint --type-aware --deny-warnings",
     "lint:no-types": "bunx -b oxlint --deny-warnings",
     "fmt": "oxfmt",
@@ -86,6 +88,7 @@
     "@types/react-dom": "^19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260306.1",
     "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/ui": "4.0.18",
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.9",
     "jsdom": "^28.1.0",
@@ -95,7 +98,8 @@
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "8.0.0-beta.16"
+    "vite": "8.0.0-beta.16",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "vite": "8.0.0-beta.16"

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { computeRequiredQuantities } from '@/server/functions/inventory/orders-bundles'
 
 describe('computeRequiredQuantities', () => {

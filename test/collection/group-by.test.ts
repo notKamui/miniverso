@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test'
-import { Collection } from '../../src/lib/utils/collection'
+import { describe, expect, it } from 'vitest'
+import { Collection } from '@/lib/utils/collection'
 
 describe('Collection.groupBy', () => {
   it('groups numbers by parity (number keys)', () => {

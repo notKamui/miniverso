@@ -6,7 +6,9 @@ export namespace Collection {
   export function partition<T>(array: T[], predicate: (value: T) => boolean): [T[], T[]] {
     const truthy: T[] = []
     const falsy: T[] = []
-    for (const value of array) {
+    for (let i = 0; i < array.length; i++) {
+      if (!(i in array)) continue
+      const value = array[i]!
       if (predicate(value)) truthy.push(value)
       else falsy.push(value)
     }
@@ -29,7 +31,9 @@ export namespace Collection {
     keySelector: (value: T) => K,
   ): Record<K, T[]> {
     const result = {} as Record<K, T[]>
-    for (const value of array) {
+    for (let i = 0; i < array.length; i++) {
+      if (!(i in array)) continue
+      const value = array[i]!
       const key = keySelector(value)
       if (!result[key]) {
         result[key] = []
