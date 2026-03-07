@@ -65,12 +65,9 @@ export function SalesStatsSection({ stats }: SalesStatsSectionProps) {
               <YAxis tickFormatter={(v) => formatMoney(Number(v), currency)} />
               <ChartTooltip
                 cursor={false}
-                content={({ content: _, ...props }) => (
-                  <ChartTooltipContent
-                    {...props}
-                    formatter={(v) => formatMoney(Number(v), currency)}
-                  />
-                )}
+                content={
+                  <ChartTooltipContent formatter={(v) => formatMoney(Number(v), currency)} />
+                }
               />
               <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
             </BarChart>
