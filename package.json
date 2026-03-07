@@ -18,7 +18,7 @@
     "fmt": "oxfmt",
     "type-check": "tsgo --noEmit",
     "tc": "bun type-check",
-    "fix": "bun run --sequential fmt lint:fix",
+    "fix": "bun fmt && bun lint --fix",
     "check": "bun run --parallel --no-exit-on-error check:*",
     "check:lint": "bun lint",
     "check:fmt": "bun fmt --check",
@@ -66,6 +66,8 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/devtools-vite": "^0.5.3",
+    "@tanstack/eslint-plugin-query": "^5.91.4",
+    "@tanstack/eslint-plugin-router": "^1.161.4",
     "@tanstack/react-devtools": "^0.9.10",
     "@tanstack/react-form-devtools": "^0.2.17",
     "@tanstack/react-query-devtools": "^5.91.3",

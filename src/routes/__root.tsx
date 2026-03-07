@@ -21,6 +21,21 @@ export const Route = createRootRouteWithContext<{
   user: User | null
   queryClient: QueryClient
 }>()({
+  beforeLoad: async ({ context: { queryClient } }) => {
+    const [hcaptchaInfo, socialOAuth, requestInfo, user] = await Promise.all([
+      queryClient.fetchQuery(hcaptchaInfoQueryOptions()),
+      queryClient.fetchQuery(socialOAuthQueryOptions()),
+      queryClient.fetchQuery(requestInfoQueryOptions()),
+      queryClient.fetchQuery(userQueryOptions()),
+    ])
+    const { theme, sidebar } = requestInfo.userPreferences
+
+    queryClient.setQueryData(themeQueryKey, theme)
+    queryClient.setQueryData(sidebarStateQueryKey, sidebar)
+
+    return { user, requestInfo, socialOAuth, hcaptchaInfo }
+  },
+  loader: () => ({ crumb: 'Home' }),
   head: () => ({
     meta: [
       {
@@ -39,21 +54,6 @@ export const Route = createRootRouteWithContext<{
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
-  beforeLoad: async ({ context: { queryClient } }) => {
-    const [hcaptchaInfo, socialOAuth, requestInfo, user] = await Promise.all([
-      queryClient.fetchQuery(hcaptchaInfoQueryOptions()),
-      queryClient.fetchQuery(socialOAuthQueryOptions()),
-      queryClient.fetchQuery(requestInfoQueryOptions()),
-      queryClient.fetchQuery(userQueryOptions()),
-    ])
-    const { theme, sidebar } = requestInfo.userPreferences
-
-    queryClient.setQueryData(themeQueryKey, theme)
-    queryClient.setQueryData(sidebarStateQueryKey, sidebar)
-
-    return { user, requestInfo, socialOAuth, hcaptchaInfo }
-  },
-  loader: () => ({ crumb: 'Home' }),
   component: RouteComponent,
 })
 

@@ -11,9 +11,8 @@ import { priceTaxIncluded } from './utils'
 export const inventoryStockStatsQueryKey = ['inventory-stock-stats'] as const
 
 export function getInventoryStockStatsQueryOptions({ labelIds = [] }: { labelIds?: string[] }) {
-  const cacheKey = labelIds.length === 0 ? 'all' : [...labelIds].toSorted().join(',')
   return queryOptions({
-    queryKey: [...inventoryStockStatsQueryKey, cacheKey] as const,
+    queryKey: [...inventoryStockStatsQueryKey, labelIds] as const,
     queryFn: ({ signal }) => $getInventoryStockStats({ signal, data: { labelIds } }),
     staleTime: 1000 * 60 * 2,
   })
