@@ -21,7 +21,7 @@
     "fix": "bun run --sequential fmt lint:fix",
     "check": "bun run --parallel --no-exit-on-error check:*",
     "check:lint": "bun lint",
-    "check:fmt": "bun fmt:check",
+    "check:fmt": "bun fmt --check",
     "check:tc": "bun type-check",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",

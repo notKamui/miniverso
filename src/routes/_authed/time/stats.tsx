@@ -240,7 +240,7 @@ function RouteComponent() {
           <YAxis tickFormatter={chart.format} />
           <ChartTooltip
             cursor={false}
-            content={(props) => (
+            content={({ content: _, ...props }) => (
               <ChartTooltipContent
                 {...props}
                 nameKey="total"
