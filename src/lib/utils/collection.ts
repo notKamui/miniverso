@@ -8,7 +8,7 @@ export namespace Collection {
     const falsy: T[] = []
     for (let i = 0; i < array.length; i++) {
       if (!(i in array)) continue
-      const value = array[i]!
+      const value = array[i]
       if (predicate(value)) truthy.push(value)
       else falsy.push(value)
     }
@@ -33,7 +33,7 @@ export namespace Collection {
     const result = {} as Record<K, T[]>
     for (let i = 0; i < array.length; i++) {
       if (!(i in array)) continue
-      const value = array[i]!
+      const value = array[i]
       const key = keySelector(value)
       if (!result[key]) {
         result[key] = []
