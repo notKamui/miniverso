@@ -240,9 +240,12 @@ function RouteComponent() {
           <YAxis tickFormatter={chart.format} />
           <ChartTooltip
             cursor={false}
-            content={
-              <ChartTooltipContent formatter={(value) => chart.format(Number(value ?? 0))} />
-            }
+            content={(props) => (
+              <ChartTooltipContent
+                {...props}
+                formatter={(value) => chart.format(Number(value ?? 0))}
+              />
+            )}
           />
           <Bar
             dataKey="total"

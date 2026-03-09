@@ -58,7 +58,7 @@
     "react": "^19.2.4",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.4",
-    "recharts": "2.15.4",
+    "recharts": "3.8.0",
     "resend": "^6.9.3",
     "sonner": "^2.0.7",
     "zod": "^4.3.6"
