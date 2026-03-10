@@ -1,7 +1,6 @@
-import handler from '@tanstack/react-start/server-entry'
+import server, { type ServerEntry } from '@tanstack/react-start/server-entry'
+import { FastResponse } from 'srvx'
 
-export default {
-  fetch(request: Request) {
-    return handler.fetch(request)
-  },
-}
+globalThis.Response = FastResponse
+
+export default { fetch: server.fetch } satisfies ServerEntry

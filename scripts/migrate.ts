@@ -1,3 +1,5 @@
+// oxlint-disable unicorn/no-process-exit
+
 import { env } from '../src/lib/env/server'
 
 export async function runDatabaseMigrations() {
@@ -25,9 +27,7 @@ if (import.meta.main) {
   await runDatabaseMigrations()
     .catch((error) => {
       console.error('❌ Migration failed:', error)
-      // oxlint-disable-next-line unicorn/no-process-exit
       process.exit(1)
     })
-    // oxlint-disable-next-line unicorn/no-process-exit
     .then(() => process.exit(0))
 }
