@@ -4,6 +4,7 @@ import type { User } from 'better-auth'
 import type { ReactNode } from 'react'
 import { ClientHintCheck } from '@/components/client-hint-check'
 import { DevTools } from '@/components/devtools'
+import { SWReloadPrompt } from '@/components/sw-reload-prompt'
 import { MainLayout } from '@/layouts/main'
 import { useServerErrors } from '@/lib/hooks/use-server-errors'
 import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
@@ -78,6 +79,7 @@ function RootDocument({ children, theme }: { children: ReactNode; theme: Theme }
         <HeadContent />
       </head>
       <body className="min-h-svh antialiased">
+        <SWReloadPrompt />
         <Providers>{children}</Providers>
         <DevTools />
         <Scripts />
