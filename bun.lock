@@ -65,13 +65,10 @@
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "^4.2.1",
         "tailwindcss-animate": "^1.0.7",
-        "vite": "8.0.0",
+        "vite": "^8.0.0",
         "vitest": "^4.1.0",
       },
     },
-  },
-  "overrides": {
-    "vite": "8.0.0",
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
