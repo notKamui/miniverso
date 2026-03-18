@@ -1,4 +1,39 @@
 export namespace Collection {
+  type MergeRecordsByKeysInput = Record<string, Record<PropertyKey, unknown>>
+
+  type InnerKeys<T extends MergeRecordsByKeysInput> = {
+    [P in keyof T]: keyof T[P]
+  }[keyof T]
+
+  type MergeRecordsByKeysOutput<T extends MergeRecordsByKeysInput> = {
+    [K in InnerKeys<T>]: {
+      [P in keyof T]: K extends keyof T[P] ? T[P][K] | undefined : undefined
+    }
+  }
+
+  export function mergeRecordsByKeys<T extends MergeRecordsByKeysInput>(
+    sources: T,
+  ): MergeRecordsByKeysOutput<T> {
+    const mergedKeys = new Set<PropertyKey>()
+    for (const record of Object.values(sources)) {
+      for (const key of Object.keys(record)) {
+        mergedKeys.add(key)
+      }
+    }
+
+    const result: Record<PropertyKey, Record<string, unknown>> = {}
+
+    for (const key of mergedKeys) {
+      const merged: Record<string, unknown> = {}
+      for (const [sourceName, record] of Object.entries(sources)) {
+        merged[sourceName] = record[key]
+      }
+      result[key] = merged
+    }
+
+    return result as MergeRecordsByKeysOutput<T>
+  }
+
   export function unique<T>(array: T[]): T[] {
     return [...new Set(array)]
   }
