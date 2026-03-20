@@ -32,4 +32,3 @@ describe('Collection.mergeRecordsByKeys', () => {
     expect(res.python.config).toBe(undefined)
   })
 })
-
