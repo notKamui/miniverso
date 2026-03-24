@@ -1,9 +1,10 @@
+/// <reference types="vitest/config" />
+
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import type { TestUserConfig } from 'vitest/config'
 import pkg from './package.json'
 
 function chunkNodeModules(id: string) {
@@ -37,10 +38,4 @@ export default defineConfig({
 
 declare global {
   const APP_VERSION: string
-}
-
-declare module 'vite' {
-  interface UserConfig {
-    test?: TestUserConfig
-  }
 }
