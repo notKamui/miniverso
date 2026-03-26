@@ -12,16 +12,6 @@ export default defineConfig({
     'promise',
     'node',
   ],
-  jsPlugins: [
-    {
-      name: 'tanstack-router',
-      specifier: '@tanstack/eslint-plugin-router',
-    },
-    {
-      name: 'tanstack-query',
-      specifier: '@tanstack/eslint-plugin-query',
-    },
-  ],
   ignorePatterns: [
     '**/node_modules/**',
     '**/bun.lock',
@@ -33,14 +23,6 @@ export default defineConfig({
     correctness: 'off',
   },
   rules: {
-    'tanstack-router/create-route-property-order': 'error',
-    'tanstack-query/exhaustive-deps': 'error',
-    'tanstack-query/stable-query-client': 'error',
-    'tanstack-query/no-rest-destructuring': 'error',
-    'tanstack-query/no-unstable-deps': 'error',
-    'tanstack-query/infinite-query-property-order': 'error',
-    'tanstack-query/no-void-query-fn': 'error',
-    'tanstack-query/mutation-property-order': 'error',
     'eslint/constructor-super': 'error',
     'eslint/default-case-last': 'error',
     'eslint/default-param-last': 'error',
