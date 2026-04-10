@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { buildObject } from '../../src/lib/utils/build-object'
 
 describe('buildObject', () => {

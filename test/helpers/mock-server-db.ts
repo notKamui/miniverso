@@ -1,4 +1,4 @@
-import { mock } from 'bun:test'
+import { vi } from 'vitest'
 
 type ExportRow = {
   id: string
@@ -69,7 +69,7 @@ function exportQueryBuilder() {
   }
 }
 
-await mock.module('@/server/db', () => ({
+vi.mock('@/server/db', () => ({
   db: {
     select: (_shape: any) => ({
       from: (_table: any) => {

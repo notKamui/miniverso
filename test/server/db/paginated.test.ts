@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'bun:test'
-import { paginated } from '@/server/db/utils'
+import { describe, expect, it } from 'vitest'
 
 // Install shared server DB mock and use its transaction injection hook.
 const dbMock = await import('@/../test/helpers/mock-server-db')
+const { paginated } = await import('@/server/db/utils')
 
 function makeFakeDb(args: { total: number; rows: any[] }) {
   const calls = {

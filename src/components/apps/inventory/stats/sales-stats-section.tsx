@@ -58,7 +58,7 @@ export function SalesStatsSection({ stats }: SalesStatsSectionProps) {
         </div>
 
         {chartData.length > 0 && (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-75 w-full">
             <BarChart data={chartData} margin={{ left: 20 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />

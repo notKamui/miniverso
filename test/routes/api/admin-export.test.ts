@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { Time } from '@/lib/utils/time'
 
 // Install shared mocks once.
@@ -17,7 +17,7 @@ const exportedRows = Array.from({ length: 3 }, (_, i) => {
 })
 
 // Ensure admin middleware is importable without real env/auth.
-await mock.module('@/server/middlewares/auth', () => ({ $$auth: {} }))
+vi.mock('@/server/middlewares/auth', () => ({ $$auth: {} }))
 
 const exportRouteMod = await import('@/routes/api/admin/export')
 const GET = (exportRouteMod.Route.options.server?.handlers as any)?.GET as (args: {

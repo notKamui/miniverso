@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it, vi } from 'vitest'
 import { Collection } from '@/lib/utils/collection'
 
 describe('Collection.partition', () => {
@@ -38,7 +38,7 @@ describe('Collection.partition', () => {
 
   it('calls predicate for each element', () => {
     const input = [10, 20, 30]
-    const predicate = mock((n: number) => n > 15)
+    const predicate = vi.fn((n: number) => n > 15)
     const [gt, le] = Collection.partition(input, predicate)
     expect(predicate).toHaveBeenCalledTimes(3)
     expect(gt).toEqual([20, 30])

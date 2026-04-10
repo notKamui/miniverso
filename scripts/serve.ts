@@ -1,3 +1,5 @@
+// oxlint-disable unicorn/no-process-exit
+
 /**
  * TanStack Start Production Server with Bun
  *
@@ -392,11 +394,8 @@ async function startServer() {
 
   if (error) {
     console.error('❌ Failed to load server module:', error)
-    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
-
-  const handler = module.default
 
   const { routes } = await buildStaticRoutes(CLIENT_DIR)
 
@@ -404,7 +403,7 @@ async function startServer() {
     port: PORT,
     routes: {
       ...routes,
-      '/*': (req: Request) => handler.fetch(req),
+      '/*': module.default.fetch,
     },
     error(error) {
       console.error('Uncaught server error:', error)
@@ -419,14 +418,12 @@ async function main() {
   const [migrationError] = await tryAsync(runDatabaseMigrations())
   if (migrationError) {
     console.error('❌ Failed to run database migrations:', migrationError)
-    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 
   const [serverError] = await tryAsync(startServer())
   if (serverError) {
     console.error('❌ Failed to start server:', serverError)
-    // oxlint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   }
 }

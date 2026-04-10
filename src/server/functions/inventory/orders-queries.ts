@@ -37,7 +37,7 @@ export function getOrdersQueryOptions(params: z.input<typeof getOrdersSchema> = 
     endDate: params.endDate,
   }
   return queryOptions({
-    queryKey: [...ordersQueryKey, params] as const,
+    queryKey: [...ordersQueryKey, data] as const,
     queryFn: ({ signal }) => $getOrders({ signal, data }),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 30,

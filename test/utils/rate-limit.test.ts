@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { createTokenBucketManager } from '../../src/lib/utils/rate-limit'
 import { withFakeTime } from '../helpers/fake-time'
 

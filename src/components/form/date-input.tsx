@@ -1,4 +1,4 @@
-import { Label } from '@radix-ui/react-label'
+import { Label } from 'radix-ui'
 import { FieldInfo } from '@/components/form/field-info'
 import { CalendarSelect } from '@/components/ui/calendar-select'
 import type { ReactForm } from '@/lib/utils/types'
@@ -14,7 +14,7 @@ export function DateInput<F extends Record<string, any>>({ name, form, label }: 
     <form.Field name={name as any}>
       {(field) => (
         <div className="space-y-2">
-          <Label htmlFor={field.name}>{label}</Label>
+          <Label.Root htmlFor={field.name}>{label}</Label.Root>
           <CalendarSelect
             value={field.state.value as any}
             onBlur={field.handleBlur}

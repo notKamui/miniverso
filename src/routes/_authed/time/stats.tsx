@@ -243,7 +243,6 @@ function RouteComponent() {
             content={(props) => (
               <ChartTooltipContent
                 {...props}
-                nameKey="total"
                 formatter={(value) => chart.format(Number(value ?? 0))}
               />
             )}
@@ -253,7 +252,8 @@ function RouteComponent() {
             fill="var(--color-total)"
             radius={4}
             onClick={async (data) => {
-              const dayKey = chart.getDayKey(data as unknown as { dayKey: DayKey })
+              if (!('dayKey' in data)) throw new Error('Expected data to have dayKey in payload')
+              const dayKey = chart.getDayKey(data as { dayKey: DayKey })
               if (dayKey) {
                 await navigate({
                   to: '/time/{-$day}',
