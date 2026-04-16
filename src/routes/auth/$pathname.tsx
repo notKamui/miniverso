@@ -1,34 +1,15 @@
 import { viewPaths } from '@better-auth-ui/react/core'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Auth } from '@/components/auth/auth'
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
-  loader: async ({ params: { pathname } }) => {
+  beforeLoad: async ({ params: { pathname } }) => {
     if (!Object.values(viewPaths.auth).includes(pathname)) {
-      throw redirect({ to: '/' })
-    }
-
-    // if (
-    //   !user &&
-    //   ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP, authViewPaths.FORGOT_PASSWORD].includes(
-    //     pathname,
-    //   )
-    // ) {
-    //   throw redirect({
-    //     to: '/auth/$pathname',
-    //     params: { pathname: authViewPaths.SIGN_IN },
-    //   })
-    // }
-
-    // if (user && pathname === authViewPaths.SIGN_OUT) {
-    //   await queryClient.invalidateQueries({ queryKey: ['user'] })
-    // }
-
-    return {
-      crumb: 'Auth',
+      throw notFound()
     }
   },
+  loader: ({ params: { pathname } }) => ({ crumb: pathname }),
   component: RouteComponent,
 })
 

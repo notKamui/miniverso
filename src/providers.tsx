@@ -28,21 +28,26 @@ export function Providers({ children }: { children: ReactNode }) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { socialOAuth } = useGlobalContext()
   const socialOAuthProviders = Object.entries(socialOAuth ?? {})
-    .filter(([, enabled]) => enabled)
+    .filter(([name, enabled]) => enabled && name !== 'emailAndPassword')
     .map(([provider]) => provider)
   const navigate = useNavigate()
-  const { data } = useSuspenseQuery(themeQueryOptions())
-  const theme = data ?? undefined
-  const { mutate } = useUpdateTheme()
-  const setTheme = (theme: string) => {
-    mutate(theme as Theme | 'system')
-  }
+  const { data: theme } = useSuspenseQuery(themeQueryOptions())
+  const { mutate: setTheme } = useUpdateTheme()
 
   return (
     <BetterAuthProvider
       authClient={authClient}
-      appearance={{ theme, setTheme }}
-      magicLink
+      appearance={{
+        theme: theme ?? 'system',
+        setTheme: (theme) => setTheme(theme as Theme | 'system'),
+      }}
+      emailAndPassword={{
+        enabled: socialOAuth?.emailAndPassword,
+        confirmPassword: true,
+        forgotPassword: true,
+        rememberMe: true,
+        requireEmailVerification: true,
+      }}
       multiSession
       socialProviders={socialOAuthProviders}
       redirectTo="/"
