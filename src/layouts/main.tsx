@@ -1,6 +1,4 @@
-import { UserButton } from '@daveyplate/better-auth-ui'
-import { Link, linkOptions, useRouteContext } from '@tanstack/react-router'
-import { ShieldIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import { ThemeSwitcher } from '@/components/theme-switcher'
@@ -14,6 +12,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { UserButton } from '@/components/user/user-button'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
 import { useSidebarState, useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
@@ -23,10 +22,6 @@ export function MainLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile(true)
   const sidebarOpen = useSidebarState() === 'open'
   const { mutate: updateSidebarState } = useUpdateSidebarState()
-  const isAdmin = useRouteContext({
-    from: '__root__',
-    select: ({ user }) => user?.role === 'admin',
-  })
 
   return (
     <SidebarProvider
@@ -59,18 +54,18 @@ export function MainLayout({ children }: { children: ReactNode }) {
             <UserButton
               size={isMobile ? 'icon' : 'default'}
               variant="ghost"
-              additionalLinks={
-                isAdmin
-                  ? [
-                      {
-                        href: linkOptions({ to: '/admin' }).to,
-                        label: 'Admin',
-                        icon: <ShieldIcon />,
-                        signedIn: true,
-                      },
-                    ]
-                  : []
-              }
+              // additionalLinks={
+              //   isAdmin
+              //     ? [
+              //         {
+              //           href: linkOptions({ to: '/admin' }).to,
+              //           label: 'Admin',
+              //           icon: <ShieldIcon />,
+              //           signedIn: true,
+              //         },
+              //       ]
+              //     : []
+              // }
             />
           </div>
         </header>

@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsPathnameRouteImport } from './routes/settings/$pathname'
 import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
-import { Route as AccountPathnameRouteImport } from './routes/account/$pathname'
 import { Route as AuthedTimeRouteRouteImport } from './routes/_authed/time/route'
 import { Route as AuthedInventoryRouteRouteImport } from './routes/_authed/inventory/route'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
@@ -44,14 +44,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsPathnameRoute = SettingsPathnameRouteImport.update({
+  id: '/settings/$pathname',
+  path: '/settings/$pathname',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthPathnameRoute = AuthPathnameRouteImport.update({
   id: '/auth/$pathname',
   path: '/auth/$pathname',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AccountPathnameRoute = AccountPathnameRouteImport.update({
-  id: '/account/$pathname',
-  path: '/account/$pathname',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedTimeRouteRoute = AuthedTimeRouteRouteImport.update({
@@ -172,8 +172,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/time': typeof AuthedTimeRouteRouteWithChildren
-  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
+  '/settings/$pathname': typeof SettingsPathnameRoute
   '/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
@@ -196,8 +196,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/time': typeof AuthedTimeRouteRouteWithChildren
-  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
+  '/settings/$pathname': typeof SettingsPathnameRoute
   '/admin/export': typeof AuthedAdminExportRoute
   '/admin/users': typeof AuthedAdminUsersRoute
   '/inventory/cash': typeof AuthedInventoryCashRoute
@@ -223,8 +223,8 @@ export interface FileRoutesById {
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
   '/_authed/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/_authed/time': typeof AuthedTimeRouteRouteWithChildren
-  '/account/$pathname': typeof AccountPathnameRoute
   '/auth/$pathname': typeof AuthPathnameRoute
+  '/settings/$pathname': typeof SettingsPathnameRoute
   '/_authed/inventory/orders': typeof AuthedInventoryOrdersRouteRouteWithChildren
   '/_authed/admin/export': typeof AuthedAdminExportRoute
   '/_authed/admin/users': typeof AuthedAdminUsersRoute
@@ -251,8 +251,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/inventory'
     | '/time'
-    | '/account/$pathname'
     | '/auth/$pathname'
+    | '/settings/$pathname'
     | '/inventory/orders'
     | '/admin/export'
     | '/admin/users'
@@ -275,8 +275,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/time'
-    | '/account/$pathname'
     | '/auth/$pathname'
+    | '/settings/$pathname'
     | '/admin/export'
     | '/admin/users'
     | '/inventory/cash'
@@ -301,8 +301,8 @@ export interface FileRouteTypes {
     | '/_authed/admin'
     | '/_authed/inventory'
     | '/_authed/time'
-    | '/account/$pathname'
     | '/auth/$pathname'
+    | '/settings/$pathname'
     | '/_authed/inventory/orders'
     | '/_authed/admin/export'
     | '/_authed/admin/users'
@@ -326,8 +326,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
-  AccountPathnameRoute: typeof AccountPathnameRoute
   AuthPathnameRoute: typeof AuthPathnameRoute
+  SettingsPathnameRoute: typeof SettingsPathnameRoute
   ApiAdminExportRoute: typeof ApiAdminExportRoute
   ApiAdminImportRoute: typeof ApiAdminImportRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -349,18 +349,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/$pathname': {
+      id: '/settings/$pathname'
+      path: '/settings/$pathname'
+      fullPath: '/settings/$pathname'
+      preLoaderRoute: typeof SettingsPathnameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/$pathname': {
       id: '/auth/$pathname'
       path: '/auth/$pathname'
       fullPath: '/auth/$pathname'
       preLoaderRoute: typeof AuthPathnameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/$pathname': {
-      id: '/account/$pathname'
-      path: '/account/$pathname'
-      fullPath: '/account/$pathname'
-      preLoaderRoute: typeof AccountPathnameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/time': {
@@ -602,8 +602,8 @@ const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
-  AccountPathnameRoute: AccountPathnameRoute,
   AuthPathnameRoute: AuthPathnameRoute,
+  SettingsPathnameRoute: SettingsPathnameRoute,
   ApiAdminExportRoute: ApiAdminExportRoute,
   ApiAdminImportRoute: ApiAdminImportRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

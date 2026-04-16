@@ -1,11 +1,13 @@
-import { AuthQueryProvider } from '@daveyplate/better-auth-tanstack'
-import { AuthUIProviderTanstack } from '@daveyplate/better-auth-ui/tanstack'
-import { Link, useRouter } from '@tanstack/react-router'
+import { AuthProvider as BetterAuthProvider } from '@better-auth-ui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { LazyMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { authClient } from '@/lib/auth-client'
 import { useGlobalContext } from '@/lib/hooks/use-global-context'
+import { themeQueryOptions, useUpdateTheme } from './lib/hooks/use-theme'
+import { Theme } from './server/functions/theme'
 
 async function motionFeatures() {
   const mod = await import('@/lib/utils/motion-features')
@@ -13,33 +15,41 @@ async function motionFeatures() {
 }
 
 export function Providers({ children }: { children: ReactNode }) {
-  const router = useRouter()
-  const { socialOAuth, hcaptchaInfo } = useGlobalContext()
+  return (
+    <LazyMotion strict features={motionFeatures}>
+      <AuthProvider>
+        {children}
+        <Toaster closeButton duration={5000} richColors visibleToasts={5} />
+      </AuthProvider>
+    </LazyMotion>
+  )
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { socialOAuth } = useGlobalContext()
   const socialOAuthProviders = Object.entries(socialOAuth ?? {})
     .filter(([, enabled]) => enabled)
     .map(([provider]) => provider)
-  const captcha = hcaptchaInfo?.siteKey
-    ? ({ provider: 'hcaptcha', siteKey: hcaptchaInfo.siteKey } as const)
-    : undefined
+  const navigate = useNavigate()
+  const { data } = useSuspenseQuery(themeQueryOptions())
+  const theme = data ?? undefined
+  const { mutate } = useUpdateTheme()
+  const setTheme = (theme: string) => {
+    mutate(theme as Theme | 'system')
+  }
 
   return (
-    <LazyMotion strict features={motionFeatures}>
-      <AuthQueryProvider>
-        <AuthUIProviderTanstack
-          authClient={authClient}
-          navigate={(href) => router.navigate({ href })}
-          replace={(href) => router.navigate({ href, replace: true })}
-          Link={({ href, ...props }) => <Link to={href} {...props} />}
-          social={{
-            providers: socialOAuthProviders,
-          }}
-          credentials={socialOAuth.emailAndPassword}
-          captcha={captcha}
-        >
-          {children}
-          <Toaster closeButton duration={5000} richColors visibleToasts={5} />
-        </AuthUIProviderTanstack>
-      </AuthQueryProvider>
-    </LazyMotion>
+    <BetterAuthProvider
+      authClient={authClient}
+      appearance={{ theme, setTheme }}
+      magicLink
+      multiSession
+      socialProviders={socialOAuthProviders}
+      redirectTo="/"
+      navigate={navigate}
+      Link={Link}
+    >
+      {children}
+    </BetterAuthProvider>
   )
 }
