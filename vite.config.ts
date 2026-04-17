@@ -30,9 +30,6 @@ export default defineConfig({
       RESEND_MAIL_DOMAIN: 'example.com',
     },
   },
-  ssr: {
-    noExternal: ['@better-auth-ui/core', '@better-auth-ui/react'],
-  },
   build: {
     chunkSizeWarningLimit: 1000,
     rolldownOptions: { output: { manualChunks: chunkNodeModules } },
