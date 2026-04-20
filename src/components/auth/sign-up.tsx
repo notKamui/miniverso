@@ -1,5 +1,6 @@
-import { useAuth, useSignInSocial, useSignUpEmail } from '@better-auth-ui/react'
-import { Eye, EyeOff } from 'lucide-react'
+import { useAuth, useIsUsernameAvailable, useSignUpEmail } from '@better-auth-ui/react'
+import { useDebouncer } from '@tanstack/react-pacer'
+import { Check, Eye, EyeOff, X } from 'lucide-react'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -52,6 +53,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
     magicLink,
     redirectTo,
     socialProviders,
+    username: usernameConfig,
     viewPaths,
     navigate,
     Link,
@@ -59,6 +61,35 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [username, setUsername] = useState('')
+
+  const {
+    mutate: isUsernameAvailable,
+    data: usernameData,
+    error: usernameError,
+    reset: resetUsername,
+  } = useIsUsernameAvailable()
+
+  const usernameDebouncer = useDebouncer(
+    (value: string) => {
+      if (!value.trim()) {
+        resetUsername()
+        return
+      }
+
+      isUsernameAvailable({ username: value.trim() })
+    },
+    { wait: 500 },
+  )
+
+  function handleUsernameChange(value: string) {
+    setUsername(value)
+    resetUsername()
+
+    if (usernameConfig?.isUsernameAvailable) {
+      usernameDebouncer.maybeExecute(value)
+    }
+  }
 
   const { mutate: signUpEmail, isPending: signUpPending } = useSignUpEmail({
     onError: (error) => {
@@ -76,20 +107,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
     },
   })
 
-  const [socialRedirecting, setSocialRedirecting] = useState(false)
-
-  const { mutate: signInSocial, isPending: socialPending } = useSignInSocial({
-    onError: (error) => toast.error(error.error?.message || error.message),
-    onSuccess: async () => {
-      setSocialRedirecting(true)
-
-      setTimeout(() => {
-        setSocialRedirecting(false)
-      }, 5000)
-    },
-  })
-
-  const isPending = signUpPending || socialPending || socialRedirecting
+  const isPending = signUpPending
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
@@ -115,7 +133,17 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
       return
     }
 
-    signUpEmail({ name, email, password })
+    signUpEmail({
+      name,
+      email,
+      password,
+      ...(usernameConfig?.enabled
+        ? {
+            username: username.trim(),
+            ...(usernameConfig.displayUsername ? { displayUsername: username.trim() } : {}),
+          }
+        : {}),
+    })
   }
 
   const showSeparator = emailAndPassword?.enabled && socialProviders && socialProviders.length > 0
@@ -131,11 +159,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
           {socialPosition === 'top' && (
             <>
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons
-                  socialLayout={socialLayout}
-                  signInSocial={signInSocial}
-                  isPending={isPending}
-                />
+                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
               )}
 
               {showSeparator && (
@@ -179,6 +203,55 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
 
                   <FieldError>{fieldErrors.name}</FieldError>
                 </Field>
+
+                {usernameConfig?.enabled && (
+                  <Field
+                    data-invalid={
+                      Boolean(usernameError) || (usernameData && !usernameData.available)
+                    }
+                  >
+                    <Label htmlFor="username">{localization.auth.username}</Label>
+
+                    <InputGroup>
+                      <InputGroupInput
+                        id="username"
+                        name="username"
+                        type="text"
+                        autoComplete="username"
+                        placeholder={localization.auth.usernamePlaceholder}
+                        required
+                        minLength={usernameConfig.minUsernameLength}
+                        maxLength={usernameConfig.maxUsernameLength}
+                        disabled={isPending}
+                        value={username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        aria-invalid={
+                          Boolean(usernameError) || (usernameData && !usernameData.available)
+                        }
+                      />
+
+                      {usernameConfig.isUsernameAvailable && username.trim() && (
+                        <InputGroupAddon align="inline-end">
+                          {usernameData?.available ? (
+                            <Check className="text-foreground" />
+                          ) : usernameError || usernameData?.available === false ? (
+                            <X className="text-destructive" />
+                          ) : (
+                            <Spinner />
+                          )}
+                        </InputGroupAddon>
+                      )}
+                    </InputGroup>
+
+                    <FieldError>
+                      {usernameError?.error?.message ||
+                        usernameError?.message ||
+                        (usernameData?.available === false
+                          ? localization.auth.usernameTaken
+                          : null)}
+                    </FieldError>
+                  </Field>
+                )}
 
                 <Field data-invalid={Boolean(fieldErrors.email)}>
                   <Label htmlFor="email">{localization.auth.email}</Label>
@@ -348,11 +421,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
               )}
 
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons
-                  socialLayout={socialLayout}
-                  signInSocial={signInSocial}
-                  isPending={isPending}
-                />
+                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
               )}
             </>
           )}

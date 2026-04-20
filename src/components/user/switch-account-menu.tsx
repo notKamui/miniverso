@@ -1,5 +1,3 @@
-'use client'
-
 import { useAuth, useListDeviceSessions, useSession } from '@better-auth-ui/react'
 import { Check, CirclePlus } from 'lucide-react'
 import {

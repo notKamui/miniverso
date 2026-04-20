@@ -1,7 +1,4 @@
-'use client'
-
 import { useAuth, useListDeviceSessions, useSession } from '@better-auth-ui/react'
-import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils/cn'
@@ -23,12 +20,7 @@ export function ManageAccounts({ className }: ManageAccountsProps) {
   const { localization } = useAuth()
   const { data: session } = useSession()
 
-  const { data: deviceSessions, isPending } = useListDeviceSessions({
-    throwOnError: (error) => {
-      if (error.error) toast.error(error.error.message)
-      return false
-    },
-  })
+  const { data: deviceSessions, isPending } = useListDeviceSessions()
 
   const otherSessions = deviceSessions?.filter(
     (deviceSession) => deviceSession.session.id !== session?.session.id,

@@ -1,5 +1,4 @@
 import { useAuth, useListAccounts } from '@better-auth-ui/react'
-import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,12 +21,7 @@ export type LinkedAccountsProps = {
 export function LinkedAccounts({ className }: LinkedAccountsProps) {
   const { localization, socialProviders } = useAuth()
 
-  const { data: accounts, isPending } = useListAccounts({
-    throwOnError: (error) => {
-      if (error.error) toast.error(error.error.message)
-      return false
-    },
-  })
+  const { data: accounts, isPending } = useListAccounts()
 
   const linkedAccounts = accounts?.filter((account) => account.providerId !== 'credential')
 

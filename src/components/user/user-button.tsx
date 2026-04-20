@@ -141,7 +141,7 @@ export function UserButton({
 
             <DropdownMenuSeparator />
 
-            {themeToggle && theme && setTheme && themes?.length > 0 && (
+            {themeToggle && theme && setTheme && themes.length > 0 && (
               <>
                 <DropdownMenuItem
                   className="cursor-default! justify-between py-0.75 hover:bg-transparent!"

@@ -42,12 +42,9 @@ export function ManageAccount({ deviceSession, isPending }: ManageAccountProps) 
   const { localization } = useAuth()
   const { data: session } = useSession()
 
-  const { mutate: setActiveSession, isPending: isSwitching } = useSetActiveSession({
-    onError: (error) => toast.error(error.error?.message || error.message),
-  })
+  const { mutate: setActiveSession, isPending: isSwitching } = useSetActiveSession()
 
   const { mutate: revokeSession, isPending: isRevoking } = useRevokeMultiSession({
-    onError: (error) => toast.error(error.error?.message || error.message),
     onSuccess: () => toast.success(localization.settings.revokeSessionSuccess),
   })
 

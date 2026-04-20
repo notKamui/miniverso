@@ -1,6 +1,5 @@
 import { useAuth, useSignInPasskey } from '@better-auth-ui/react'
 import { Fingerprint } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
@@ -13,7 +12,6 @@ export function PasskeyButton({ isPending }: PasskeyButtonProps) {
   const { localization, redirectTo, navigate } = useAuth()
 
   const { mutate: signInPasskey, isPending: passkeyPending } = useSignInPasskey({
-    onError: (error) => toast.error(error.error?.message || error.message),
     onSuccess: () => navigate({ to: redirectTo }),
   })
 

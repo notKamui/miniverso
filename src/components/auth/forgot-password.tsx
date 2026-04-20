@@ -26,7 +26,6 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
   const { basePaths, localization, viewPaths, Link } = useAuth()
 
   const { mutate: requestPasswordReset, isPending } = useRequestPasswordReset({
-    onError: (error) => toast.error(error.message || error.statusText),
     onSuccess: () => toast.success(localization.auth.passwordResetEmailSent),
   })
 

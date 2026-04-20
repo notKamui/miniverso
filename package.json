@@ -41,6 +41,7 @@
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/query-core": "^5.99.2",
     "@tanstack/react-form": "^1.29.0",
+    "@tanstack/react-pacer": "^0.22.0",
     "@tanstack/react-query": "^5.99.2",
     "@tanstack/react-router": "^1.168.23",
     "@tanstack/react-router-ssr-query": "^1.166.11",

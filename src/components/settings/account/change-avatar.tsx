@@ -1,5 +1,3 @@
-'use client'
-
 import { useAuth, useSession, useUpdateUser } from '@better-auth-ui/react'
 import { fileToBase64 } from '@better-auth-ui/react/core'
 import { Trash2, Upload } from 'lucide-react'
@@ -25,9 +23,7 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
   const { localization, avatar } = useAuth()
   const { data: session } = useSession()
 
-  const { mutate: updateUser, isPending: updatePending } = useUpdateUser({
-    onError: (error) => toast.error(error.error?.message || error.message),
-  })
+  const { mutate: updateUser, isPending: updatePending } = useUpdateUser()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)

@@ -1,5 +1,3 @@
-'use client'
-
 import { useAuth, useRevokeSession, useSession } from '@better-auth-ui/react'
 import type { Session } from 'better-auth'
 import Bowser from 'bowser'
@@ -50,7 +48,6 @@ export function ActiveSession({ activeSession }: ActiveSessionProps) {
   const { data: session } = useSession({ refetchOnMount: false })
 
   const { mutate: revokeSession, isPending: isRevoking } = useRevokeSession({
-    onError: (error) => toast.error(error.error?.message || error.message),
     onSuccess: () => toast.success(localization.settings.revokeSessionSuccess),
   })
 

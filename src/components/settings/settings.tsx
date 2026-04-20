@@ -1,5 +1,3 @@
-'use client'
-
 import { useAuth, useAuthenticate } from '@better-auth-ui/react'
 import type { SettingsView } from '@better-auth-ui/react/core'
 import { useMemo } from 'react'

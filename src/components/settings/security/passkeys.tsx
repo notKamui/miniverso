@@ -1,5 +1,4 @@
 import { useAddPasskey, useAuth, useListUserPasskeys } from '@better-auth-ui/react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -15,16 +14,9 @@ export type PasskeysProps = {
 export function Passkeys({ className }: PasskeysProps) {
   const { localization } = useAuth()
 
-  const { data: passkeys, isPending } = useListUserPasskeys({
-    throwOnError: (error) => {
-      if (error.error) toast.error(error.error.message)
-      return false
-    },
-  })
+  const { data: passkeys, isPending } = useListUserPasskeys()
 
-  const { mutate: addPasskey, isPending: isAdding } = useAddPasskey({
-    onError: (error) => toast.error(error.error?.message || error.message),
-  })
+  const { mutate: addPasskey, isPending: isAdding } = useAddPasskey()
 
   return (
     <div>
