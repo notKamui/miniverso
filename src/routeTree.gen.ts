@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as AuthRouteRouteImport } from './routes/auth/route'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -36,6 +37,11 @@ import { Route as AuthedInventoryProductsProductIdRouteImport } from './routes/_
 import { Route as AuthedInventoryOrdersNewRouteImport } from './routes/_authed/inventory/orders/new'
 import { Route as AuthedInventoryOrdersOrderIdRouteImport } from './routes/_authed/inventory/orders/$orderId'
 
+const SettingsRouteRoute = SettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -51,9 +57,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsPathnameRoute = SettingsPathnameRouteImport.update({
-  id: '/settings/$pathname',
-  path: '/settings/$pathname',
-  getParentRoute: () => rootRouteImport,
+  id: '/$pathname',
+  path: '/$pathname',
+  getParentRoute: () => SettingsRouteRoute,
 } as any)
 const AuthPathnameRoute = AuthPathnameRouteImport.update({
   id: '/$pathname',
@@ -176,6 +182,7 @@ const AuthedInventoryOrdersOrderIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/time': typeof AuthedTimeRouteRouteWithChildren
@@ -203,6 +210,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/time': typeof AuthedTimeRouteRouteWithChildren
   '/auth/$pathname': typeof AuthPathnameRoute
   '/settings/$pathname': typeof SettingsPathnameRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
+  '/settings': typeof SettingsRouteRouteWithChildren
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
   '/_authed/inventory': typeof AuthedInventoryRouteRouteWithChildren
   '/_authed/time': typeof AuthedTimeRouteRouteWithChildren
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/settings'
     | '/admin'
     | '/inventory'
     | '/time'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/settings'
     | '/time'
     | '/auth/$pathname'
     | '/settings/$pathname'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authed'
     | '/auth'
+    | '/settings'
     | '/_authed/admin'
     | '/_authed/inventory'
     | '/_authed/time'
@@ -339,7 +351,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
-  SettingsPathnameRoute: typeof SettingsPathnameRoute
+  SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   ApiAdminExportRoute: typeof ApiAdminExportRoute
   ApiAdminImportRoute: typeof ApiAdminImportRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -347,6 +359,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -370,10 +389,10 @@ declare module '@tanstack/react-router' {
     }
     '/settings/$pathname': {
       id: '/settings/$pathname'
-      path: '/settings/$pathname'
+      path: '/$pathname'
       fullPath: '/settings/$pathname'
       preLoaderRoute: typeof SettingsPathnameRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SettingsRouteRoute
     }
     '/auth/$pathname': {
       id: '/auth/$pathname'
@@ -630,11 +649,23 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
+interface SettingsRouteRouteChildren {
+  SettingsPathnameRoute: typeof SettingsPathnameRoute
+}
+
+const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
+  SettingsPathnameRoute: SettingsPathnameRoute,
+}
+
+const SettingsRouteRouteWithChildren = SettingsRouteRoute._addFileChildren(
+  SettingsRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
-  SettingsPathnameRoute: SettingsPathnameRoute,
+  SettingsRouteRoute: SettingsRouteRouteWithChildren,
   ApiAdminExportRoute: ApiAdminExportRoute,
   ApiAdminImportRoute: ApiAdminImportRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

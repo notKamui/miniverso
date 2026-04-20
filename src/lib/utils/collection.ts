@@ -85,6 +85,15 @@ export namespace Collection {
     return Array.from({ length: lastExcluded - first }, (_, i) => i + first)
   }
 
+  export function invertRecord<T extends Record<PropertyKey, unknown>>(
+    record: T,
+  ): Record<string, keyof T> {
+    return Object.fromEntries(Object.entries(record).map(([key, value]) => [value, key])) as Record<
+      string,
+      keyof T
+    >
+  }
+
   export function notNullish<T>(value: T | null | undefined): value is T {
     return value !== null && value !== undefined
   }
