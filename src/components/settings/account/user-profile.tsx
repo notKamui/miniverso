@@ -1,7 +1,7 @@
 import { useAuth, useIsUsernameAvailable, useSession, useUpdateUser } from '@better-auth-ui/react'
 import { useDebouncer } from '@tanstack/react-pacer'
 import { Check, X } from 'lucide-react'
-import { type SyntheticEvent, useEffect, useState } from 'react'
+import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { useResetOnChange } from '@/lib/hooks/use-reset-on-change'
 import { cn } from '@/lib/utils/cn'
 import { ChangeAvatar } from './change-avatar'
 
@@ -32,11 +33,7 @@ export function UserProfile({ className }: UserProfileProps) {
     (usernameConfig?.displayUsername ? session?.user?.displayUsername : session?.user?.username) ||
     ''
 
-  const [username, setUsername] = useState(currentUsername)
-
-  useEffect(() => {
-    setUsername(currentUsername)
-  }, [currentUsername])
+  const [username, setUsername] = useResetOnChange(currentUsername)
 
   const {
     mutate: isUsernameAvailable,

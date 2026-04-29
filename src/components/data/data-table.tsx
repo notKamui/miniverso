@@ -68,6 +68,9 @@ export function DataTable<TData, TValue>({
   pagination: serverPagination,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: DataTableProps<TData, TValue>) {
+  'use no memo'
+  // TODO: ^ remove this once tanstack table is fixed
+
   const setColumnVisibility = useServerFn($setColumnVisibility)
 
   const [columnVisibility, setColumnVisibility_] = useState<VisibilityState>(
@@ -89,6 +92,7 @@ export function DataTable<TData, TValue>({
 
   const showPaginationFooter = serverPagination != null
 
+  // oxlint-disable-next-line react-hooks-js/incompatible-library TODO: remove this once tanstack table is fixed
   const table = useReactTable({
     columns,
     data,

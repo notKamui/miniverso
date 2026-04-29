@@ -1,9 +1,10 @@
 /// <reference types="vitest/config" />
 
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import pkg from './package.json'
 
@@ -14,7 +15,13 @@ function chunkNodeModules(id: string) {
 }
 
 export default defineConfig({
-  plugins: [devtools(), tailwindcss(), tanstackStart(), react()],
+  plugins: [
+    devtools(),
+    tailwindcss(),
+    tanstackStart(),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
+  ],
   define: { APP_VERSION: JSON.stringify(pkg.version) },
   resolve: { tsconfigPaths: true },
   test: {
