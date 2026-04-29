@@ -1,7 +1,7 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { captcha } from 'better-auth/plugins'
+import { captcha, multiSession } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
@@ -11,6 +11,9 @@ import * as authSchema from '@/server/db/schema/auth'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({
+    rateLimit: {
+      enabled: !env.DISABLE_RATE_LIMIT,
+    },
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     user: {
@@ -94,6 +97,7 @@ export const auth = createServerOnlyFn(() =>
             }),
           ]
         : []),
+      multiSession(),
       tanstackStartCookies(), // INFO: should be the last plugin
     ],
   }),

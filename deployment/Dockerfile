@@ -1,17 +1,18 @@
-FROM oven/bun:1.3.12-alpine AS base
+FROM node:25-alpine AS base
 WORKDIR /app
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
+RUN npm install -g pnpm@10
 
 FROM base AS install
 
 RUN mkdir -p /tmp/build
-COPY package.json bun.lock /tmp/build/
-RUN cd /tmp/build && bun install --frozen-lockfile
+COPY package.json pnpm-lock.yaml /tmp/build/
+RUN cd /tmp/build && pnpm install --frozen-lockfile
 
 RUN mkdir -p /tmp/prod
-COPY package.json bun.lock /tmp/prod/
-RUN cd /tmp/prod && bun install --frozen-lockfile --production
+COPY package.json pnpm-lock.yaml /tmp/prod/
+RUN cd /tmp/prod && pnpm install --frozen-lockfile --prod
 
 FROM base AS build
 
@@ -20,7 +21,7 @@ COPY . .
 
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
-RUN bun run build
+RUN pnpm run build
 
 FROM base AS production
 
@@ -28,8 +29,7 @@ COPY --from=install /tmp/prod/node_modules node_modules
 COPY --from=build /app/public ./public
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/.drizzle ./.drizzle
-COPY --from=build /app/dist/serve.js ./
 
-USER bun
+USER node
 EXPOSE 3000
-CMD ["bun", "serve.js"]
+CMD ["node", "dist/serve.js"]

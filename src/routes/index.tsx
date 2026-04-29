@@ -1,4 +1,4 @@
-import { authViewPaths } from '@daveyplate/better-auth-ui'
+import { viewPaths } from '@better-auth-ui/react/core'
 import { createFileRoute, Link, type ToOptions } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
 import { type GlobalContext, useGlobalContext } from '@/lib/hooks/use-global-context'
@@ -28,7 +28,7 @@ function NotLoggedIn() {
         <Link
           to="/auth/$pathname"
           from="/"
-          params={{ pathname: authViewPaths.SIGN_IN }}
+          params={{ pathname: viewPaths.auth.signIn }}
           className={link()}
         >
           sign in
@@ -37,7 +37,7 @@ function NotLoggedIn() {
         <Link
           to="/auth/$pathname"
           from="/"
-          params={{ pathname: authViewPaths.SIGN_UP }}
+          params={{ pathname: viewPaths.auth.signUp }}
           className={link()}
         >
           sign up

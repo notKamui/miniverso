@@ -1,3 +1,5 @@
+import { Compute } from './types'
+
 export namespace Collection {
   type MergeRecordsByKeysInput = Record<string, Record<PropertyKey, unknown>>
 
@@ -83,6 +85,23 @@ export namespace Collection {
       throw new Error('lastExcluded must be greater than first')
     }
     return Array.from({ length: lastExcluded - first }, (_, i) => i + first)
+  }
+
+  type InvertRecordOutput<T extends Record<PropertyKey, PropertyKey>> = {
+    [K in keyof T as T[K]]: K
+  }
+
+  export function invertRecord<T extends Record<PropertyKey, PropertyKey>>(
+    record: T,
+  ): Compute<InvertRecordOutput<T>> {
+    const result: Record<PropertyKey, keyof T> = {}
+
+    for (const key of Reflect.ownKeys(record) as (keyof T)[]) {
+      const value = record[key]
+      result[value] = key
+    }
+
+    return result as unknown as InvertRecordOutput<T>
   }
 
   export function notNullish<T>(value: T | null | undefined): value is T {

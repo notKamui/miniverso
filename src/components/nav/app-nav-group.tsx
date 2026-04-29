@@ -1,6 +1,6 @@
 import { Link, type ToOptions, useLinkProps } from '@tanstack/react-router'
 import { ChevronRightIcon, type LucideIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   SidebarGroup,
@@ -59,13 +59,25 @@ export function AppNavGroup({ title, items, condition }: AppNavGroupProps) {
 }
 
 function MenuItem({ item }: { item: NavGroupItem }) {
-  const isMobile = useIsMobile()
-  const { mutate: updateSidebarState } = useUpdateSidebarState()
   const linkProps = (useLinkProps({ to: item.link.to }) as any)['data-status'] as string
   const defaultIsActive = linkProps === 'active' || linkProps === 'exact-active'
-  const [isActive, setIsActive] = useState(defaultIsActive)
 
-  useEffect(() => setIsActive(defaultIsActive), [defaultIsActive])
+  // Remount on active update
+  return (
+    <MenuItemContent key={String(defaultIsActive)} item={item} defaultIsActive={defaultIsActive} />
+  )
+}
+
+function MenuItemContent({
+  item,
+  defaultIsActive,
+}: {
+  item: NavGroupItem
+  defaultIsActive: boolean
+}) {
+  const isMobile = useIsMobile()
+  const { mutate: updateSidebarState } = useUpdateSidebarState()
+  const [isActive, setIsActive] = useState(defaultIsActive)
 
   function handleLinkClick() {
     if (isMobile) {

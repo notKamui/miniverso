@@ -29,10 +29,3 @@ export const $fetch: CustomFetch = async (input, init) => {
   }
   return response
 }
-
-$fetch.preconnect = async (url) => {
-  return globalThis.fetch(url, {
-    method: 'HEAD',
-    mode: 'no-cors',
-  })
-}

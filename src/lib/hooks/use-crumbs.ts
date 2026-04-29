@@ -5,11 +5,12 @@ export type Crumb = {
   params?: Record<string, unknown>
   search?: Record<string, unknown>
   name: string
+  noLink?: boolean
 }
 
 function hasCrumb<T extends { loaderData?: unknown }>(
   obj: T,
-): obj is T & { loaderData: { crumb: string } } {
+): obj is T & { loaderData: { crumb: string; noLink?: boolean } } {
   return (
     Boolean(obj.loaderData) &&
     obj.loaderData !== null &&
@@ -27,6 +28,7 @@ export function useCrumbs(): Crumb[] {
         params: match.params,
         search: match.search,
         name: match.loaderData.crumb,
+        noLink: match.loaderData.noLink,
       })),
   })
 }
