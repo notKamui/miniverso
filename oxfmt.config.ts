@@ -18,7 +18,7 @@ export default defineConfig({
   },
   ignorePatterns: [
     '**/node_modules/**',
-    '**/bun.lock',
+    '**/pnpm-lock.yaml',
     '**/src/routeTree.gen.ts',
     '**/.drizzle/**',
     '**/dist/**',

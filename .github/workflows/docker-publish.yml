@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node-24
+        uses: ./.github/actions/setup-node
 
       - name: Extract version from package.json
         id: version

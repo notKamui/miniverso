@@ -6,6 +6,7 @@ import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { buildServeEntrypoint } from './build/vite-plugins/build-serve-entrypoint'
 import pkg from './package.json'
 
 function chunkNodeModules(id: string) {
@@ -21,6 +22,7 @@ export default defineConfig({
     tanstackStart(),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
+    buildServeEntrypoint(),
   ],
   define: { APP_VERSION: JSON.stringify(pkg.version) },
   resolve: { tsconfigPaths: true },

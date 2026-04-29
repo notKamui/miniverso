@@ -1,5 +1,4 @@
 import { useForm } from '@tanstack/react-form'
-import type { MaybePromise } from 'bun'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -16,6 +15,8 @@ import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
 import type { PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema/time'
+
+type MaybePromise<T> = T | Promise<T>
 
 export function EditEntryDialog({
   entry,

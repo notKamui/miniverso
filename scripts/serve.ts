@@ -1,16 +1,7 @@
 // oxlint-disable unicorn/no-process-exit
 
 /**
- * TanStack Start Production Server with Bun
- *
- * A high-performance production server for TanStack Start applications that
- * implements intelligent static asset loading with configurable memory management.
- *
- * Features:
- * - Hybrid loading strategy (preload small files, serve large files on-demand)
- * - Configurable file filtering with include/exclude patterns
- * - Memory-efficient response generation
- * - Production-ready caching headers
+ * TanStack Start production server with srvx + Node APIs.
  *
  * Environment Variables:
  *
@@ -22,7 +13,6 @@
  *   - Maximum file size in bytes to preload into memory
  *   - Files larger than this will be served on-demand from disk
  *   - Default: 5242880 (5MB)
- *   - Example: STATIC_PRELOAD_MAX_BYTES=5242880 (5MB)
  *
  * STATIC_PRELOAD_INCLUDE (string)
  *   - Comma-separated list of glob patterns for files to include
@@ -58,17 +48,23 @@
  *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
  *
  * Usage:
- *   bun run server.ts
+ *   pnpm build && pnpm start
  */
 
-import { env } from '../src/lib/env/server'
-import { tryAsync, tryInline } from '../src/lib/utils/try'
+import { createHash } from 'node:crypto'
+import { promises as fs } from 'node:fs'
+import { extname, join, posix } from 'node:path'
+import { gzipSync } from 'node:zlib'
+import { serve } from 'srvx'
+import { env } from '@/lib/env/server'
+import { tryAsync, tryInline } from '@/lib/utils/try'
 import { runDatabaseMigrations } from './migrate'
 
 // Configuration
 const PORT = env.PORT
-const CLIENT_DIR = './dist/client'
-const SERVER_ENTRY = './dist/server/server.js'
+const CLIENT_DIR = new URL(/* @vite-ignore */ '../dist/client', import.meta.url).pathname
+const SERVER_ENTRY = new URL(/* @vite-ignore */ '../dist/server/server.js', import.meta.url)
+  .pathname
 
 // Preloading configuration from environment variables
 const MAX_PRELOAD_BYTES = Number(
@@ -163,8 +159,8 @@ interface InMemoryAsset {
 }
 
 function computeEtag(data: Uint8Array): string {
-  const hash = Bun.hash(data)
-  return `W/"${hash.toString(16)}-${data.byteLength}"`
+  const hash = createHash('sha1').update(data).digest('hex')
+  return `W/"${hash}-${data.byteLength}"`
 }
 
 function formatKB(bytes: number) {
@@ -209,15 +205,15 @@ function gzipMaybe(data: Uint8Array<ArrayBuffer>, type: string): Uint8Array | un
   if (!ENABLE_GZIP) return undefined
   if (data.byteLength < GZIP_MIN_BYTES) return undefined
   if (!matchesCompressible(type)) return undefined
-  const [error, gz] = tryInline(() => Bun.gzipSync(data))
+  const [error, gz] = tryInline(() => gzipSync(data))
   if (error) return undefined
   return gz
 }
 
 function makeOnDemandFactory(filepath: string, type: string) {
-  return (_req: Request) => {
-    const f = Bun.file(filepath)
-    return new Response(f, {
+  return async (_req: Request) => {
+    const file = await fs.readFile(filepath)
+    return new Response(file, {
       headers: {
         'Content-Type': type,
         'Cache-Control': 'public, max-age=3600',
@@ -226,14 +222,22 @@ function makeOnDemandFactory(filepath: string, type: string) {
   }
 }
 
-function buildCompositeGlob(): Bun.Glob {
-  const raw = (process.env.STATIC_PRELOAD_INCLUDE || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  if (raw.length === 0) return new Bun.Glob('**/*')
-  if (raw.length === 1) return new Bun.Glob(raw[0])
-  return new Bun.Glob(`{${raw.join(',')}}`)
+async function listClientFiles(clientDir: string, root = clientDir): Promise<string[]> {
+  const entries = await fs.readdir(root, { withFileTypes: true })
+  const relativePaths: string[] = []
+
+  for (const entry of entries) {
+    const absolutePath = join(root, entry.name)
+    if (entry.isDirectory()) {
+      relativePaths.push(...(await listClientFiles(clientDir, absolutePath)))
+      continue
+    }
+    if (entry.isFile()) {
+      relativePaths.push(posix.normalize(absolutePath.replace(`${clientDir}/`, '')))
+    }
+  }
+
+  return relativePaths
 }
 
 /**
@@ -264,29 +268,28 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   const gzSizes: Record<string, number> = {}
 
   try {
-    const glob = buildCompositeGlob()
-    for await (const relativePath of glob.scan({ cwd: clientDir })) {
+    const files = await listClientFiles(clientDir)
+    for (const relativePath of files) {
       const filepath = `${clientDir}/${relativePath}`
       const route = `/${relativePath}`
 
       try {
-        const file = Bun.file(filepath)
-
-        if (!(await file.exists()) || file.size === 0) {
+        const stat = await fs.stat(filepath)
+        if (!stat.isFile() || stat.size === 0) {
           continue
         }
 
         const metadata: AssetMetadata = {
           route,
-          size: file.size,
-          type: file.type || 'application/octet-stream',
+          size: stat.size,
+          type: getMimeType(filepath),
         }
 
         const matchesPattern = shouldInclude(relativePath)
-        const withinSizeLimit = file.size <= MAX_PRELOAD_BYTES
+        const withinSizeLimit = stat.size <= MAX_PRELOAD_BYTES
 
         if (matchesPattern && withinSizeLimit) {
-          const bytes = new Uint8Array(await file.arrayBuffer())
+          const bytes = new Uint8Array(await fs.readFile(filepath))
           const gz = gzipMaybe(bytes, metadata.type)
           const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined
           const asset: InMemoryAsset = {
@@ -380,6 +383,29 @@ async function buildStaticRoutes(clientDir: string): Promise<PreloadResult> {
   return { routes, loaded, skipped }
 }
 
+function getMimeType(filepath: string): string {
+  const ext = extname(filepath).toLowerCase()
+  const mimeByExt: Record<string, string> = {
+    '.css': 'text/css; charset=utf-8',
+    '.gif': 'image/gif',
+    '.html': 'text/html; charset=utf-8',
+    '.ico': 'image/x-icon',
+    '.jpeg': 'image/jpeg',
+    '.jpg': 'image/jpeg',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.mjs': 'application/javascript; charset=utf-8',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+    '.txt': 'text/plain; charset=utf-8',
+    '.wasm': 'application/wasm',
+    '.webp': 'image/webp',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+  }
+  return mimeByExt[ext] ?? 'application/octet-stream'
+}
+
 /**
  * Start the production server
  */
@@ -399,19 +425,23 @@ async function startServer() {
 
   const { routes } = await buildStaticRoutes(CLIENT_DIR)
 
-  const server = Bun.serve({
+  const server = serve({
+    hostname: '0.0.0.0',
     port: PORT,
-    routes: {
-      ...routes,
-      '/*': module.default.fetch,
-    },
-    error(error) {
-      console.error('Uncaught server error:', error)
-      return new Response('Internal Server Error', { status: 500 })
+    async fetch(request: Request) {
+      try {
+        const pathname = new URL(request.url).pathname
+        const staticHandler = routes[pathname]
+        return staticHandler ? await staticHandler(request) : await module.default.fetch(request)
+      } catch (error) {
+        console.error('Uncaught server error:', error)
+        return new Response('Internal Server Error', { status: 500 })
+      }
     },
   })
 
-  console.log(`\n🚀 Server running at http://localhost:${String(server.port)}\n`)
+  await server.ready()
+  console.log(`\n🚀 Server running at ${server.url}\n`)
 }
 
 async function main() {

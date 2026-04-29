@@ -2,12 +2,12 @@
 
 ## Environment Configuration
 
-The production Bun server (`serve.ts`) supports several environment variables to control static asset preloading, caching, and optimization features.
+The production server entrypoint (`dist/serve.js`) supports several environment variables to control static asset preloading, caching, and optimization features.
 
 ### Core
 
 - `PORT` (number, default: `3000`)
-  Port the Bun server listens on.
+  Port the server listens on.
 
 - `DATABASE_URL` (string, required)
   Postgres connection string used for Drizzle migrations and runtime queries.
@@ -46,7 +46,7 @@ The server can preload smaller static assets into memory for faster responses wh
 
 ### How It Works (Summary)
 
-1. Files in `dist/client` are scanned using `Bun.Glob` with the composite include patterns (if any).
+1. Files in `dist/client` are scanned recursively using Node filesystem APIs.
 2. Each file is filtered by include/exclude lists.
 3. If within `STATIC_PRELOAD_MAX_BYTES`, it's loaded into memory (and optionally gzipped + ETagged).
 4. Larger or filtered files get lightweight on-demand route handlers that stream from disk.
@@ -63,7 +63,7 @@ STATIC_PRELOAD_EXCLUDE="*.map" \
 STATIC_PRELOAD_VERBOSE=true \
 STATIC_PRELOAD_GZIP=true \
 STATIC_PRELOAD_ETAG=true \
-bun run serve.ts
+pnpm build && node --env-file=.env dist/serve.js
 ```
 
 See `.env.example` for an annotated list of available settings.
