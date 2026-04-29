@@ -1,6 +1,5 @@
-/**
- * @vitest-environment jsdom
- */
+// @vitest-environment jsdom
+
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useResetOnChange, useResetOnChangeByKey } from '@/lib/hooks/use-reset-on-change'
