@@ -1,7 +1,7 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { captcha } from 'better-auth/plugins'
+import { captcha, multiSession } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
@@ -94,6 +94,7 @@ export const auth = createServerOnlyFn(() =>
             }),
           ]
         : []),
+      multiSession(),
       tanstackStartCookies(), // INFO: should be the last plugin
     ],
   }),

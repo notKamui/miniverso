@@ -22,7 +22,7 @@ async function treatError(error: unknown) {
   throw new Error(parsed.error)
 }
 
-export const $fetch: CustomFetch = async (input, init) => {
+export const $fetch: CustomFetch & typeof globalThis.fetch = async (input, init) => {
   const response = await globalThis.fetch(input, init)
   if (!response.ok) {
     await treatError(response)

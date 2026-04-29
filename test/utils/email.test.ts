@@ -23,9 +23,10 @@ vi.mock('resend', () => ({
   },
 }))
 
-// Mock EmailTemplate to a simple factory that exposes props for inspection
-vi.mock('@daveyplate/better-auth-ui/server', () => ({
-  EmailTemplate: (props: any) => ({ __type: 'EmailTemplate', props }),
+// Mock better-auth-ui email components so JSX element type/props are inspectable
+vi.mock('@better-auth-ui/react', () => ({
+  ResetPasswordEmail: 'ResetPasswordEmail',
+  EmailVerificationEmail: 'EmailVerificationEmail',
 }))
 
 // Now import the module under test
@@ -51,12 +52,13 @@ describe('email utils', () => {
     expect(call.from).toBe('Miniverso <app@example.com>')
     expect(call.to).toBe('john.doe@example.com')
     expect(call.subject).toBe('Reset your password')
-    // react payload comes from mocked EmailTemplate
-    expect(call.react.__type).toBe('EmailTemplate')
-    expect(call.react.props.action).toBe('Reset password')
-    expect(call.react.props.heading).toBe('Reset your password')
+    expect(call.react.type).toBe('ResetPasswordEmail')
     expect(call.react.props.url).toBe('https://app.example.com/reset?token=abc')
-    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
+    expect(call.react.props.email).toBe('john.doe@example.com')
+    expect(call.react.props.appName).toBe('Miniverso')
+    expect(call.react.props.expirationMinutes).toBe(60)
+    expect(call.react.props.logoURL).toBe('https://app.example.com/logo512.png')
+    expect(call.react.props.darkMode).toBe(true)
   })
 
   it('sendResetPasswordEmail respects provided imageUrl and name', async () => {
@@ -68,7 +70,8 @@ describe('email utils', () => {
       imageUrl: 'https://cdn.example.com/img.png',
     })
     const call = sendMock.mock.calls[0]?.[0]
-    expect(call.react.props.imageUrl).toBe('https://cdn.example.com/img.png')
+    expect(call.react.type).toBe('ResetPasswordEmail')
+    expect(call.react.props.logoURL).toBe('https://cdn.example.com/img.png')
   })
 
   it('sendVerificationEmail builds correct payload', async () => {
@@ -82,10 +85,12 @@ describe('email utils', () => {
     expect(call.from).toBe('Miniverso <app@example.com>')
     expect(call.to).toBe('bob@example.com')
     expect(call.subject).toBe('Verify your email address')
-    expect(call.react.__type).toBe('EmailTemplate')
-    expect(call.react.props.action).toBe('Verify email')
-    expect(call.react.props.heading).toBe('Verify your email address')
+    expect(call.react.type).toBe('EmailVerificationEmail')
     expect(call.react.props.url).toBe('https://app.example.com/verify?token=xyz')
-    expect(call.react.props.imageUrl).toBe('https://app.example.com/logo512.png')
+    expect(call.react.props.email).toBe('bob@example.com')
+    expect(call.react.props.appName).toBe('Miniverso')
+    expect(call.react.props.expirationMinutes).toBe(60)
+    expect(call.react.props.logoURL).toBe('https://app.example.com/logo512.png')
+    expect(call.react.props.darkMode).toBe(true)
   })
 })

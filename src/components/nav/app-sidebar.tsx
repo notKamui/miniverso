@@ -85,9 +85,10 @@ export function AppSidebar() {
   )
 }
 
+const MotionIcon = m.create(StarIcon)
+
 function Header() {
   const open = useSidebarState() === 'open'
-  const MotionIcon = m.create(StarIcon)
   return (
     <SidebarHeader className="flex flex-row justify-between">
       <m.h1

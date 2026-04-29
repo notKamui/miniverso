@@ -1,4 +1,4 @@
-import { EmailTemplate } from '@daveyplate/better-auth-ui/server'
+import { EmailVerificationEmail, ResetPasswordEmail } from '@better-auth-ui/react'
 import { Resend } from 'resend'
 import { env } from '@/lib/env/server'
 
@@ -18,45 +18,39 @@ export type MailOptions = {
 }
 
 export async function sendResetPasswordEmail(options: MailOptions & { url: string }) {
-  const name = options.name || options.to.split('@')[0]
-
   return await resend.emails.send({
     from: `Miniverso <app@${env.RESEND_MAIL_DOMAIN}>`,
     to: options.to,
     subject: 'Reset your password',
-    react: EmailTemplate({
-      action: 'Reset password',
-      content: (
-        <>
-          <p>{`Hello ${name},`}</p>
-          <p>Click the button below to reset your password.</p>
-        </>
-      ),
-      heading: 'Reset your password',
-      url: options.url,
-      imageUrl: options.imageUrl ?? `${env.BASE_URL}/logo512.png`,
-    }),
+
+    react: (
+      <ResetPasswordEmail
+        url={options.url}
+        email={options.to}
+        appName="Miniverso"
+        expirationMinutes={60}
+        logoURL={options.imageUrl ?? `${env.BASE_URL}/logo512.png`}
+        darkMode
+      />
+    ),
   })
 }
 
 export async function sendVerificationEmail(options: MailOptions & { url: string }) {
-  const name = options.name || options.to.split('@')[0]
-
   return await resend.emails.send({
     from: `Miniverso <app@${env.RESEND_MAIL_DOMAIN}>`,
     to: options.to,
     subject: 'Verify your email address',
-    react: EmailTemplate({
-      action: 'Verify email',
-      content: (
-        <>
-          <p>{`Hello ${name},`}</p>
-          <p>Click the button below to verify your email address.</p>
-        </>
-      ),
-      heading: 'Verify your email address',
-      url: options.url,
-      imageUrl: options.imageUrl ?? `${env.BASE_URL}/logo512.png`,
-    }),
+
+    react: (
+      <EmailVerificationEmail
+        url={options.url}
+        email={options.to}
+        appName="Miniverso"
+        expirationMinutes={60}
+        logoURL={options.imageUrl ?? `${env.BASE_URL}/logo512.png`}
+        darkMode
+      />
+    ),
   })
 }

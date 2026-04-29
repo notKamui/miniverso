@@ -4,14 +4,12 @@ export function useDebounce<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
-    if (delayMs <= 0) {
-      setDebouncedValue(value)
-      return
-    }
-
-    const handle = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delayMs)
+    const handle = setTimeout(
+      () => {
+        setDebouncedValue(value)
+      },
+      Math.max(0, delayMs),
+    )
 
     return () => clearTimeout(handle)
   }, [value, delayMs])

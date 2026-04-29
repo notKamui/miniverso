@@ -1,29 +1,31 @@
-import { AuthView, authViewPaths } from '@daveyplate/better-auth-ui'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { viewPaths } from '@better-auth-ui/react/core'
+import { createFileRoute, notFound } from '@tanstack/react-router'
+import { Auth } from '@/components/auth/auth'
+import { Collection } from '@/lib/utils/collection'
+
+type TAuthPaths = {
+  [key in keyof typeof viewPaths.auth]: string
+}
+
+const authPaths = Collection.invertRecord(viewPaths.auth)
+
+const authCrumbs: TAuthPaths = {
+  signIn: 'Sign In',
+  signUp: 'Sign Up',
+  magicLink: 'Magic Link',
+  forgotPassword: 'Forgot Password',
+  resetPassword: 'Reset Password',
+  signOut: 'Sign Out',
+}
 
 export const Route = createFileRoute('/auth/$pathname')({
   preload: false,
-  loader: async ({ context: { user, queryClient }, params: { pathname } }) => {
-    if (
-      !user &&
-      ![authViewPaths.SIGN_IN, authViewPaths.SIGN_UP, authViewPaths.FORGOT_PASSWORD].includes(
-        pathname,
-      )
-    ) {
-      throw redirect({
-        to: '/auth/$pathname',
-        params: { pathname: authViewPaths.SIGN_IN },
-      })
-    }
-
-    if (user && pathname === authViewPaths.SIGN_OUT) {
-      await queryClient.invalidateQueries({ queryKey: ['user'] })
-    }
-
-    return {
-      crumb: 'Auth',
+  beforeLoad: async ({ params: { pathname } }) => {
+    if (!(pathname in authPaths)) {
+      throw notFound()
     }
   },
+  loader: ({ params: { pathname } }) => ({ crumb: authCrumbs[authPaths[pathname]] }),
   component: RouteComponent,
 })
 
@@ -31,8 +33,8 @@ function RouteComponent() {
   const { pathname } = Route.useParams()
 
   return (
-    <div className="mb-0 flex h-full flex-col items-center justify-center">
-      <AuthView pathname={pathname} socialLayout="grid" />
+    <div className="grid h-full place-items-center">
+      <Auth path={pathname} socialLayout="grid" />
     </div>
   )
 }

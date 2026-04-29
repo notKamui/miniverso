@@ -1,0 +1,219 @@
+import { useAuth, useSession, useSetActiveSession } from '@better-auth-ui/react'
+import {
+  ChevronsUpDown,
+  LogIn,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+  UserPlus2,
+  UsersRound,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils/cn'
+import { SwitchAccountMenu } from './switch-account-menu'
+import { UserAvatar } from './user-avatar'
+import { UserView } from './user-view'
+
+export type UserButtonProps = {
+  className?: string
+  align?: 'center' | 'end' | 'start' | undefined
+  sideOffset?: number
+  size?: 'default' | 'icon'
+  themeToggle?: boolean
+  variant?: 'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary'
+}
+
+/**
+ * Render a user dropdown button that shows user info, settings, theme controls, and authentication actions.
+ *
+ * Includes user profile, settings link, optional multi-session account switching, theme picker,
+ * and sign-in/sign-up/sign-out actions depending on authentication state.
+ *
+ * @param className - Additional CSS classes applied to the button trigger
+ * @param align - Alignment of the dropdown menu relative to the trigger
+ * @param sideOffset - Offset between the trigger and the dropdown menu
+ * @param size - "icon" renders only the avatar; "default" renders a full button with label and chevron
+ * @param themeToggle - When true, renders a theme picker in the menu; defaults to true
+ * @param variant - Visual variant of the trigger button
+ * @returns The dropdown menu component with user actions
+ */
+export function UserButton({
+  className,
+  align,
+  sideOffset,
+  size = 'default',
+  themeToggle = true,
+  variant = 'ghost',
+}: UserButtonProps) {
+  const {
+    basePaths,
+    viewPaths,
+    localization,
+    multiSession,
+    Link,
+    appearance: { theme, setTheme, themes },
+  } = useAuth()
+
+  const { isPending: settingActiveSession } = useSetActiveSession()
+  const { data: session, isPending: sessionPending } = useSession()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(size === 'icon' && 'rounded-full', size === 'icon' && className)}
+        asChild={size === 'default'}
+      >
+        {size === 'icon' ? (
+          <UserAvatar />
+        ) : (
+          <Button
+            variant={variant}
+            className={cn('h-auto py-2.5 font-normal', className)}
+            size="lg"
+          >
+            {session || sessionPending || settingActiveSession ? (
+              <UserView isPending={Boolean(settingActiveSession)} />
+            ) : (
+              <>
+                <UserAvatar />
+
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  {localization.auth.account}
+                </div>
+              </>
+            )}
+
+            <ChevronsUpDown className="ml-auto" />
+          </Button>
+        )}
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        className="w-[--radix-dropdown-menu-trigger-width] max-w-[48svw] min-w-40 md:min-w-56"
+        sideOffset={sideOffset}
+        align={align}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        {session && (
+          <>
+            <DropdownMenuLabel className="text-sm font-normal">
+              <UserView />
+            </DropdownMenuLabel>
+
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {session ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`${basePaths.settings}/${viewPaths.settings.account}`}>
+                <Settings className="text-muted-foreground" />
+
+                {localization.settings.settings}
+              </Link>
+            </DropdownMenuItem>
+
+            {multiSession && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <UsersRound className="text-muted-foreground" />
+
+                  {localization.auth.switchAccount}
+                </DropdownMenuSubTrigger>
+
+                <SwitchAccountMenu />
+              </DropdownMenuSub>
+            )}
+
+            <DropdownMenuSeparator />
+
+            {themeToggle && theme && setTheme && themes.length > 0 && (
+              <>
+                <DropdownMenuItem
+                  className="cursor-default! justify-between py-0.75 hover:bg-transparent!"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  {localization.settings.theme}
+
+                  <Tabs value={theme} onValueChange={setTheme}>
+                    <TabsList className="h-6!">
+                      {themes.includes('system') && (
+                        <TabsTrigger
+                          value="system"
+                          className="size-5 p-0"
+                          aria-label={localization.settings.system}
+                        >
+                          <Monitor className="size-3" />
+                        </TabsTrigger>
+                      )}
+                      {themes.includes('light') && (
+                        <TabsTrigger
+                          value="light"
+                          className="size-5 p-0"
+                          aria-label={localization.settings.light}
+                        >
+                          <Sun className="size-3" />
+                        </TabsTrigger>
+                      )}
+                      {themes.includes('dark') && (
+                        <TabsTrigger
+                          value="dark"
+                          className="size-5 p-0"
+                          aria-label={localization.settings.dark}
+                        >
+                          <Moon className="size-3" />
+                        </TabsTrigger>
+                      )}
+                    </TabsList>
+                  </Tabs>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            <DropdownMenuItem asChild>
+              <Link href={`${basePaths.auth}/${viewPaths.auth.signOut}`}>
+                <LogOut className="text-muted-foreground" />
+
+                {localization.auth.signOut}
+              </Link>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`${basePaths.auth}/${viewPaths.auth.signIn}`}>
+                <LogIn className="text-muted-foreground" />
+
+                {localization.auth.signIn}
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link href={`${basePaths.auth}/${viewPaths.auth.signUp}`}>
+                <UserPlus2 className="text-muted-foreground" />
+
+                {localization.auth.signUp}
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

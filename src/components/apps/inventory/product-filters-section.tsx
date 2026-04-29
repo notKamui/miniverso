@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { createCombobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { useResetOnChange } from '@/lib/hooks/use-reset-on-change'
 import { contrastTextForHex } from '@/lib/utils/color'
 
 type InventoryTag = { id: string; name: string; color: string }
@@ -30,16 +31,12 @@ type ProductFiltersSectionProps = {
 }
 
 export function ProductFiltersSection({ search, navigate, tags }: ProductFiltersSectionProps) {
-  const [qInput, setQInput] = useState(search.q ?? '')
+  const [qInput, setQInput] = useResetOnChange(search.q ?? '')
   const debouncedQ = useDebounce(qInput, 300)
   const tagFilterAnchorRef = TagCombobox.useAnchor()
   const selectedTags = tags.filter((t) => (search.tagIds ?? []).includes(t.id))
   const visibleTags = selectedTags.slice(0, 2)
   const hiddenCount = Math.max(0, selectedTags.length - visibleTags.length)
-
-  useEffect(() => {
-    setQInput(search.q ?? '')
-  }, [search.q])
 
   useEffect(() => {
     if ((debouncedQ || undefined) !== (search.q || undefined)) {

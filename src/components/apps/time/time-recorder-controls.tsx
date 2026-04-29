@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { useResetOnChangeByKey } from '@/lib/hooks/use-reset-on-change'
 import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
 import type { TimeEntry, TimeEntryTag } from '@/server/db/schema/time'
@@ -22,13 +22,11 @@ export function TimeRecorderControls({ entries, className }: TimeRecorderControl
   })
   const currentStart = currentEntry ? Time.from(currentEntry.startedAt) : null
 
-  const [description, setDescription] = useState('')
+  const [description, setDescription] = useResetOnChangeByKey(
+    currentEntry?.id ?? null,
+    currentEntry?.description ?? '',
+  )
   const entryKey = `${currentEntry?.id ?? 'none'}-${currentEntry?.description ?? ''}`
-
-  useEffect(() => {
-    if (!currentEntry || !currentEntry.description) return
-    setDescription(currentEntry.description)
-  }, [currentEntry])
 
   const showCreating = useDebounce(isCreating, 300)
   const showUpdating = useDebounce(isUpdating, 300)
