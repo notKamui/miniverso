@@ -1,5 +1,3 @@
-// oxlint-disable unicorn/no-process-exit
-
 import { env } from '../src/lib/env/server'
 
 export async function runDatabaseMigrations() {
@@ -21,13 +19,4 @@ export async function runDatabaseMigrations() {
     )
     console.log('✅ Admin user roles updated successfully.\n')
   }
-}
-
-if (import.meta.main) {
-  await runDatabaseMigrations()
-    .catch((error) => {
-      console.error('❌ Migration failed:', error)
-      process.exit(1)
-    })
-    .then(() => process.exit(0))
 }

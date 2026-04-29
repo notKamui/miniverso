@@ -1,12 +1,12 @@
 name: Setup Bun Toolchain
-description: Setup Node.js 24, Bun, and install dependencies
+description: Setup Node.js 25, Bun, and install dependencies
 runs:
   using: composite
   steps:
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '24'
+        node-version: '25'
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:

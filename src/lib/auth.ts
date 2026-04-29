@@ -11,6 +11,9 @@ import * as authSchema from '@/server/db/schema/auth'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({
+    rateLimit: {
+      enabled: !env.DISABLE_RATE_LIMIT,
+    },
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     user: {

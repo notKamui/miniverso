@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  APP_VERSION: ''
+  APP_VERSION: ""
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: ./.github/actions/setup-node-24
+        uses: ./.github/actions/setup-node-25
 
       - name: Extract version from package.json
         id: version
