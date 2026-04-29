@@ -25,8 +25,7 @@ describe('useResetOnChange', () => {
 describe('useResetOnChangeByKey', () => {
   it('resets when the key changes even if the value string is unchanged', () => {
     const { result, rerender } = renderHook(
-      ({ key, value }: { key: string; value: string }) =>
-        useResetOnChangeByKey(key, value),
+      ({ key, value }: { key: string; value: string }) => useResetOnChangeByKey(key, value),
       { initialProps: { key: 'entry-1', value: 'same' } },
     )
     expect(result.current[0]).toBe('same')
@@ -42,8 +41,7 @@ describe('useResetOnChangeByKey', () => {
 
   it('syncs when the value changes for the same key', () => {
     const { result, rerender } = renderHook(
-      ({ key, value }: { key: string; value: string }) =>
-        useResetOnChangeByKey(key, value),
+      ({ key, value }: { key: string; value: string }) => useResetOnChangeByKey(key, value),
       { initialProps: { key: 'entry-1', value: 'v1' } },
     )
 
