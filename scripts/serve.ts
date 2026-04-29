@@ -55,7 +55,7 @@ import { createHash } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import { extname, join, posix } from 'node:path'
 import { gzipSync } from 'node:zlib'
-import { serve } from 'srvx'
+import { FastResponse, serve } from 'srvx'
 import { env } from '@/lib/env/server'
 import { tryAsync, tryInline } from '@/lib/utils/try'
 import { runDatabaseMigrations } from './migrate'
@@ -180,7 +180,7 @@ function buildResponseFactory(asset: InMemoryAsset): (req: Request) => Response 
     if (ENABLE_ETAG && asset.etag) {
       const ifNone = req.headers.get('if-none-match')
       if (ifNone && ifNone === asset.etag) {
-        return new Response(null, {
+        return new FastResponse(null, {
           status: 304,
           headers: { ETag: asset.etag },
         })
@@ -192,12 +192,12 @@ function buildResponseFactory(asset: InMemoryAsset): (req: Request) => Response 
       headers['Content-Encoding'] = 'gzip'
       headers['Content-Length'] = String(asset.gz.byteLength)
       const gzCopy = new Uint8Array(asset.gz)
-      return new Response(gzCopy, { status: 200, headers })
+      return new FastResponse(gzCopy, { status: 200, headers })
     }
 
     headers['Content-Length'] = String(asset.raw.byteLength)
     const rawCopy = new Uint8Array(asset.raw)
-    return new Response(rawCopy, { status: 200, headers })
+    return new FastResponse(rawCopy, { status: 200, headers })
   }
 }
 
@@ -213,7 +213,7 @@ function gzipMaybe(data: Uint8Array<ArrayBuffer>, type: string): Uint8Array | un
 function makeOnDemandFactory(filepath: string, type: string) {
   return async (_req: Request) => {
     const file = await fs.readFile(filepath)
-    return new Response(file, {
+    return new FastResponse(file, {
       headers: {
         'Content-Type': type,
         'Cache-Control': 'public, max-age=3600',
@@ -435,7 +435,7 @@ async function startServer() {
         return staticHandler ? await staticHandler(request) : await module.default.fetch(request)
       } catch (error) {
         console.error('Uncaught server error:', error)
-        return new Response('Internal Server Error', { status: 500 })
+        return new FastResponse('Internal Server Error', { status: 500 })
       }
     },
   })
