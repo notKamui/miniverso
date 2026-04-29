@@ -2,16 +2,17 @@ FROM node:25-alpine AS base
 WORKDIR /app
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
+RUN npm install -g pnpm@10
 
 FROM base AS install
 
 RUN mkdir -p /tmp/build
-COPY package.json /tmp/build/
-RUN cd /tmp/build && npm install
+COPY package.json pnpm-lock.yaml /tmp/build/
+RUN cd /tmp/build && pnpm install --frozen-lockfile
 
 RUN mkdir -p /tmp/prod
-COPY package.json /tmp/prod/
-RUN cd /tmp/prod && npm install --omit=dev
+COPY package.json pnpm-lock.yaml /tmp/prod/
+RUN cd /tmp/prod && pnpm install --frozen-lockfile --prod
 
 FROM base AS build
 
@@ -20,7 +21,7 @@ COPY . .
 
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
-RUN npm run build
+RUN pnpm run build
 
 FROM base AS production
 

@@ -48,7 +48,7 @@
  *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
  *
  * Usage:
- *   bun run build && bun start
+ *   pnpm build && pnpm start
  */
 
 import { env } from '../src/lib/env/server'

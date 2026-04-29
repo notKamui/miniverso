@@ -63,7 +63,7 @@ STATIC_PRELOAD_EXCLUDE="*.map" \
 STATIC_PRELOAD_VERBOSE=true \
 STATIC_PRELOAD_GZIP=true \
 STATIC_PRELOAD_ETAG=true \
-bun run build && node --env-file=.env dist/serve.js
+pnpm build && node --env-file=.env dist/serve.js
 ```
 
 See `.env.example` for an annotated list of available settings.

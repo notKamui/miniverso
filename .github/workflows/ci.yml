@@ -17,33 +17,33 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-bun-toolchain
+      - uses: ./.github/actions/setup-pnpm-toolchain
       - name: Run type check
-        run: bun type-check
+        run: pnpm check:tc
 
   lint:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-bun-toolchain
+      - uses: ./.github/actions/setup-pnpm-toolchain
       - name: Run lint
-        run: bun -b lint
+        run: pnpm check:lint
 
   fmt:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-bun-toolchain
+      - uses: ./.github/actions/setup-pnpm-toolchain
       - name: Run fmt
-        run: npx oxfmt --check
+        run: pnpm check:fmt
 
   test:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-bun-toolchain
+      - uses: ./.github/actions/setup-pnpm-toolchain
       - name: Run tests
-        run: bun test:run
+        run: pnpm test:run
