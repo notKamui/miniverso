@@ -56,9 +56,12 @@ import { promises as fs } from 'node:fs'
 import { extname, join, posix } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { FastResponse, serve } from 'srvx'
+import { patchGlobalRequest } from 'srvx/node'
 import { env } from '@/lib/env/server'
 import { tryAsync, tryInline } from '@/lib/utils/try'
 import { runDatabaseMigrations } from './migrate'
+
+patchGlobalRequest()
 
 // Configuration
 const PORT = env.PORT
