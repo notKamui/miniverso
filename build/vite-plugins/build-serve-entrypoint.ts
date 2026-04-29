@@ -14,7 +14,7 @@ export function buildServeEntrypoint(): PluginOption {
           minify: 'oxc',
           outDir: 'dist',
           rolldownOptions: {
-            external: (id) => !id.startsWith('.') && !id.startsWith('/'),
+            external: (id) => !id.startsWith('.') && !id.startsWith('/') && !id.startsWith('@/'),
             output: {
               entryFileNames: 'serve.js',
               format: 'es',

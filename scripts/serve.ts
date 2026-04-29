@@ -51,19 +51,20 @@
  *   pnpm build && pnpm start
  */
 
-import { env } from '../src/lib/env/server'
-import { tryAsync, tryInline } from '../src/lib/utils/try'
-import { runDatabaseMigrations } from './migrate'
-import { serve } from 'srvx'
 import { createHash } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import { extname, join, posix } from 'node:path'
 import { gzipSync } from 'node:zlib'
+import { serve } from 'srvx'
+import { env } from '@/lib/env/server'
+import { tryAsync, tryInline } from '@/lib/utils/try'
+import { runDatabaseMigrations } from './migrate'
 
 // Configuration
 const PORT = env.PORT
 const CLIENT_DIR = new URL(/* @vite-ignore */ '../dist/client', import.meta.url).pathname
-const SERVER_ENTRY = new URL(/* @vite-ignore */ '../dist/server/server.js', import.meta.url).pathname
+const SERVER_ENTRY = new URL(/* @vite-ignore */ '../dist/server/server.js', import.meta.url)
+  .pathname
 
 // Preloading configuration from environment variables
 const MAX_PRELOAD_BYTES = Number(
