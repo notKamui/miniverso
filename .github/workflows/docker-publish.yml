@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  APP_VERSION: ''
+  APP_VERSION: ""
 
 jobs:
   deploy:
@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Extract version from package.json
         id: version
