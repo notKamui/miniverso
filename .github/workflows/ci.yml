@@ -17,10 +17,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup-bun-toolchain
       - name: Run type check
         run: bun type-check
 
@@ -29,10 +26,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup-bun-toolchain
       - name: Run lint
         run: bun -b lint
 
@@ -41,13 +35,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup-bun-toolchain
       - name: Run fmt
         run: npx oxfmt --check
 
@@ -56,9 +44,6 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup-bun-toolchain
       - name: Run tests
         run: bun test:run

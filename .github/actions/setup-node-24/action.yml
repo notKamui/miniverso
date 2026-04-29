@@ -1,0 +1,9 @@
+name: Setup Node 24
+description: Setup Node.js v24
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
