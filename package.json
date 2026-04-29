@@ -63,6 +63,7 @@
     "resend": "^6.12.2",
     "sonner": "^2.0.7",
     "srvx": "^0.11.15",
+    "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -91,7 +92,6 @@
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0",
     "oxlint-tsgolint": "^0.22.1",
-    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.4",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^6.0.3",
