@@ -16,8 +16,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: '.node-version'
+          cache: false
+          run-install: false
 
       - name: Extract version from package.json
         id: version
