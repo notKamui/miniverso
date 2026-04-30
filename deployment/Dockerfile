@@ -1,35 +1,34 @@
-FROM node:25-alpine AS base
+# syntax=docker/dockerfile:1.7
+FROM node:24-slim AS base
+WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
+
+FROM base AS build
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NODE_ENV=production
+ENV BUILD_ENV=production
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm run build
+
+FROM base AS prod-deps
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --prod
+
+FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
-RUN npm install -g pnpm@10
 
-FROM base AS install
-
-RUN mkdir -p /tmp/build
-COPY package.json pnpm-lock.yaml /tmp/build/
-RUN cd /tmp/build && pnpm install --frozen-lockfile
-
-RUN mkdir -p /tmp/prod
-COPY package.json pnpm-lock.yaml /tmp/prod/
-RUN cd /tmp/prod && pnpm install --frozen-lockfile --prod
-
-FROM base AS build
-
-COPY --from=install /tmp/build/node_modules node_modules
-COPY . .
-
-ENV NODE_ENV=production
-ENV BUILD_ENV=production
-RUN pnpm run build
-
-FROM base AS production
-
-COPY --from=install /tmp/prod/node_modules node_modules
-COPY --from=build /app/public ./public
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public
 COPY --from=build /app/.drizzle ./.drizzle
 
-USER node
 EXPOSE 3000
-CMD ["node", "dist/serve.js"]
+CMD ["dist/serve.js"]
