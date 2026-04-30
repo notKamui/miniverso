@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 import { Collection } from '@/lib/utils/collection'
 
 describe('Collection.partition', () => {

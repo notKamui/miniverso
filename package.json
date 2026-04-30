@@ -6,28 +6,21 @@
   "scripts": {
     "dev": "cross-env-shell NODE_ENV=development \"node --experimental-strip-types scripts/migrate-run.ts && vite dev --port 3000\"",
     "start": "cross-env NODE_ENV=production node --env-file=.env dist/serve.js",
-    "b": "pnpm build",
-    "build": "cross-env NODE_ENV=production BUILD_ENV=production vite build --mode production",
-    "test": "vitest --typecheck",
-    "test:run": "vitest run --typecheck",
-    "t": "pnpm test:run",
-    "lint": "oxlint --type-aware --deny-warnings",
-    "lint:no-types": "oxlint --deny-warnings",
-    "fmt": "oxfmt",
+    "b": "vp run build",
+    "build": "cross-env NODE_ENV=production BUILD_ENV=production vp build --mode production",
+    "test": "vp test --typecheck",
+    "test:run": "vp test run --typecheck",
     "type-check": "tsgo --noEmit",
-    "tc": "pnpm type-check",
-    "fix": "pnpm fmt && pnpm lint --fix",
-    "check": "pnpm run \"/^check:.*/\"",
-    "check:lint": "pnpm lint",
-    "check:fmt": "pnpm fmt --check",
-    "check:tc": "pnpm type-check",
+    "tc": "vp run type-check",
+    "fix": "vp check --fix",
     "dev:docker": "docker compose -f docker-compose.dev.yml",
     "db": "drizzle-kit",
-    "migrate": "pnpm db migrate",
-    "auth:secret": "pnpx @better-auth/cli@latest secret",
-    "auth:generate": "pnpx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && pnpm run fix",
+    "migrate": "vp run db migrate",
+    "auth:secret": "vpx @better-auth/cli@latest secret",
+    "auth:generate": "vpx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && vp run fix",
     "deploy": "sh ./deployment/_.deploy.sh",
-    "up": "pnpx taze@latest major -lI"
+    "up": "vpx taze@latest major -lI",
+    "prepare": "vp config"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -81,22 +74,20 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260429.1",
+    "@typescript/native-preview": "7.0.0-dev.20260430.1",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/ui": "4.1.5",
     "babel-plugin-react-compiler": "^1.0.0",
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.10",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "jsdom": "^29.1.0",
-    "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0",
-    "oxlint-tsgolint": "^0.22.1",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.2.4",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10",
-    "vitest": "4.1.5"
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "overrides": {
     "react-is": "19.2.5"
@@ -104,5 +95,6 @@
   "engines": {
     "node": ">=24"
   },
+  "packageManager": "pnpm@10.33.2",
   "_notes": {}
 }

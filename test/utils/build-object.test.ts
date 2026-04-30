@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { buildObject } from '../../src/lib/utils/build-object'
 
 describe('buildObject', () => {

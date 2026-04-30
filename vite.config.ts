@@ -1,13 +1,13 @@
-/// <reference types="vitest/config" />
-
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import { buildServeEntrypoint } from './build/vite-plugins/build-serve-entrypoint'
-import pkg from './package.json'
+import { defineConfig } from 'vite-plus'
+import { buildServeEntrypoint } from './build/vite-plugins/build-serve-entrypoint.ts'
+import fmt from './oxfmt.config.ts'
+import lint from './oxlint.config.ts'
+import pkg from './package.json' with { type: 'json' }
 
 function chunkNodeModules(id: string) {
   if (!id.includes('node_modules')) return undefined
@@ -16,6 +16,8 @@ function chunkNodeModules(id: string) {
 }
 
 export default defineConfig({
+  fmt,
+  lint,
   plugins: [
     devtools(),
     tailwindcss(),
@@ -42,6 +44,13 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000,
     rolldownOptions: { output: { manualChunks: chunkNodeModules } },
+  },
+  staged: { '*': 'vp check --fix' },
+  server: { port: 3000 },
+  run: {
+    cache: {
+      scripts: true,
+    },
   },
 })
 

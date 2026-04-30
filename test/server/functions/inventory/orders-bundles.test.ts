@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { computeRequiredQuantities } from '@/server/functions/inventory/orders-bundles'
 
 describe('computeRequiredQuantities', () => {
