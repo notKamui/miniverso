@@ -20,13 +20,13 @@ jobs:
       matrix:
         check:
           - name: type-check
-            command: pnpm check:tc
+            command: vp run tc
           - name: lint
-            command: pnpm check:lint
+            command: vp lint
           - name: fmt
-            command: pnpm check:fmt
+            command: vp fmt --check
           - name: test
-            command: pnpm test:run
+            command: vp test
     name: ${{ matrix.check.name }}
     steps:
       - uses: actions/checkout@v6

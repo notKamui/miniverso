@@ -29,6 +29,11 @@ export default defineConfig({
   define: { APP_VERSION: JSON.stringify(pkg.version) },
   resolve: { tsconfigPaths: true },
   test: {
+    typecheck: {
+      checker: 'tsc',
+      include: ['test/**/*.test-d.{ts,js}'],
+      enabled: true,
+    },
     environment: 'node',
     include: ['test/**/*.test.{ts,js}'],
     env: {

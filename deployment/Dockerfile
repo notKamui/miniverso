@@ -14,7 +14,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
 ENV BUILD_ENV=production
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm run build
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store vp run build
 
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml ./
