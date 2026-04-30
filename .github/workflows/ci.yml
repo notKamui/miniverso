@@ -33,7 +33,6 @@ jobs:
       - uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: '.node-version'
-          cache: true
           run-install: true
       - name: Run ${{ matrix.check.name }}
         run: ${{ matrix.check.command }}
