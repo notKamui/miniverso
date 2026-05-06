@@ -14,7 +14,7 @@
     "db": "drizzle-kit",
     "migrate": "vp run db migrate",
     "auth:secret": "vpx @better-auth/cli@latest secret",
-    "auth:generate": "vpx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && vp run fix",
+    "auth:generate": "vpx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && vp check --fix",
     "deploy": "sh ./deployment/_.deploy.sh",
     "up": "vpx taze@latest major -lI",
     "prepare": "vp config"
