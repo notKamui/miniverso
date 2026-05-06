@@ -1,4 +1,4 @@
-import { viewPaths } from '@better-auth-ui/react/core'
+import { viewPaths } from '@better-auth-ui/core'
 import { createFileRoute, Link, type ToOptions } from '@tanstack/react-router'
 import { link, title } from '@/components/ui/typography'
 import { type GlobalContext, useGlobalContext } from '@/lib/hooks/use-global-context'
