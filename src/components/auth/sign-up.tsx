@@ -1,6 +1,7 @@
-import { useAuth, useIsUsernameAvailable, useSignUpEmail } from '@better-auth-ui/react'
-import { useDebouncer } from '@tanstack/react-pacer'
-import { Check, Eye, EyeOff, X } from 'lucide-react'
+import { authMutationKeys, parseAdditionalFieldValue } from '@better-auth-ui/core'
+import { useAuth, useSignUpEmail } from '@better-auth-ui/react'
+import { useIsMutating } from '@tanstack/react-query'
+import { Eye, EyeOff } from 'lucide-react'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -22,7 +23,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
 import { Label } from '../ui/label'
-import { MagicLinkButton } from './magic-link-button'
+import { AdditionalField } from './additional-field'
 import { ProviderButtons, type SocialLayout } from './provider-buttons'
 
 export type SignUpProps = {
@@ -47,13 +48,14 @@ export type SignUpProps = {
  */
 export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: SignUpProps) {
   const {
+    additionalFields,
+    authClient,
     basePaths,
     emailAndPassword,
     localization,
-    magicLink,
+    plugins,
     redirectTo,
     socialProviders,
-    username: usernameConfig,
     viewPaths,
     navigate,
     Link,
@@ -61,37 +63,8 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [username, setUsername] = useState('')
 
-  const {
-    mutate: isUsernameAvailable,
-    data: usernameData,
-    error: usernameError,
-    reset: resetUsername,
-  } = useIsUsernameAvailable()
-
-  const usernameDebouncer = useDebouncer(
-    (value: string) => {
-      if (!value.trim()) {
-        resetUsername()
-        return
-      }
-
-      isUsernameAvailable({ username: value.trim() })
-    },
-    { wait: 500 },
-  )
-
-  function handleUsernameChange(value: string) {
-    setUsername(value)
-    resetUsername()
-
-    if (usernameConfig?.isUsernameAvailable) {
-      usernameDebouncer.maybeExecute(value)
-    }
-  }
-
-  const { mutate: signUpEmail, isPending: signUpPending } = useSignUpEmail({
+  const { mutate: signUpEmail, isPending: signUpEmailPending } = useSignUpEmail(authClient, {
     onError: (error) => {
       setPassword('')
       setConfirmPassword('')
@@ -107,7 +80,13 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
     },
   })
 
-  const isPending = signUpPending
+  const signInMutating = useIsMutating({
+    mutationKey: authMutationKeys.signIn.all,
+  })
+  const signUpMutating = useIsMutating({
+    mutationKey: authMutationKeys.signUp.all,
+  })
+  const isPending = signInMutating + signUpMutating > 0
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
@@ -119,11 +98,12 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
     confirmPassword?: string
   }>({})
 
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const formData = new FormData(e.currentTarget)
-    const name = formData.get('name') as string
+    // `emailAndPassword.name === false` hides the name field and submits "".
+    const name = (formData.get('name') as string | null) ?? ''
     const email = formData.get('email') as string
 
     if (emailAndPassword?.confirmPassword && password !== confirmPassword) {
@@ -133,16 +113,31 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
       return
     }
 
+    const additionalFieldValues: Record<string, unknown> = {}
+
+    for (const field of additionalFields ?? []) {
+      if (!field.signUp || field.readOnly) continue
+      const value = parseAdditionalFieldValue(field, formData.get(field.name) as string | null)
+
+      if (field.validate) {
+        try {
+          await field.validate(value)
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : String(error))
+          return
+        }
+      }
+
+      if (value !== undefined) {
+        additionalFieldValues[field.name] = value
+      }
+    }
+
     signUpEmail({
       name,
       email,
       password,
-      ...(usernameConfig?.enabled
-        ? {
-            username: username.trim(),
-            ...(usernameConfig.displayUsername ? { displayUsername: username.trim() } : {}),
-          }
-        : {}),
+      ...additionalFieldValues,
     })
   }
 
@@ -159,7 +154,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
           {socialPosition === 'top' && (
             <>
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
+                <ProviderButtons socialLayout={socialLayout} />
               )}
 
               {showSeparator && (
@@ -173,83 +168,36 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
           {emailAndPassword?.enabled && (
             <form onSubmit={handleSubmit}>
               <FieldGroup>
-                <Field data-invalid={Boolean(fieldErrors.name)}>
-                  <Label htmlFor="name">{localization.auth.name}</Label>
+                {emailAndPassword.name !== false && (
+                  <Field data-invalid={Boolean(fieldErrors.name)}>
+                    <Label htmlFor="name">{localization.auth.name}</Label>
 
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder={localization.auth.namePlaceholder}
-                    required
-                    disabled={isPending}
-                    onChange={() => {
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        name: undefined,
-                      }))
-                    }}
-                    onInvalid={(e) => {
-                      e.preventDefault()
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      placeholder={localization.auth.namePlaceholder}
+                      required
+                      disabled={isPending}
+                      onChange={() => {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          name: undefined,
+                        }))
+                      }}
+                      onInvalid={(e) => {
+                        e.preventDefault()
 
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        name: (e.target as HTMLInputElement).validationMessage,
-                      }))
-                    }}
-                    aria-invalid={Boolean(fieldErrors.name)}
-                  />
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          name: (e.target as HTMLInputElement).validationMessage,
+                        }))
+                      }}
+                      aria-invalid={Boolean(fieldErrors.name)}
+                    />
 
-                  <FieldError>{fieldErrors.name}</FieldError>
-                </Field>
-
-                {usernameConfig?.enabled && (
-                  <Field
-                    data-invalid={
-                      Boolean(usernameError) || (usernameData && !usernameData.available)
-                    }
-                  >
-                    <Label htmlFor="username">{localization.auth.username}</Label>
-
-                    <InputGroup>
-                      <InputGroupInput
-                        id="username"
-                        name="username"
-                        type="text"
-                        autoComplete="username"
-                        placeholder={localization.auth.usernamePlaceholder}
-                        required
-                        minLength={usernameConfig.minUsernameLength}
-                        maxLength={usernameConfig.maxUsernameLength}
-                        disabled={isPending}
-                        value={username}
-                        onChange={(e) => handleUsernameChange(e.target.value)}
-                        aria-invalid={
-                          Boolean(usernameError) || (usernameData && !usernameData.available)
-                        }
-                      />
-
-                      {usernameConfig.isUsernameAvailable && username.trim() && (
-                        <InputGroupAddon align="inline-end">
-                          {usernameData?.available ? (
-                            <Check className="text-foreground" />
-                          ) : usernameError || usernameData?.available === false ? (
-                            <X className="text-destructive" />
-                          ) : (
-                            <Spinner />
-                          )}
-                        </InputGroupAddon>
-                      )}
-                    </InputGroup>
-
-                    <FieldError>
-                      {usernameError?.error?.message ||
-                        usernameError?.message ||
-                        (usernameData?.available === false
-                          ? localization.auth.usernameTaken
-                          : null)}
-                    </FieldError>
+                    <FieldError>{fieldErrors.name}</FieldError>
                   </Field>
                 )}
 
@@ -283,6 +231,18 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
 
                   <FieldError>{fieldErrors.email}</FieldError>
                 </Field>
+
+                {additionalFields?.map(
+                  (field) =>
+                    field.signUp === 'above' && (
+                      <AdditionalField
+                        key={field.name}
+                        name={field.name}
+                        field={field}
+                        isPending={isPending}
+                      />
+                    ),
+                )}
 
                 <Field data-invalid={Boolean(fieldErrors.password)}>
                   <Label htmlFor="password">{localization.auth.password}</Label>
@@ -399,14 +359,31 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
                   </Field>
                 )}
 
+                {additionalFields?.map(
+                  (field) =>
+                    field.signUp &&
+                    field.signUp !== 'above' && (
+                      <AdditionalField
+                        key={field.name}
+                        name={field.name}
+                        field={field}
+                        isPending={isPending}
+                      />
+                    ),
+                )}
+
                 <div className="flex flex-col gap-3">
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Spinner />}
+                    {signUpEmailPending && <Spinner />}
 
                     {localization.auth.signUp}
                   </Button>
 
-                  {magicLink && <MagicLinkButton view="signUp" isPending={isPending} />}
+                  {plugins.flatMap((plugin) =>
+                    (plugin.authButtons ?? []).map((AuthButton, index) => (
+                      <AuthButton key={`${plugin.id}-${index.toString()}`} view="signUp" />
+                    )),
+                  )}
                 </div>
               </FieldGroup>
             </form>
@@ -421,7 +398,7 @@ export function SignUp({ className, socialLayout, socialPosition = 'bottom' }: S
               )}
 
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
+                <ProviderButtons socialLayout={socialLayout} />
               )}
             </>
           )}

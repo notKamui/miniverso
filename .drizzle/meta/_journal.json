@@ -85,6 +85,13 @@
       "when": 1769696845325,
       "tag": "0011_add_order_item_price_modifications",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778087312500,
+      "tag": "0012_add_passkey_to_users",
+      "breakpoints": true
     }
   ]
 }

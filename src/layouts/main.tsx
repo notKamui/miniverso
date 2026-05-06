@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { UserButton } from '@/components/auth/user/user-button'
 import { AppSidebar } from '@/components/nav/app-sidebar'
 import {
   Breadcrumb,
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { UserButton } from '@/components/user/user-button'
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
 import { useSidebarState, useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'

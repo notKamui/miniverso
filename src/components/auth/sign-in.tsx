@@ -1,9 +1,6 @@
-import {
-  useAuth,
-  useSendVerificationEmail,
-  useSignInEmail,
-  useSignInUsername,
-} from '@better-auth-ui/react'
+import { authMutationKeys } from '@better-auth-ui/core'
+import { useAuth, useSendVerificationEmail, useSignInEmail } from '@better-auth-ui/react'
+import { useIsMutating } from '@tanstack/react-query'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -20,18 +17,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
-import { MagicLinkButton } from './magic-link-button'
-import { PasskeyButton } from './passkey-button'
 import { ProviderButtons, type SocialLayout } from './provider-buttons'
 
 export type SignInProps = {
   className?: string
   socialLayout?: SocialLayout
   socialPosition?: 'top' | 'bottom'
-}
-
-function isEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
 /**
@@ -44,15 +35,14 @@ function isEmail(value: string): boolean {
  */
 export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: SignInProps) {
   const {
+    authClient,
     basePaths,
     baseURL,
     emailAndPassword,
     localization,
-    magicLink,
-    passkey,
+    plugins,
     redirectTo,
     socialProviders,
-    username: usernameConfig,
     viewPaths,
     navigate,
     Link,
@@ -60,11 +50,11 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
 
   const [password, setPassword] = useState('')
 
-  const { mutate: sendVerificationEmail } = useSendVerificationEmail({
+  const { mutate: sendVerificationEmail } = useSendVerificationEmail(authClient, {
     onSuccess: () => toast.success(localization.auth.verificationEmailSent),
   })
 
-  const { mutate: signInEmail, isPending: signInEmailPending } = useSignInEmail({
+  const { mutate: signInEmail, isPending: signInEmailPending } = useSignInEmail(authClient, {
     onError: (error, { email }) => {
       setPassword('')
 
@@ -86,15 +76,13 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
     onSuccess: () => navigate({ to: redirectTo }),
   })
 
-  const { mutate: signInUsername, isPending: signInUsernamePending } = useSignInUsername({
-    onError: (error) => {
-      setPassword('')
-      toast.error(error.error?.message || error.message)
-    },
-    onSuccess: () => navigate({ to: redirectTo }),
+  const signInMutating = useIsMutating({
+    mutationKey: authMutationKeys.signIn.all,
   })
-
-  const isPending = signInEmailPending || signInUsernamePending
+  const signUpMutating = useIsMutating({
+    mutationKey: authMutationKeys.signUp.all,
+  })
+  const isPending = signInMutating + signUpMutating > 0
 
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string
@@ -108,18 +96,11 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
     const email = formData.get('email') as string
     const rememberMe = formData.get('rememberMe') === 'on'
 
-    if (usernameConfig?.enabled && !isEmail(email)) {
-      signInUsername({
-        username: email,
-        password,
-      })
-    } else {
-      signInEmail({
-        email,
-        password,
-        ...(emailAndPassword?.rememberMe ? { rememberMe } : {}),
-      })
-    }
+    signInEmail({
+      email,
+      password,
+      ...(emailAndPassword?.rememberMe ? { rememberMe } : {}),
+    })
   }
 
   const showSeparator = emailAndPassword?.enabled && socialProviders && socialProviders.length > 0
@@ -135,7 +116,7 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
           {socialPosition === 'top' && (
             <>
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
+                <ProviderButtons socialLayout={socialLayout} />
               )}
 
               {showSeparator && (
@@ -150,20 +131,14 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
             <form onSubmit={handleSubmit}>
               <FieldGroup>
                 <Field data-invalid={Boolean(fieldErrors.email)}>
-                  <Label htmlFor="email">
-                    {usernameConfig?.enabled ? localization.auth.username : localization.auth.email}
-                  </Label>
+                  <Label htmlFor="email">{localization.auth.email}</Label>
 
                   <Input
                     id="email"
                     name="email"
-                    type={usernameConfig?.enabled ? 'text' : 'email'}
-                    autoComplete={usernameConfig?.enabled ? 'username email' : 'email'}
-                    placeholder={
-                      usernameConfig?.enabled
-                        ? localization.auth.usernameOrEmailPlaceholder
-                        : localization.auth.emailPlaceholder
-                    }
+                    type="email"
+                    autoComplete="email"
+                    placeholder={localization.auth.emailPlaceholder}
                     required
                     disabled={isPending}
                     onChange={() => {
@@ -236,14 +211,16 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
 
                 <div className="flex flex-col gap-3">
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Spinner />}
+                    {signInEmailPending && <Spinner />}
 
                     {localization.auth.signIn}
                   </Button>
 
-                  {magicLink && <MagicLinkButton view="signIn" isPending={isPending} />}
-
-                  {passkey && <PasskeyButton isPending={isPending} />}
+                  {plugins.flatMap((plugin) =>
+                    (plugin.authButtons ?? []).map((AuthButton, index) => (
+                      <AuthButton key={`${plugin.id}-${index.toString()}`} view="signIn" />
+                    )),
+                  )}
                 </div>
               </FieldGroup>
             </form>
@@ -258,7 +235,7 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
               )}
 
               {socialProviders && socialProviders.length > 0 && (
-                <ProviderButtons socialLayout={socialLayout} isPending={isPending} />
+                <ProviderButtons socialLayout={socialLayout} />
               )}
             </>
           )}

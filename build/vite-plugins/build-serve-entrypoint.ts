@@ -1,11 +1,11 @@
-import { build as viteBuild, type PluginOption } from 'vite'
+import * as Vite from 'vite-plus'
 
-export function buildServeEntrypoint(): PluginOption {
+export function buildServeEntrypoint(): Vite.PluginOption {
   return {
     apply: 'build',
     name: 'build-serve-entrypoint',
     async closeBundle() {
-      await viteBuild({
+      await Vite.build({
         appType: 'custom',
         build: {
           ssr: 'scripts/serve.ts',

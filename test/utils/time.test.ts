@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { Time, UTCTime } from '../../src/lib/utils/time'
 
 describe('Time', () => {
@@ -20,7 +20,6 @@ describe('Time', () => {
 
   it('from(null|undefined) yields current-time-based instance without throwing', () => {
     const t1 = Time.from(null)
-    // oxlint-disable-next-line unicorn/no-useless-undefined
     const t2 = Time.from(undefined)
     expect(t1).toBeInstanceOf(Time)
     expect(t2).toBeInstanceOf(Time)

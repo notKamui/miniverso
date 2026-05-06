@@ -1,11 +1,16 @@
+import { passkey } from '@better-auth/passkey'
 import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { captcha, multiSession } from 'better-auth/plugins'
+import { captcha, magicLink, multiSession } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
 import { buildObject } from '@/lib/utils/build-object'
-import { sendResetPasswordEmail, sendVerificationEmail } from '@/lib/utils/email'
+import {
+  sendMagicLinkEmail,
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as authSchema from '@/server/db/schema/auth'
 
@@ -17,6 +22,9 @@ export const auth = createServerOnlyFn(() =>
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     user: {
+      deleteUser: {
+        enabled: true,
+      },
       additionalFields: {
         role: {
           fieldName: 'role',
@@ -98,6 +106,15 @@ export const auth = createServerOnlyFn(() =>
           ]
         : []),
       multiSession(),
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          const response = await sendMagicLinkEmail({ to: email, url })
+          if (response.error) {
+            console.error('Error sending magic link email:', response.error, response.data)
+          }
+        },
+      }),
+      passkey(),
       tanstackStartCookies(), // INFO: should be the last plugin
     ],
   }),

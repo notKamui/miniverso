@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest'
+import { expectTypeOf, test } from 'vite-plus/test'
 import { Collection } from '@/lib/utils/collection'
 
 test('Collection.invertRecord preserves value-key mapping types', () => {

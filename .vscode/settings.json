@@ -15,7 +15,12 @@
   "oxc.enable": true,
   "oxc.typeAware": true,
   "oxc.unusedDisableDirectives": "warn",
+  "oxc.fmt.configPath": "./vite.config.ts",
   "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  },
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
@@ -66,7 +71,7 @@
     ".env": ".env.*",
     "vite.config.ts": "oxfmt.config.ts, oxlint.config.ts, tsconfig.json, .editorconfig",
     "tsconfig.json": "tsconfig.*.json",
-    "package.json": "pnpm-lock.yaml, .nvmrc",
+    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml, .nvmrc",
     "README.md": "LICENSE"
   },
 

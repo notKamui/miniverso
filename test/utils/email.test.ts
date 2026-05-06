@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 // Prepare mocks before importing the module under test
 const sendMock = vi.fn((args: any) => ({ ok: true, args }))

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { adminApiGuard } from '@/server/middlewares/admin-guards'
 
 describe('$$adminApi', () => {
