@@ -97,11 +97,11 @@ export const auth = createServerOnlyFn(() =>
       },
     ),
     plugins: [
-      ...(env.HCAPTCHA_SECRET && env.HCAPTCHA_SITEKEY
+      ...(env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY
         ? [
             captcha({
-              provider: 'hcaptcha',
-              secretKey: env.HCAPTCHA_SECRET,
+              provider: 'cloudflare-turnstile',
+              secretKey: env.TURNSTILE_SECRET,
             }),
           ]
         : []),

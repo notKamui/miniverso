@@ -4,7 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { LazyMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { AuthProvider as BetterAuthProvider } from '@/components/auth/auth-provider'
-import { HCaptchaWidget } from '@/components/auth/hcaptcha-widget'
+import { CaptchaWidget } from '@/components/auth/captcha-widget'
 import { Toaster } from '@/components/ui/sonner'
 import { authClient } from '@/lib/auth-client'
 import { deleteUserPlugin } from '@/lib/auth/delete-user-plugin'
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           theme: theme ?? 'system',
           setTheme: (theme) => setTheme(theme as Theme | 'system'),
         }),
-        captchaPlugin({ render: HCaptchaWidget }),
+        captchaPlugin({ render: CaptchaWidget }),
         deleteUserPlugin(),
         multiSessionPlugin(),
         magicLinkPlugin(),

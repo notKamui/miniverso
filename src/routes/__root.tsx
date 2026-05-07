@@ -10,7 +10,7 @@ import { sidebarStateQueryKey } from '@/lib/hooks/use-sidebar-state'
 import { themeQueryKey, useTheme } from '@/lib/hooks/use-theme'
 import { cn } from '@/lib/utils/cn'
 import { Providers } from '@/providers'
-import { hcaptchaInfoQueryOptions } from '@/server/functions/hcaptcha'
+import { captchaInfoQueryOptions } from '@/server/functions/captcha'
 import { requestInfoQueryOptions } from '@/server/functions/request-info'
 import { socialOAuthQueryOptions } from '@/server/functions/social-oauth'
 import type { Theme } from '@/server/functions/theme'
@@ -23,7 +23,7 @@ export const Route = createRootRouteWithContext<{
 }>()({
   beforeLoad: async ({ context: { queryClient } }) => {
     const [hcaptchaInfo, socialOAuth, requestInfo, user] = await Promise.all([
-      queryClient.fetchQuery(hcaptchaInfoQueryOptions()),
+      queryClient.fetchQuery(captchaInfoQueryOptions()),
       queryClient.fetchQuery(socialOAuthQueryOptions()),
       queryClient.fetchQuery(requestInfoQueryOptions()),
       queryClient.fetchQuery(userQueryOptions()),
