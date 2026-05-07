@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 // Prepare mocks before importing the module under test
 const sendMock = vi.fn((args: any) => ({ ok: true, args }))
@@ -24,7 +24,7 @@ vi.mock('resend', () => ({
 }))
 
 // Mock better-auth-ui email components so JSX element type/props are inspectable
-vi.mock('@better-auth-ui/react', () => ({
+vi.mock('@better-auth-ui/react/email', () => ({
   ResetPasswordEmail: 'ResetPasswordEmail',
   EmailVerificationEmail: 'EmailVerificationEmail',
 }))

@@ -1,4 +1,8 @@
-import { EmailVerificationEmail, ResetPasswordEmail } from '@better-auth-ui/react'
+import {
+  EmailVerificationEmail,
+  MagicLinkEmail,
+  ResetPasswordEmail,
+} from '@better-auth-ui/react/email'
 import { Resend } from 'resend'
 import { env } from '@/lib/env/server'
 
@@ -44,6 +48,25 @@ export async function sendVerificationEmail(options: MailOptions & { url: string
 
     react: (
       <EmailVerificationEmail
+        url={options.url}
+        email={options.to}
+        appName="Miniverso"
+        expirationMinutes={60}
+        logoURL={options.imageUrl ?? `${env.BASE_URL}/logo512.png`}
+        darkMode
+      />
+    ),
+  })
+}
+
+export async function sendMagicLinkEmail(options: MailOptions & { url: string }) {
+  return await resend.emails.send({
+    from: `Miniverso <app@${env.RESEND_MAIL_DOMAIN}>`,
+    to: options.to,
+    subject: 'Your magic link',
+
+    react: (
+      <MagicLinkEmail
         url={options.url}
         email={options.to}
         appName="Miniverso"

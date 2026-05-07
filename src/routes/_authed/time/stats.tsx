@@ -256,9 +256,8 @@ function RouteComponent() {
               const dayKey = chart.getDayKey(data as { dayKey: DayKey })
               if (dayKey) {
                 await navigate({
-                  to: '/time/{-$day}',
-                  params: { day: dayKey },
-                  search: { tz },
+                  to: '/time',
+                  search: { day: dayKey, tz },
                 })
               }
             }}

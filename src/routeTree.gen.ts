@@ -18,12 +18,12 @@ import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
 import { Route as AuthedTimeRouteRouteImport } from './routes/_authed/time/route'
 import { Route as AuthedInventoryRouteRouteImport } from './routes/_authed/inventory/route'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
+import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
 import { Route as AuthedInventoryIndexRouteImport } from './routes/_authed/inventory/index'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminImportRouteImport } from './routes/api/admin/import'
 import { Route as ApiAdminExportRouteImport } from './routes/api/admin/export'
-import { Route as AuthedTimeChar123DayChar125RouteImport } from './routes/_authed/time/{-$day}'
 import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
 import { Route as AuthedInventoryStatsRouteImport } from './routes/_authed/inventory/stats'
 import { Route as AuthedInventorySettingsRouteImport } from './routes/_authed/inventory/settings'
@@ -81,6 +81,11 @@ const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
+const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedTimeRouteRoute,
+} as any)
 const AuthedInventoryIndexRoute = AuthedInventoryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -106,12 +111,6 @@ const ApiAdminExportRoute = ApiAdminExportRouteImport.update({
   path: '/api/admin/export',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedTimeChar123DayChar125Route =
-  AuthedTimeChar123DayChar125RouteImport.update({
-    id: '/{-$day}',
-    path: '/{-$day}',
-    getParentRoute: () => AuthedTimeRouteRoute,
-  } as any)
 const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -195,12 +194,12 @@ export interface FileRoutesByFullPath {
   '/inventory/settings': typeof AuthedInventorySettingsRoute
   '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
-  '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/inventory/': typeof AuthedInventoryIndexRoute
+  '/time/': typeof AuthedTimeIndexRoute
   '/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
   '/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
   '/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
@@ -211,7 +210,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
-  '/time': typeof AuthedTimeRouteRouteWithChildren
   '/auth/$pathname': typeof AuthPathnameRoute
   '/settings/$pathname': typeof SettingsPathnameRoute
   '/admin/export': typeof AuthedAdminExportRoute
@@ -220,12 +218,12 @@ export interface FileRoutesByTo {
   '/inventory/settings': typeof AuthedInventorySettingsRoute
   '/inventory/stats': typeof AuthedInventoryStatsRoute
   '/time/stats': typeof AuthedTimeStatsRoute
-  '/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/inventory': typeof AuthedInventoryIndexRoute
+  '/time': typeof AuthedTimeIndexRoute
   '/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
   '/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
   '/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
@@ -250,12 +248,12 @@ export interface FileRoutesById {
   '/_authed/inventory/settings': typeof AuthedInventorySettingsRoute
   '/_authed/inventory/stats': typeof AuthedInventoryStatsRoute
   '/_authed/time/stats': typeof AuthedTimeStatsRoute
-  '/_authed/time/{-$day}': typeof AuthedTimeChar123DayChar125Route
   '/api/admin/export': typeof ApiAdminExportRoute
   '/api/admin/import': typeof ApiAdminImportRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/inventory/': typeof AuthedInventoryIndexRoute
+  '/_authed/time/': typeof AuthedTimeIndexRoute
   '/_authed/inventory/orders/$orderId': typeof AuthedInventoryOrdersOrderIdRoute
   '/_authed/inventory/orders/new': typeof AuthedInventoryOrdersNewRoute
   '/_authed/inventory/products/$productId': typeof AuthedInventoryProductsProductIdRoute
@@ -280,12 +278,12 @@ export interface FileRouteTypes {
     | '/inventory/settings'
     | '/inventory/stats'
     | '/time/stats'
-    | '/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/admin/'
     | '/inventory/'
+    | '/time/'
     | '/inventory/orders/$orderId'
     | '/inventory/orders/new'
     | '/inventory/products/$productId'
@@ -296,7 +294,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/settings'
-    | '/time'
     | '/auth/$pathname'
     | '/settings/$pathname'
     | '/admin/export'
@@ -305,12 +302,12 @@ export interface FileRouteTypes {
     | '/inventory/settings'
     | '/inventory/stats'
     | '/time/stats'
-    | '/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/admin'
     | '/inventory'
+    | '/time'
     | '/inventory/orders/$orderId'
     | '/inventory/orders/new'
     | '/inventory/products/$productId'
@@ -334,12 +331,12 @@ export interface FileRouteTypes {
     | '/_authed/inventory/settings'
     | '/_authed/inventory/stats'
     | '/_authed/time/stats'
-    | '/_authed/time/{-$day}'
     | '/api/admin/export'
     | '/api/admin/import'
     | '/api/auth/$'
     | '/_authed/admin/'
     | '/_authed/inventory/'
+    | '/_authed/time/'
     | '/_authed/inventory/orders/$orderId'
     | '/_authed/inventory/orders/new'
     | '/_authed/inventory/products/$productId'
@@ -422,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
+    '/_authed/time/': {
+      id: '/_authed/time/'
+      path: '/'
+      fullPath: '/time/'
+      preLoaderRoute: typeof AuthedTimeIndexRouteImport
+      parentRoute: typeof AuthedTimeRouteRoute
+    }
     '/_authed/inventory/': {
       id: '/_authed/inventory/'
       path: '/'
@@ -456,13 +460,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/export'
       preLoaderRoute: typeof ApiAdminExportRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authed/time/{-$day}': {
-      id: '/_authed/time/{-$day}'
-      path: '/{-$day}'
-      fullPath: '/time/{-$day}'
-      preLoaderRoute: typeof AuthedTimeChar123DayChar125RouteImport
-      parentRoute: typeof AuthedTimeRouteRoute
     }
     '/_authed/time/stats': {
       id: '/_authed/time/stats'
@@ -609,12 +606,12 @@ const AuthedInventoryRouteRouteWithChildren =
 
 interface AuthedTimeRouteRouteChildren {
   AuthedTimeStatsRoute: typeof AuthedTimeStatsRoute
-  AuthedTimeChar123DayChar125Route: typeof AuthedTimeChar123DayChar125Route
+  AuthedTimeIndexRoute: typeof AuthedTimeIndexRoute
 }
 
 const AuthedTimeRouteRouteChildren: AuthedTimeRouteRouteChildren = {
   AuthedTimeStatsRoute: AuthedTimeStatsRoute,
-  AuthedTimeChar123DayChar125Route: AuthedTimeChar123DayChar125Route,
+  AuthedTimeIndexRoute: AuthedTimeIndexRoute,
 }
 
 const AuthedTimeRouteRouteWithChildren = AuthedTimeRouteRoute._addFileChildren(

@@ -1,13 +1,16 @@
-import { viewPaths } from '@better-auth-ui/react/core'
+import { viewPaths } from '@better-auth-ui/core'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Auth } from '@/components/auth/auth'
+import { magicLinkPlugin } from '@/lib/auth/magic-link-plugin'
 import { Collection } from '@/lib/utils/collection'
 
+const _authPaths = { ...viewPaths.auth, ...magicLinkPlugin().viewPaths.auth }
+
 type TAuthPaths = {
-  [key in keyof typeof viewPaths.auth]: string
+  [key in keyof typeof _authPaths]: string
 }
 
-const authPaths = Collection.invertRecord(viewPaths.auth)
+const authPaths = Collection.invertRecord(_authPaths)
 
 const authCrumbs: TAuthPaths = {
   signIn: 'Sign In',

@@ -1,4 +1,4 @@
-import { viewPaths } from '@better-auth-ui/react/core'
+import { viewPaths } from '@better-auth-ui/core'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed')({

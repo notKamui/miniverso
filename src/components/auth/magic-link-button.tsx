@@ -1,25 +1,42 @@
-import { useAuth } from '@better-auth-ui/react'
-import type { AuthView } from '@better-auth-ui/react/core'
+import { type AuthView, authMutationKeys } from '@better-auth-ui/core'
+import { useAuth, useAuthPlugin } from '@better-auth-ui/react'
+import { useIsMutating } from '@tanstack/react-query'
 import { Lock, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { magicLinkPlugin } from '@/lib/auth/magic-link-plugin'
 import { cn } from '@/lib/utils/cn'
 
 export type MagicLinkButtonProps = {
-  isPending: boolean
+  /** @remarks `AuthView` */
   view?: AuthView
 }
 
 /**
- * Renders a full-width outline button that navigates to either the magic-link flow or the sign-in flow and shows the matching icon and label.
+ * Toggle button between the password sign-in and magic-link routes.
  *
- * @param isPending - If true, disables the button and applies pending styling
- * @param view - Current auth view; when "magicLink", the button targets the sign-in/password route
- * @returns The button element configured to navigate to the appropriate auth route
+ * @param view - Current auth view. On `"magicLink"` this links back to password sign-in.
  */
-export function MagicLinkButton({ isPending, view }: MagicLinkButtonProps) {
-  const { basePaths, viewPaths, localization, Link } = useAuth()
+export function MagicLinkButton({ view }: MagicLinkButtonProps) {
+  const { basePaths, emailAndPassword, viewPaths, localization, Link } = useAuth()
+
+  const signInMutating = useIsMutating({
+    mutationKey: authMutationKeys.signIn.all,
+  })
+  const signUpMutating = useIsMutating({
+    mutationKey: authMutationKeys.signUp.all,
+  })
+  const isPending = signInMutating + signUpMutating > 0
+
+  const { localization: magicLinkLocalization, viewPaths: magicLinkViewPaths } =
+    useAuthPlugin(magicLinkPlugin)
 
   const isMagicLinkView = view === 'magicLink'
+
+  // On the magic-link view this button switches back to password sign-in.
+  // With password auth disabled there's nowhere to switch to, so hide it.
+  // (Other views — e.g. a phone-number plugin's surface — still get a
+  // "Continue with Magic Link" link.)
+  if (isMagicLinkView && !emailAndPassword?.enabled) return null
 
   return (
     <Button
@@ -30,13 +47,13 @@ export function MagicLinkButton({ isPending, view }: MagicLinkButtonProps) {
       asChild
     >
       <Link
-        href={`${basePaths.auth}/${isMagicLinkView ? viewPaths.auth.signIn : viewPaths.auth.magicLink}`}
+        href={`${basePaths.auth}/${isMagicLinkView ? viewPaths.auth.signIn : magicLinkViewPaths.auth.magicLink}`}
       >
         {isMagicLinkView ? <Lock /> : <Mail />}
 
         {localization.auth.continueWith.replace(
           '{{provider}}',
-          isMagicLinkView ? localization.auth.password : localization.auth.magicLink,
+          isMagicLinkView ? localization.auth.password : magicLinkLocalization.magicLink,
         )}
       </Link>
     </Button>

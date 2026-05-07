@@ -27,9 +27,10 @@ export type ResetPasswordProps = {
  * @returns The password reset form UI ready to be mounted in the app layout.
  */
 export function ResetPassword({ className }: ResetPasswordProps) {
-  const { basePaths, emailAndPassword, localization, viewPaths, navigate, Link } = useAuth()
+  const { authClient, basePaths, emailAndPassword, localization, viewPaths, navigate, Link } =
+    useAuth()
 
-  const { mutate: resetPassword, isPending } = useResetPassword({
+  const { mutate: resetPassword, isPending } = useResetPassword(authClient, {
     onSuccess: () => {
       toast.success(localization.auth.passwordResetSuccess)
       navigate({ to: `${basePaths.auth}/${viewPaths.auth.signIn}` })

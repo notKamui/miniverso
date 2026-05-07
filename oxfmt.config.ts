@@ -1,6 +1,6 @@
-import { defineConfig } from 'oxfmt'
+import type { OxfmtConfig } from 'vite-plus/fmt'
 
-export default defineConfig({
+export default {
   printWidth: 100,
   tabWidth: 2,
   useTabs: false,
@@ -23,4 +23,4 @@ export default defineConfig({
     '**/.drizzle/**',
     '**/dist/**',
   ],
-})
+} satisfies OxfmtConfig

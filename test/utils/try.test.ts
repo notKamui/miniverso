@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { tryAsync, tryInline } from '../../src/lib/utils/try'
 
 class CustomError extends Error {}
