@@ -24,7 +24,7 @@ vi.mock('resend', () => ({
 }))
 
 // Mock better-auth-ui email components so JSX element type/props are inspectable
-vi.mock('@better-auth-ui/react', () => ({
+vi.mock('@better-auth-ui/react/email', () => ({
   ResetPasswordEmail: 'ResetPasswordEmail',
   EmailVerificationEmail: 'EmailVerificationEmail',
 }))
