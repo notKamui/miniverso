@@ -1,3 +1,5 @@
+allowBuilds:
+  esbuild: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vite-plus: ^0.1.20
