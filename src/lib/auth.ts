@@ -5,7 +5,6 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { captcha, magicLink, multiSession } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
-import { buildObject } from '@/lib/utils/build-object'
 import {
   sendMagicLinkEmail,
   sendResetPasswordEmail,
@@ -13,6 +12,7 @@ import {
 } from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as authSchema from '@/server/db/schema/auth'
+import { Collection } from './utils/collection'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({
@@ -80,7 +80,7 @@ export const auth = createServerOnlyFn(() =>
         }
       },
     },
-    socialProviders: buildObject(
+    socialProviders: Collection.buildObject(
       Boolean(env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) && {
         github: {
           clientId: env.GITHUB_OAUTH_CLIENT_ID,
@@ -96,16 +96,10 @@ export const auth = createServerOnlyFn(() =>
         },
       },
     ),
-    plugins: [
-      ...(env.TURNSTILE_SECRET && env.TURNSTILE_SITEKEY
-        ? [
-            captcha({
-              provider: 'cloudflare-turnstile',
-              secretKey: env.TURNSTILE_SECRET,
-            }),
-          ]
-        : []),
-      multiSession(),
+    plugins: Collection.buildArray(
+      env.TURNSTILE_SECRET &&
+        env.TURNSTILE_SITEKEY &&
+        captcha({ provider: 'cloudflare-turnstile', secretKey: env.TURNSTILE_SECRET }),
       magicLink({
         sendMagicLink: async ({ email, url }) => {
           const response = await sendMagicLinkEmail({ to: email, url })
@@ -114,8 +108,9 @@ export const auth = createServerOnlyFn(() =>
           }
         },
       }),
+      multiSession(),
       passkey(),
-      tanstackStartCookies(), // INFO: should be the last plugin
-    ],
+      tanstackStartCookies(),
+    ),
   }),
 )()

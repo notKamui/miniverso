@@ -1,6 +1,11 @@
 import { Compute } from './types'
 
 export namespace Collection {
+  type Falsy = false | 0 | '' | null | undefined
+  type Truthy<T> = T extends Falsy ? never : T
+
+  type ObjectInput = Record<string, any> | false | null | undefined
+
   type MergeRecordsByKeysInput = Record<string, Record<PropertyKey, unknown>>
 
   type InnerKeys<T extends MergeRecordsByKeysInput> = {
@@ -109,13 +114,32 @@ export namespace Collection {
   }
 
   // oxlint-disable-next-line unicorn/prefer-native-coercion-functions
-  export function notFalsy<T>(value: T | false | 0 | '' | null | undefined): value is T {
+  export function notFalsy<T>(value: T): value is Truthy<T> {
     return Boolean(value)
   }
 
-  export function createFactory<T>(): (...items: (T | null | undefined | false)[]) => T[] {
-    return (...items: (T | null | undefined | false)[]) => {
+  export function createFactory<T>(): (...items: (T | Falsy)[]) => Truthy<T>[] {
+    return (...items: (T | Falsy)[]) => {
       return items.filter(notFalsy)
     }
+  }
+
+  export function buildArray<const T extends readonly unknown[]>(...items: T): Truthy<T[number]>[] {
+    return items.filter((item): item is Truthy<T[number]> => notFalsy(item))
+  }
+
+  export function buildObject(...inputs: ObjectInput[]): Record<string, any> {
+    const result: Record<string, any> = {}
+
+    for (const input of inputs) {
+      if (!input || typeof input !== 'object') continue
+      for (const [key, value] of Object.entries(input)) {
+        if (value) {
+          result[key] = value
+        }
+      }
+    }
+
+    return result
   }
 }
