@@ -60,7 +60,7 @@ const applications: Application[] = [
     title: 'Time recorder',
     description: 'Record your time and track your progress',
     link: {
-      to: '/time/{-$day}',
+      to: '/time',
       search: {
         tz: Time.getOffset(),
       },

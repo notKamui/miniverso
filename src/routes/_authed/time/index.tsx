@@ -7,13 +7,17 @@ import { Time } from '@/lib/utils/time'
 import { getColumnVisibilityQueryOptions } from '@/server/functions/column-visibility'
 import { getTimeEntriesByDayQueryOptions } from '@/server/functions/time-entry'
 
-export const Route = createFileRoute('/_authed/time/{-$day}')({
+export const Route = createFileRoute('/_authed/time/')({
   validateSearch: z.object({
+    day: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
     tz: z.coerce.number().int().min(-840).max(840).optional(),
   }),
   loaderDeps: ({ search }) => ({ search }),
-  loader: async ({ params: { day }, deps: { search }, context: { queryClient } }) => {
-    const date = Time.from(day)
+  loader: async ({ deps: { search }, context: { queryClient } }) => {
+    const date = Time.from(search.day)
     const tzOffsetMinutes = search.tz ?? 0
 
     const [columnVisibilityTimeRecorder] = await Promise.all([
@@ -27,9 +31,9 @@ export const Route = createFileRoute('/_authed/time/{-$day}')({
     ])
 
     return {
+      columnVisibilityTimeRecorder,
       time: date,
       crumb: date.isToday() ? undefined : date.formatDayNumber(),
-      columnVisibilityTimeRecorder,
     }
   },
   component: RouteComponent,
@@ -39,7 +43,9 @@ function RouteComponent() {
   const { time, columnVisibilityTimeRecorder } = Route.useLoaderData({
     select: ({ time, columnVisibilityTimeRecorder }) => ({ time, columnVisibilityTimeRecorder }),
   })
-  const { tz = 0 } = Route.useSearch()
+  const tz = Route.useSearch({
+    select: ({ tz }) => tz ?? 0,
+  })
 
   const { data: entries } = useSuspenseQuery(
     getTimeEntriesByDayQueryOptions({
