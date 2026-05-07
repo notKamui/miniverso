@@ -1,4 +1,4 @@
-import { useAuth, useRequestPasswordReset } from '@better-auth-ui/react'
+import { useAuth, useFetchOptions, useRequestPasswordReset } from '@better-auth-ui/react'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,17 +23,28 @@ export type ForgotPasswordProps = {
  * @returns The forgot-password form UI as a JSX element
  */
 export function ForgotPassword({ className }: ForgotPasswordProps) {
-  const { authClient, basePaths, localization, viewPaths, Link } = useAuth()
+  const { authClient, basePaths, localization, plugins, viewPaths, Link } = useAuth()
+
+  const { fetchOptions, resetFetchOptions } = useFetchOptions()
 
   const { mutate: requestPasswordReset, isPending } = useRequestPasswordReset(authClient, {
+    onError: (error) => {
+      toast.error(error.error?.message || error.message)
+      resetFetchOptions()
+    },
     onSuccess: () => toast.success(localization.auth.passwordResetEmailSent),
   })
 
   function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    requestPasswordReset({ email: formData.get('email') as string })
+    requestPasswordReset({
+      email: formData.get('email') as string,
+      fetchOptions,
+    })
   }
+
+  const Captcha = plugins.find((plugin) => plugin.captchaComponent)?.captchaComponent
 
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string
@@ -78,6 +89,8 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
 
               <FieldError>{fieldErrors.email}</FieldError>
             </Field>
+
+            {Captcha && <div className="flex justify-center">{Captcha}</div>}
 
             <div className="flex flex-col gap-3">
               <Button type="submit" disabled={isPending}>

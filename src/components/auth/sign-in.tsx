@@ -1,5 +1,10 @@
 import { authMutationKeys } from '@better-auth-ui/core'
-import { useAuth, useSendVerificationEmail, useSignInEmail } from '@better-auth-ui/react'
+import {
+  useAuth,
+  useFetchOptions,
+  useSendVerificationEmail,
+  useSignInEmail,
+} from '@better-auth-ui/react'
 import { useIsMutating } from '@tanstack/react-query'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
@@ -48,6 +53,8 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
     Link,
   } = useAuth()
 
+  const { fetchOptions, resetFetchOptions } = useFetchOptions()
+
   const [password, setPassword] = useState('')
 
   const { mutate: sendVerificationEmail } = useSendVerificationEmail(authClient, {
@@ -72,6 +79,8 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
       } else {
         toast.error(error.error?.message || error.message)
       }
+
+      resetFetchOptions()
     },
     onSuccess: () => navigate({ to: redirectTo }),
   })
@@ -83,6 +92,8 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
     mutationKey: authMutationKeys.signUp.all,
   })
   const isPending = signInMutating + signUpMutating > 0
+
+  const Captcha = plugins.find((plugin) => plugin.captchaComponent)?.captchaComponent
 
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string
@@ -100,6 +111,7 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
       email,
       password,
       ...(emailAndPassword?.rememberMe ? { rememberMe } : {}),
+      fetchOptions,
     })
   }
 
@@ -208,6 +220,8 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
                     </div>
                   </Field>
                 )}
+
+                {Captcha && <div className="flex justify-center">{Captcha}</div>}
 
                 <div className="flex flex-col gap-3">
                   <Button type="submit" disabled={isPending}>
