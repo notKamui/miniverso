@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vite-plus/test'
-import { buildObject } from '../../src/lib/utils/build-object'
+import { Collection } from '@/lib/utils/collection'
 
 describe('buildObject', () => {
   it('merges truthy values from multiple objects', () => {
-    const res = buildObject(
+    const res = Collection.buildObject(
       { a: 1, b: 0, c: '', d: null, e: undefined, f: false, g: true },
       { h: 'x', i: 2 },
     )
@@ -16,20 +16,20 @@ describe('buildObject', () => {
   })
 
   it('skips non-object inputs', () => {
-    const res = buildObject(false, null, undefined, {
+    const res = Collection.buildObject(false, null, undefined, {
       a: 1,
     })
     expect(res).toEqual({ a: 1 })
   })
 
   it('later objects override earlier ones for truthy values', () => {
-    const res = buildObject({ a: 1, b: 'x' }, { a: 2, b: 'y' })
+    const res = Collection.buildObject({ a: 1, b: 'x' }, { a: 2, b: 'y' })
     expect(res).toEqual({ a: 2, b: 'y' })
   })
 
   it('does not deep-merge; assigns nested objects as-is', () => {
     const nested = { n: { x: 1 } }
-    const res = buildObject({ n: { x: 0 } }, nested)
+    const res = Collection.buildObject({ n: { x: 0 } }, nested)
     expect(res.n).toBe(nested.n)
     expect(res).toEqual({ n: { x: 1 } })
   })
