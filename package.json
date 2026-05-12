@@ -83,9 +83,9 @@
     "tailwindcss": "^4.3.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^6.0.3",
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vite": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    "vitest": "catalog:"
   },
   "overrides": {
     "react-is": "19.2.6"

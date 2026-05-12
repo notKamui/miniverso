@@ -7,7 +7,7 @@ RUN corepack enable
 RUN corepack prepare pnpm@latest-11 --activate
 
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM base AS build
@@ -18,7 +18,7 @@ ENV BUILD_ENV=production
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store vp run build
 
 FROM base AS prod-deps
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --prod
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runtime
