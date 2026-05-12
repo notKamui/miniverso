@@ -16,7 +16,7 @@
     "auth:secret": "vpx @better-auth/cli@latest secret",
     "auth:generate": "vpx @better-auth/cli@latest generate --y --output ./src/server/db/schema/auth.ts && vp check --fix",
     "deploy": "sh ./deployment/_.deploy.sh",
-    "up": "vpx taze@latest major -lI",
+    "up": "vpx taze@latest major -lI --maturity-period",
     "prepare": "vp config"
   },
   "dependencies": {
@@ -93,6 +93,6 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@11.0.8",
+  "packageManager": "pnpm@11.1.0+sha512.0c44e842e5686b2c061a81adda8b2258bd8818e9704b2cf2c63d56b931a7b2e910092e085027003b96ca3911ab56a07f6df5abaed2be9925034cdd686a535b14",
   "_notes": {}
 }
