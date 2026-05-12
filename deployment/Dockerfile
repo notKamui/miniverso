@@ -2,7 +2,11 @@
 FROM node:24-slim AS base
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="/root/.vite-plus/bin:$PNPM_HOME:$PATH"
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl git \
+  && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://vite.plus | bash
 RUN corepack enable
 RUN corepack prepare pnpm@latest-11 --activate
 
