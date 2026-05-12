@@ -1,13 +1,20 @@
+import { captchaPlugin } from '@better-auth-ui/react/plugins'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { LazyMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { AuthProvider as BetterAuthProvider } from '@/components/auth/auth-provider'
+import { CaptchaWidget } from '@/components/auth/captcha-widget'
 import { Toaster } from '@/components/ui/sonner'
 import { authClient } from '@/lib/auth-client'
+import { deleteUserPlugin } from '@/lib/auth/delete-user-plugin'
+import { magicLinkPlugin } from '@/lib/auth/magic-link-plugin'
+import { multiSessionPlugin } from '@/lib/auth/multi-session-plugin'
+import { passkeyPlugin } from '@/lib/auth/passkey-plugin'
+import { themePlugin } from '@/lib/auth/theme-plugin'
 import { useGlobalContext } from '@/lib/hooks/use-global-context'
-import { themeQueryOptions, useUpdateTheme } from './lib/hooks/use-theme'
-import { Theme } from './server/functions/theme'
+import { themeQueryOptions, useUpdateTheme } from '@/lib/hooks/use-theme'
+import { Theme } from '@/server/functions/theme'
 
 const motionFeatures = () => import('@/lib/utils/motion-features').then((mod) => mod.default)
 
@@ -34,10 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <BetterAuthProvider
       authClient={authClient}
-      appearance={{
-        theme: theme ?? 'system',
-        setTheme: (theme) => setTheme(theme as Theme | 'system'),
-      }}
+      plugins={[
+        themePlugin({
+          theme: theme ?? 'system',
+          setTheme: (theme) => setTheme(theme as Theme | 'system'),
+        }),
+        captchaPlugin({ render: CaptchaWidget }),
+        deleteUserPlugin(),
+        multiSessionPlugin(),
+        magicLinkPlugin(),
+        passkeyPlugin(),
+      ]}
       emailAndPassword={{
         enabled: socialOAuth?.emailAndPassword,
         confirmPassword: true,
@@ -45,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rememberMe: true,
         requireEmailVerification: true,
       }}
-      multiSession
       socialProviders={socialOAuthProviders}
       redirectTo="/"
       navigate={navigate}

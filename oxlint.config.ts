@@ -1,6 +1,12 @@
-import { defineConfig } from 'oxlint'
+import type { OxlintConfig } from 'vite-plus/lint'
 
-export default defineConfig({
+export default {
+  options: {
+    typeAware: true,
+    typeCheck: true,
+    denyWarnings: true,
+    reportUnusedDisableDirectives: 'warn',
+  },
   plugins: [
     'oxc',
     'typescript',
@@ -353,4 +359,4 @@ export default defineConfig({
     'unicorn/text-encoding-identifier-case': 'error',
     'unicorn/throw-new-error': 'error',
   },
-})
+} satisfies OxlintConfig

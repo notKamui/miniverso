@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 // Install shared server DB mock and use its transaction injection hook.
 const dbMock = await import('@/../test/helpers/mock-server-db')

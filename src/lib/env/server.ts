@@ -26,8 +26,8 @@ export const env = createEnv({
     GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1).optional(),
     RESEND_API_KEY: z.string().min(1).optional(),
     RESEND_MAIL_DOMAIN: z.string().min(1).optional(),
-    HCAPTCHA_SITEKEY: z.string().min(1).optional(),
-    HCAPTCHA_SECRET: z.string().min(1).optional(),
+    TURNSTILE_SITEKEY: z.string().min(1).optional(),
+    TURNSTILE_SECRET: z.string().min(1).optional(),
     DISABLE_CORS: z
       .string()
       .default('false')

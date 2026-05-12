@@ -12,38 +12,27 @@ on:
       - ready_for_review
 
 jobs:
-  type-check:
+  checks:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - name: type-check
+            command: vp run tc
+          - name: lint
+            command: vp lint
+          - name: fmt
+            command: vp fmt --check
+          - name: test
+            command: vp test
+    name: ${{ matrix.check.name }}
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-pnpm-toolchain
-      - name: Run type check
-        run: pnpm check:tc
-
-  lint:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-pnpm-toolchain
-      - name: Run lint
-        run: pnpm check:lint
-
-  fmt:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-pnpm-toolchain
-      - name: Run fmt
-        run: pnpm check:fmt
-
-  test:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-pnpm-toolchain
-      - name: Run tests
-        run: pnpm test:run
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: '.node-version'
+          run-install: true
+      - name: Run ${{ matrix.check.name }}
+        run: ${{ matrix.check.command }}

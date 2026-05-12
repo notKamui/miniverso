@@ -1,13 +1,18 @@
+import { passkey } from '@better-auth/passkey'
 import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { captcha, multiSession } from 'better-auth/plugins'
+import { captcha, magicLink, multiSession } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from '@/lib/env/server'
-import { buildObject } from '@/lib/utils/build-object'
-import { sendResetPasswordEmail, sendVerificationEmail } from '@/lib/utils/email'
+import {
+  sendMagicLinkEmail,
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from '@/lib/utils/email'
 import { db } from '@/server/db'
 import * as authSchema from '@/server/db/schema/auth'
+import { Collection } from './utils/collection'
 
 export const auth = createServerOnlyFn(() =>
   betterAuth({
@@ -17,6 +22,9 @@ export const auth = createServerOnlyFn(() =>
     telemetry: { enabled: false },
     database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
     user: {
+      deleteUser: {
+        enabled: true,
+      },
       additionalFields: {
         role: {
           fieldName: 'role',
@@ -72,7 +80,7 @@ export const auth = createServerOnlyFn(() =>
         }
       },
     },
-    socialProviders: buildObject(
+    socialProviders: Collection.buildObject(
       Boolean(env.GITHUB_OAUTH_CLIENT_ID && env.GITHUB_OAUTH_CLIENT_SECRET) && {
         github: {
           clientId: env.GITHUB_OAUTH_CLIENT_ID,
@@ -88,17 +96,21 @@ export const auth = createServerOnlyFn(() =>
         },
       },
     ),
-    plugins: [
-      ...(env.HCAPTCHA_SECRET && env.HCAPTCHA_SITEKEY
-        ? [
-            captcha({
-              provider: 'hcaptcha',
-              secretKey: env.HCAPTCHA_SECRET,
-            }),
-          ]
-        : []),
+    plugins: Collection.buildArray(
+      env.TURNSTILE_SECRET &&
+        env.TURNSTILE_SITEKEY &&
+        captcha({ provider: 'cloudflare-turnstile', secretKey: env.TURNSTILE_SECRET }),
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          const response = await sendMagicLinkEmail({ to: email, url })
+          if (response.error) {
+            console.error('Error sending magic link email:', response.error, response.data)
+          }
+        },
+      }),
       multiSession(),
-      tanstackStartCookies(), // INFO: should be the last plugin
-    ],
+      passkey(),
+      tanstackStartCookies(),
+    ),
   }),
 )()

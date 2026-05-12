@@ -138,9 +138,8 @@ export function RecorderDisplay({
 
   async function onDateChange(time: Time) {
     await router.navigate({
-      to: '/time/{-$day}',
-      params: { day: time.isToday() ? undefined : time.formatDayKey() },
-      search: { tz: time.getOffset() },
+      to: '/time',
+      search: { day: time.isToday() ? undefined : time.formatDayKey(), tz: time.getOffset() },
     })
   }
 
@@ -212,10 +211,9 @@ export function RecorderDisplay({
         <div className="flex flex-row items-center">
           <Button size="icon" className="h-9 rounded-r-none" asChild>
             <Link
-              to="/time/{-$day}"
+              to="/time"
               from="/"
-              params={{ day: dayBefore.formatDayKey() }}
-              search={{ tz: dayBefore.getOffset() }}
+              search={{ day: dayBefore.formatDayKey(), tz: dayBefore.getOffset() }}
             >
               <ChevronLeftIcon />
             </Link>
@@ -229,10 +227,9 @@ export function RecorderDisplay({
           {!isToday && (
             <Button size="icon" className={cn('h-9 rounded-l-none')} disabled={isToday} asChild>
               <Link
-                to="/time/{-$day}"
+                to="/time"
                 from="/"
-                params={{ day: dayAfter.formatDayKey() }}
-                search={{ tz: dayAfter.getOffset() }}
+                search={{ day: dayAfter.formatDayKey(), tz: dayAfter.getOffset() }}
               >
                 <ChevronRightIcon />
               </Link>
