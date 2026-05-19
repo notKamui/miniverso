@@ -92,7 +92,7 @@ export function DataTable<TData, TValue>({
 
   const showPaginationFooter = serverPagination != null
 
-  // oxlint-disable-next-line react-hooks-js/incompatible-library TODO: remove this once tanstack table is fixed
+  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove this once tanstack table is fixed
   const table = useReactTable({
     columns,
     data,
