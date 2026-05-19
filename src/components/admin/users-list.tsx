@@ -230,7 +230,7 @@ export function UsersList({
     [page, size],
   )
 
-  // oxlint-disable-next-line react-hooks-js/incompatible-library TODO: remove this once tanstack table is fixed
+  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove this once tanstack table is fixed
   const table = useReactTable({
     data: users,
     columns,
