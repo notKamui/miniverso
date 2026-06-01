@@ -24,14 +24,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { deleteUserPlugin } from '@/lib/auth/delete-user-plugin'
 import { cn } from '@/lib/utils/cn'
 
-export type DeleteUserProps = {
+export type DeleteAccountProps = {
   className?: string
 }
 
 /**
  * Danger-zone card to delete the authenticated account, with a confirmation dialog and toasts.
  */
-export function DeleteUser({ className }: DeleteUserProps) {
+export function DeleteAccount({ className }: DeleteAccountProps) {
   const { authClient, basePaths, localization, viewPaths, navigate } = useAuth()
 
   const { localization: deleteUserLocalization, sendDeleteAccountVerification } =
@@ -82,17 +82,19 @@ export function DeleteUser({ className }: DeleteUserProps) {
     <Card className={cn('border-destructive', className)}>
       <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm leading-tight font-medium">{deleteUserLocalization.deleteUser}</p>
+          <p className="text-sm leading-tight font-medium">
+            {deleteUserLocalization.deleteAccount}
+          </p>
 
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {deleteUserLocalization.deleteUserDescription}
+            {deleteUserLocalization.deleteAccountDescription}
           </p>
         </div>
 
         <AlertDialog open={confirmOpen} onOpenChange={handleDialogOpenChange}>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm" disabled={!accounts}>
-              {deleteUserLocalization.deleteUser}
+              {deleteUserLocalization.deleteAccount}
             </Button>
           </AlertDialogTrigger>
 
@@ -103,10 +105,10 @@ export function DeleteUser({ className }: DeleteUserProps) {
                   <TriangleAlert />
                 </AlertDialogMedia>
 
-                <AlertDialogTitle>{deleteUserLocalization.deleteUser}</AlertDialogTitle>
+                <AlertDialogTitle>{deleteUserLocalization.deleteAccount}</AlertDialogTitle>
 
                 <AlertDialogDescription>
-                  {deleteUserLocalization.deleteUserDescription}
+                  {deleteUserLocalization.deleteAccountDescription}
                 </AlertDialogDescription>
               </AlertDialogHeader>
 
@@ -138,7 +140,7 @@ export function DeleteUser({ className }: DeleteUserProps) {
                 <Button type="submit" variant="destructive" disabled={isPending}>
                   {isPending && <Spinner />}
 
-                  {deleteUserLocalization.deleteUser}
+                  {deleteUserLocalization.deleteAccount}
                 </Button>
               </AlertDialogFooter>
             </form>

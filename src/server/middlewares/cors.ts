@@ -3,7 +3,7 @@ import { getRequest, getRequestUrl } from '@tanstack/react-start/server'
 import { env } from '@/lib/env/server'
 import { badRequest } from '@/lib/utils/response'
 
-export const $$cors = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+export const $$cors = createMiddleware({ type: 'request' }).server(async ({ next }) => {
   if (env.DISABLE_CORS) return await next()
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(getRequest().method)) {
     return await next()

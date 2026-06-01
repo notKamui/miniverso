@@ -19,11 +19,18 @@ export type LinkedAccountsProps = {
  * @returns A JSX element containing the linked accounts card
  */
 export function LinkedAccounts({ className }: LinkedAccountsProps) {
-  const { authClient, localization, socialProviders } = useAuth()
+  const { authClient, localization, multipleAccountsPerProvider, socialProviders } = useAuth()
 
   const { data: accounts, isPending } = useListAccounts(authClient)
 
   const linkedAccounts = accounts?.filter((account) => account.providerId !== 'credential')
+
+  const linkedProviderIds = new Set(linkedAccounts?.map((a) => a.providerId))
+
+  const availableProviders =
+    multipleAccountsPerProvider === false
+      ? socialProviders?.filter((p) => !linkedProviderIds.has(p))
+      : socialProviders
 
   const allRows = [
     ...(linkedAccounts?.map((account) => ({
@@ -31,7 +38,7 @@ export function LinkedAccounts({ className }: LinkedAccountsProps) {
       account,
       provider: account.providerId,
     })) ?? []),
-    ...(socialProviders?.map((provider) => ({
+    ...(availableProviders?.map((provider) => ({
       key: provider,
       account: undefined,
       provider,

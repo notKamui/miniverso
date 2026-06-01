@@ -1,14 +1,16 @@
 import { vi } from 'vite-plus/test'
 
+function advance(ms: number) {
+  vi.advanceTimersByTime(ms)
+  return Date.now()
+}
+function restore() {
+  vi.useRealTimers()
+}
+
 export function installFakeTime() {
   vi.useFakeTimers()
-  function advance(ms: number) {
-    vi.advanceTimersByTime(ms)
-    return Date.now()
-  }
-  function restore() {
-    vi.useRealTimers()
-  }
+
   return { advance, restore }
 }
 

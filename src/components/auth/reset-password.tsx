@@ -11,9 +11,9 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group'
+import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
-import { Label } from '../ui/label'
 
 export type ResetPasswordProps = {
   className?: string

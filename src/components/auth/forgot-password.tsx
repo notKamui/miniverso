@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
-import { Label } from '../ui/label'
 
 export type ForgotPasswordProps = {
   className?: string
@@ -23,13 +23,12 @@ export type ForgotPasswordProps = {
  * @returns The forgot-password form UI as a JSX element
  */
 export function ForgotPassword({ className }: ForgotPasswordProps) {
-  const { authClient, basePaths, localization, plugins, viewPaths, Link } = useAuth()
+  const { authClient, baseURL, basePaths, localization, plugins, viewPaths, Link } = useAuth()
 
   const { fetchOptions, resetFetchOptions } = useFetchOptions()
 
   const { mutate: requestPasswordReset, isPending } = useRequestPasswordReset(authClient, {
-    onError: (error) => {
-      toast.error(error.error?.message || error.message)
+    onError: () => {
       resetFetchOptions()
     },
     onSuccess: () => toast.success(localization.auth.passwordResetEmailSent),
@@ -40,6 +39,7 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
     const formData = new FormData(e.currentTarget)
     requestPasswordReset({
       email: formData.get('email') as string,
+      redirectTo: `${baseURL}${basePaths.auth}/${viewPaths.auth.resetPassword}`,
       fetchOptions,
     })
   }

@@ -76,8 +76,6 @@ export function SignIn({ className, socialLayout, socialPosition = 'bottom' }: S
               }),
           },
         })
-      } else {
-        toast.error(error.error?.message || error.message)
       }
 
       resetFetchOptions()
