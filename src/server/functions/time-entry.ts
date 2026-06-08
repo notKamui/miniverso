@@ -60,7 +60,7 @@ export function getTimeStatsQueryOptions({
 
 export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         dayKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -130,7 +130,7 @@ export const $getTimeEntriesByDay = createServerFn({ method: 'GET' })
 
 export const $getTimeStatsBy = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         dayKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -200,7 +200,7 @@ export const $getTimeStatsBy = createServerFn({ method: 'GET' })
 
 export const $createTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z
         .object({
@@ -239,7 +239,7 @@ export const $createTimeEntry = createServerFn({ method: 'POST' })
 
 export const $updateTimeEntry = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         id: z.string(),
@@ -285,7 +285,7 @@ export const $updateTimeEntry = createServerFn({ method: 'POST' })
 
 export const $deleteTimeEntries = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ ids: z.array(z.string()) })))
+  .validator(validate(z.object({ ids: z.array(z.string()) })))
   .handler(async ({ context: { user }, data: { ids } }) => {
     const entry = await db
       .delete(timeEntry)
@@ -323,7 +323,7 @@ export const $getTimeEntryTags = createServerFn({ method: 'GET' })
 
 export const $createTimeEntryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         description: z.string().min(1).max(2000),
@@ -365,7 +365,7 @@ export const $createTimeEntryTag = createServerFn({ method: 'POST' })
 
 export const $deleteTimeEntryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.string() })))
+  .validator(validate(z.object({ id: z.string() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const tag = await db
       .delete(timeEntryTag)

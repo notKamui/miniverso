@@ -46,7 +46,7 @@ const presetSchema = z.object({
 
 export const $createOrderPriceModificationPreset = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(presetSchema))
+  .validator(validate(presetSchema))
   .handler(async ({ context: { user }, data }) => {
     return db
       .insert(orderPriceModificationPreset)
@@ -83,7 +83,7 @@ const updatePresetSchema = z.object({
 
 export const $updateOrderPriceModificationPreset = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(updatePresetSchema))
+  .validator(validate(updatePresetSchema))
   .handler(async ({ context: { user }, data: { id, ...rest } }) => {
     const set: Record<string, unknown> = {}
     if (rest.name !== undefined) set.name = rest.name.trim()
@@ -133,7 +133,7 @@ export const $updateOrderPriceModificationPreset = createServerFn({ method: 'POS
 
 export const $deleteOrderPriceModificationPreset = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const row = await db
       .delete(orderPriceModificationPreset)

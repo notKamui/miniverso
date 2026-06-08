@@ -36,7 +36,7 @@ export const $getProductionCostLabels = createServerFn({ method: 'GET' })
 
 export const $createProductionCostLabel = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         name: z.string().min(1).max(500),
@@ -80,7 +80,7 @@ export const $createProductionCostLabel = createServerFn({ method: 'POST' })
 
 export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         id: z.uuid(),
@@ -117,7 +117,7 @@ export const $updateProductionCostLabel = createServerFn({ method: 'POST' })
 
 export const $deleteProductionCostLabel = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const label = await db
       .delete(inventoryProductionCostLabel)

@@ -20,7 +20,7 @@ export function getInventoryStockStatsQueryOptions({ labelIds = [] }: { labelIds
 
 export const $getInventoryStockStats = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ labelIds: z.array(z.uuid()).optional() })))
+  .validator(validate(z.object({ labelIds: z.array(z.uuid()).optional() })))
   .handler(async ({ context: { user }, data: { labelIds } }) => {
     const products = await db
       .select({

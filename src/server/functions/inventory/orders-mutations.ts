@@ -41,7 +41,7 @@ const orderCreateSchema = z.object({
 
 export const $createOrder = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(orderCreateSchema))
+  .validator(validate(orderCreateSchema))
   .handler(async ({ context: { user }, data }) => {
     if (data.items.length === 0) badRequest('At least one item required', 400)
     if (!data.reference && !data.prefixId)
@@ -181,7 +181,7 @@ export const $createOrder = createServerFn({ method: 'POST' })
 
 export const $markOrderPaid = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ orderId: z.uuid() })))
+  .validator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select({ id: order.id, status: order.status })
@@ -250,7 +250,7 @@ export const $markOrderPaid = createServerFn({ method: 'POST' })
 
 export const $markOrderSent = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ orderId: z.uuid() })))
+  .validator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select({ id: order.id, status: order.status })
@@ -280,7 +280,7 @@ export const $markOrderSent = createServerFn({ method: 'POST' })
 
 export const $deleteOrder = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ orderId: z.uuid() })))
+  .validator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select({ id: order.id, status: order.status })

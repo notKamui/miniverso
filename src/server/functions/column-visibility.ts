@@ -37,7 +37,7 @@ const setSchema = z.object({
 })
 
 export const $getColumnVisibility = createServerFn({ method: 'GET' })
-  .inputValidator(validate(getSchema))
+  .validator(validate(getSchema))
   .handler(({ data: { key } }) => {
     const raw = getCookie(cookieName(key))
     if (raw == null || raw === '') return {} as VisibilityState
@@ -47,7 +47,7 @@ export const $getColumnVisibility = createServerFn({ method: 'GET' })
   })
 
 export const $setColumnVisibility = createServerFn({ method: 'POST' })
-  .inputValidator(validate(setSchema))
+  .validator(validate(setSchema))
   .handler(({ data: { key, state } }) => {
     setCookie(cookieName(key), JSON.stringify(state), {
       path: '/',
