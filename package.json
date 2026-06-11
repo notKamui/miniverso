@@ -48,7 +48,7 @@
     "postgres": "^3.4.9",
     "radix-ui": "^1.5.0",
     "react": "^19.2.7",
-    "react-day-picker": "^9.14.0",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.7",
     "recharts": "3.8.1",
     "resend": "^6.12.4",
@@ -93,6 +93,6 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916",
+  "packageManager": "pnpm@11.5.3+sha512.7ac1c919341c213a34dc0d02afb7143c5c26ac26ee8c4782deea821b8ac64d2134a081fd8941dae6e29bbb48f58dfc2b7fbceeccc07cb2f09d219d342a4969ed",
   "_notes": {}
 }
