@@ -69,7 +69,8 @@ export function DataTable<TData, TValue>({
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: DataTableProps<TData, TValue>) {
   'use no memo'
-  // TODO: ^ remove this once tanstack table is fixed
+  // TODO: remove once upgraded to @tanstack/react-table v9, which rebuilds state
+  // on TanStack Store and is natively React Compiler-compatible.
 
   const setColumnVisibility = useServerFn($setColumnVisibility)
 
@@ -92,7 +93,7 @@ export function DataTable<TData, TValue>({
 
   const showPaginationFooter = serverPagination != null
 
-  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove this once tanstack table is fixed
+  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove once on v9
   const table = useReactTable({
     columns,
     data,
@@ -103,6 +104,7 @@ export function DataTable<TData, TValue>({
 
   const headerGroups = table.getHeaderGroups()
   const rows = table.getRowModel().rows
+  const visibleColumnCount = table.getVisibleLeafColumns().length
   const hideableColumns = enableColumnHiding
     ? table.getAllLeafColumns().filter((c) => c.getCanHide())
     : []
@@ -158,6 +160,7 @@ export function DataTable<TData, TValue>({
           {headerGroups.map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => {
+                if (!header.column.getIsVisible()) return null
                 const meta = header.column.columnDef.meta as { stickyRight?: boolean } | undefined
                 const isStickyRight = meta?.stickyRight === true
                 return (
@@ -190,7 +193,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={visibleColumnCount} className="h-24 text-center">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -253,6 +256,8 @@ function DataRow<TData>({
   onRowClick?: (row: TData) => void
   onRowDoubleClick?: (row: TData) => void
 }) {
+  'use no memo' // TODO: remove once on @tanstack/react-table v9
+
   const { onTouchStart, onTouchEnd } = useLongPress(() => onRowDoubleClick?.(row.original))
 
   return (
