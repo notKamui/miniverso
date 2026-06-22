@@ -6,8 +6,6 @@ import { DefaultCatchBoundary } from '@/components/default-catch-boundary'
 import { NotFound } from '@/components/not-found'
 import { routeTree } from './routeTree.gen'
 
-const isAbortError = (error: unknown) => error instanceof Error && error.name === 'AbortError'
-
 export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -16,13 +14,6 @@ export function getRouter() {
       },
     },
   })
-
-  const queryCache = queryClient.getQueryCache()
-  const previousQueryOnError = queryCache.config.onError
-  queryCache.config.onError = (error, query) => {
-    if (isAbortError(error)) return
-    previousQueryOnError?.(error, query)
-  }
 
   const router = createRouter({
     routeTree,

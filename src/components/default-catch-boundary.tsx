@@ -15,11 +15,6 @@ export function DefaultCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
     select: (state) => state.id === rootRouteId,
   })
 
-  // Navigation cancels in-flight queries; not a real app error.
-  if (error instanceof Error && error.name === 'AbortError') {
-    return null
-  }
-
   console.error(error)
 
   return (
