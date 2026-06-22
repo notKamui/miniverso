@@ -1,15 +1,11 @@
 import { useServerFn } from '@tanstack/react-start'
 import { useSelector } from '@tanstack/react-store'
 import {
-  columnSizingFeature,
-  columnVisibilityFeature,
   type ColumnDef,
   type ColumnVisibilityState,
-  metaHelper,
   type ReactTable,
   type Row,
   type RowData,
-  tableFeatures,
   type Updater,
   useTable,
 } from '@tanstack/react-table'
@@ -32,13 +28,9 @@ import {
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { cn } from '@/lib/utils/cn'
 import { $setColumnVisibility } from '@/server/functions/column-visibility'
+import { dataTableFeatures, type DataTableFeatures } from './data-table-features'
 
-export const dataTableFeatures = tableFeatures({
-  columnSizingFeature,
-  columnVisibilityFeature,
-  columnMeta: metaHelper<{ stickyRight?: boolean; grow?: boolean }>(),
-})
-export type DataTableFeatures = typeof dataTableFeatures
+export type { DataTableFeatures } from './data-table-features'
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const
 
