@@ -1,11 +1,17 @@
 import { useServerFn } from '@tanstack/react-start'
+import { useSelector } from '@tanstack/react-store'
 import {
+  columnSizingFeature,
+  columnVisibilityFeature,
   type ColumnDef,
-  flexRender,
-  getCoreRowModel,
+  type ColumnVisibilityState,
+  metaHelper,
+  type ReactTable,
   type Row,
-  useReactTable,
-  type VisibilityState,
+  type RowData,
+  tableFeatures,
+  type Updater,
+  useTable,
 } from '@tanstack/react-table'
 import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -27,6 +33,13 @@ import { useLongPress } from '@/lib/hooks/use-long-press'
 import { cn } from '@/lib/utils/cn'
 import { $setColumnVisibility } from '@/server/functions/column-visibility'
 
+export const dataTableFeatures = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  columnMeta: metaHelper<{ stickyRight?: boolean; grow?: boolean }>(),
+})
+export type DataTableFeatures = typeof dataTableFeatures
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const
 
 export type ServerPagination = {
@@ -37,8 +50,8 @@ export type ServerPagination = {
   onPageSizeChange: (pageSize: number) => void
 }
 
-export type DataTableProps<TData, TValue> = {
-  columns: ColumnDef<TData, TValue>[]
+export type DataTableProps<TData extends RowData> = {
+  columns: ColumnDef<DataTableFeatures, TData, any>[]
   data: TData[]
   emptyMessage?: string
   className?: string
@@ -46,7 +59,7 @@ export type DataTableProps<TData, TValue> = {
   onRowDoubleClick?: (row: TData) => void
   enableColumnHiding?: boolean
   columnVisibilityStorageKey?: string
-  initialColumnVisibility?: VisibilityState
+  initialColumnVisibility?: ColumnVisibilityState
   toolbarSlot?: React.ReactNode
   /** When set, pagination is controlled by the parent (URL/server). Data is the current page only. Footer with page size and prev/next is shown only when this is set. */
   pagination?: ServerPagination
@@ -54,7 +67,7 @@ export type DataTableProps<TData, TValue> = {
   pageSizeOptions?: readonly number[]
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData>({
   columns,
   data,
   emptyMessage = 'No data',
@@ -67,19 +80,15 @@ export function DataTable<TData, TValue>({
   toolbarSlot,
   pagination: serverPagination,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
-}: DataTableProps<TData, TValue>) {
-  'use no memo'
-  // TODO: remove once upgraded to @tanstack/react-table v9, which rebuilds state
-  // on TanStack Store and is natively React Compiler-compatible.
-
+}: DataTableProps<TData>) {
   const setColumnVisibility = useServerFn($setColumnVisibility)
 
-  const [columnVisibility, setColumnVisibility_] = useState<VisibilityState>(
+  const [columnVisibility, setColumnVisibility_] = useState<ColumnVisibilityState>(
     () => initialColumnVisibility ?? {},
   )
 
   const onColumnVisibilityChange = useCallback(
-    (updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+    (updater: Updater<ColumnVisibilityState>) => {
       setColumnVisibility_((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
         if (columnVisibilityStorageKey) {
@@ -93,18 +102,16 @@ export function DataTable<TData, TValue>({
 
   const showPaginationFooter = serverPagination != null
 
-  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove once on v9
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     columns,
     data,
-    getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange,
     state: { columnVisibility },
   })
 
   const headerGroups = table.getHeaderGroups()
   const rows = table.getRowModel().rows
-  const visibleColumnCount = table.getVisibleLeafColumns().length
   const hideableColumns = enableColumnHiding
     ? table.getAllLeafColumns().filter((c) => c.getCanHide())
     : []
@@ -135,21 +142,25 @@ export function DataTable<TData, TValue>({
                     Columns
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {hideableColumns.map((col) => {
-                    const label =
-                      typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={col.id}
-                        checked={col.getIsVisible()}
-                        onCheckedChange={(checked) => col.toggleVisibility(Boolean(checked))}
-                      >
-                        {label}
-                      </DropdownMenuCheckboxItem>
-                    )
-                  })}
-                </DropdownMenuContent>
+                <table.Subscribe selector={(s) => s.columnVisibility}>
+                  {() => (
+                    <DropdownMenuContent align="end">
+                      {hideableColumns.map((col) => {
+                        const label =
+                          typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id
+                        return (
+                          <DropdownMenuCheckboxItem
+                            key={col.id}
+                            checked={col.getIsVisible()}
+                            onCheckedChange={(checked) => col.toggleVisibility(Boolean(checked))}
+                          >
+                            {label}
+                          </DropdownMenuCheckboxItem>
+                        )
+                      })}
+                    </DropdownMenuContent>
+                  )}
+                </table.Subscribe>
               </DropdownMenu>
             </div>
           )}
@@ -157,46 +168,52 @@ export function DataTable<TData, TValue>({
       )}
       <Table>
         <TableHeader>
-          {headerGroups.map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => {
-                if (!header.column.getIsVisible()) return null
-                const meta = header.column.columnDef.meta as { stickyRight?: boolean } | undefined
-                const isStickyRight = meta?.stickyRight === true
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.column.columnDef.size }}
-                    className={cn(
-                      'text-nowrap',
-                      isStickyRight && 'sticky right-0 z-10 border-l bg-background',
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
+          <table.Subscribe selector={(s) => s.columnVisibility}>
+            {() =>
+              headerGroups.map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => {
+                    if (!header.column.getIsVisible()) return null
+                    const { stickyRight, grow } = header.column.columnDef.meta ?? {}
+                    return (
+                      <TableHead
+                        key={header.id}
+                        style={{ width: grow ? undefined : header.column.columnDef.size }}
+                        className={cn('text-nowrap', stickyRight && 'sticky right-0 z-10')}
+                      >
+                        {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))
+            }
+          </table.Subscribe>
         </TableHeader>
         <TableBody>
           {rows?.length ? (
             rows.map((row) => (
               <DataRow
                 key={row.id}
+                table={table}
                 row={row}
                 onRowClick={onRowClick}
                 onRowDoubleClick={onRowDoubleClick}
               />
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={visibleColumnCount} className="h-24 text-center">
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
+            <table.Subscribe selector={(s) => s.columnVisibility}>
+              {() => (
+                <TableRow>
+                  <TableCell
+                    colSpan={table.getVisibleLeafColumns().length}
+                    className="h-24 text-center"
+                  >
+                    {emptyMessage}
+                  </TableCell>
+                </TableRow>
+              )}
+            </table.Subscribe>
           )}
         </TableBody>
       </Table>
@@ -247,22 +264,22 @@ export function DataTable<TData, TValue>({
   )
 }
 
-function DataRow<TData>({
+function DataRow<TData extends RowData>({
+  table,
   row,
   onRowClick,
   onRowDoubleClick,
 }: {
-  row: Row<TData>
+  table: ReactTable<DataTableFeatures, TData>
+  row: Row<DataTableFeatures, TData>
   onRowClick?: (row: TData) => void
   onRowDoubleClick?: (row: TData) => void
 }) {
-  'use no memo' // TODO: remove once on @tanstack/react-table v9
-
+  useSelector(table.atoms.columnVisibility)
   const { onTouchStart, onTouchEnd } = useLongPress(() => onRowDoubleClick?.(row.original))
 
   return (
     <TableRow
-      data-state={row.getIsSelected() && 'selected'}
       onClick={() => onRowClick?.(row.original)}
       onDoubleClick={() => onRowDoubleClick?.(row.original)}
       onTouchStart={onTouchStart}
@@ -270,18 +287,17 @@ function DataRow<TData>({
       className={cn('group', (onRowClick || onRowDoubleClick) && 'cursor-pointer')}
     >
       {row.getVisibleCells().map((cell) => {
-        const meta = cell.column.columnDef.meta as { stickyRight?: boolean } | undefined
-        const isStickyRight = meta?.stickyRight === true
+        const { stickyRight, grow } = cell.column.columnDef.meta ?? {}
         return (
           <TableCell
             key={cell.id}
             className={cn(
-              'max-w-0 overflow-hidden whitespace-nowrap',
-              isStickyRight &&
-                'sticky right-0 z-10 shrink-0 border-l bg-background group-hover:bg-muted/50 max-md:min-w-12',
+              !stickyRight && !grow && 'max-w-0 overflow-hidden whitespace-nowrap',
+              grow && 'truncate',
+              stickyRight && 'sticky right-0 z-10',
             )}
           >
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            <table.FlexRender cell={cell} />
           </TableCell>
         )
       })}

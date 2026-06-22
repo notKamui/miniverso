@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import type { ColumnDef } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import { PlusIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import * as z from 'zod'
-import { DataTable } from '@/components/data/data-table'
+import { DataTable, type DataTableFeatures } from '@/components/data/data-table'
 import { Button } from '@/components/ui/button'
 import { DateRangeSelect } from '@/components/ui/date-range-select'
 import { Input } from '@/components/ui/input'
@@ -46,6 +46,8 @@ export const Route = createFileRoute('/_authed/inventory/orders/')({
 
 type OrderRow = Awaited<ReturnType<typeof $getOrders>>['items'][number]
 
+const orderColumnHelper = createColumnHelper<DataTableFeatures, OrderRow>()
+
 function RouteComponent() {
   const navigate = useNavigate()
   const search = Route.useSearch()
@@ -79,9 +81,8 @@ function RouteComponent() {
 
   const orders = ordersPage.items
 
-  const columns: ColumnDef<OrderRow>[] = [
-    {
-      accessorKey: 'reference',
+  const columns = [
+    orderColumnHelper.accessor('reference', {
       header: 'Reference',
       cell: ({ row }) => {
         const o = row.original
@@ -95,9 +96,8 @@ function RouteComponent() {
           </Link>
         )
       },
-    },
-    {
-      accessorKey: 'status',
+    }),
+    orderColumnHelper.accessor('status', {
       header: 'Status',
       cell: ({ row }) => (
         <span
@@ -112,20 +112,18 @@ function RouteComponent() {
           {row.original.status}
         </span>
       ),
-    },
-    {
-      accessorKey: 'createdAt',
+    }),
+    orderColumnHelper.accessor('createdAt', {
       header: 'Created',
       cell: ({ row }) =>
         new Date(row.original.createdAt).toLocaleDateString(undefined, {
           dateStyle: 'short',
         }),
-    },
-    {
-      accessorKey: 'totalTaxIncluded',
+    }),
+    orderColumnHelper.accessor('totalTaxIncluded', {
       header: 'Total (incl. tax)',
       cell: ({ row }) => formatMoney(Number(row.original.totalTaxIncluded), currency),
-    },
+    }),
   ]
 
   return (

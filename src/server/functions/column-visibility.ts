@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie, setCookie } from '@tanstack/react-start/server'
-import type { VisibilityState } from '@tanstack/react-table'
+import type { ColumnVisibilityState } from '@tanstack/react-table'
 import * as z from 'zod'
 import { env } from '@/lib/env/server'
 import { tryInline } from '@/lib/utils/try'
@@ -13,9 +13,9 @@ function cookieName(key: string) {
   return `${COOKIE_PREFIX}${key}`
 }
 
-function parseVisibilityState(raw: unknown): VisibilityState {
+function parseVisibilityState(raw: unknown): ColumnVisibilityState {
   if (typeof raw !== 'object' || raw === null) return {}
-  const result: VisibilityState = {}
+  const result: ColumnVisibilityState = {}
   for (const [k, v] of Object.entries(raw)) {
     if (typeof v === 'boolean') result[k] = v
   }
@@ -40,9 +40,9 @@ export const $getColumnVisibility = createServerFn({ method: 'GET' })
   .validator(validate(getSchema))
   .handler(({ data: { key } }) => {
     const raw = getCookie(cookieName(key))
-    if (raw == null || raw === '') return {} as VisibilityState
+    if (raw == null || raw === '') return {} as ColumnVisibilityState
     const [error, result] = tryInline(() => JSON.parse(raw) as unknown)
-    if (error) return {} as VisibilityState
+    if (error) return {} as ColumnVisibilityState
     return parseVisibilityState(result)
   })
 
