@@ -78,10 +78,14 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
                 }}
                 onInvalid={(e) => {
                   e.preventDefault()
+                  const el = e.target as HTMLInputElement
+                  const msg = el.validity.valueMissing
+                    ? localization.auth.fieldRequired
+                    : localization.auth.invalidEmail
 
                   setFieldErrors((prev) => ({
                     ...prev,
-                    email: (e.target as HTMLInputElement).validationMessage,
+                    email: msg,
                   }))
                 }}
                 aria-invalid={Boolean(fieldErrors.email)}

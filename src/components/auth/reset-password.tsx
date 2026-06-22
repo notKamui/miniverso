@@ -110,10 +110,18 @@ export function ResetPassword({ className }: ResetPasswordProps) {
                   }}
                   onInvalid={(e) => {
                     e.preventDefault()
+                    const el = e.target as HTMLInputElement
+                    const min = emailAndPassword?.minPasswordLength
+                    const max = emailAndPassword?.maxPasswordLength
+                    const msg = el.validity.valueMissing
+                      ? localization.auth.fieldRequired
+                      : el.validity.tooShort
+                        ? localization.auth.tooShort.replace('{{min}}', String(min))
+                        : localization.auth.tooLong.replace('{{max}}', String(max))
 
                     setFieldErrors((prev) => ({
                       ...prev,
-                      password: (e.target as HTMLInputElement).validationMessage,
+                      password: msg,
                     }))
                   }}
                   aria-invalid={Boolean(fieldErrors.password)}
@@ -166,10 +174,18 @@ export function ResetPassword({ className }: ResetPasswordProps) {
                     }}
                     onInvalid={(e) => {
                       e.preventDefault()
+                      const el = e.target as HTMLInputElement
+                      const min = emailAndPassword?.minPasswordLength
+                      const max = emailAndPassword?.maxPasswordLength
+                      const msg = el.validity.valueMissing
+                        ? localization.auth.fieldRequired
+                        : el.validity.tooShort
+                          ? localization.auth.tooShort.replace('{{min}}', String(min))
+                          : localization.auth.tooLong.replace('{{max}}', String(max))
 
                       setFieldErrors((prev) => ({
                         ...prev,
-                        confirmPassword: (e.target as HTMLInputElement).validationMessage,
+                        confirmPassword: msg,
                       }))
                     }}
                     aria-invalid={Boolean(fieldErrors.confirmPassword)}

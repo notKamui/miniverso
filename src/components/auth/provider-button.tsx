@@ -48,7 +48,7 @@ export function ProviderButton({
       {...props}
       aria-label={getProviderName(provider)}
     >
-      {signInSocialPending ? <Spinner /> : <ProviderIcon />}
+      {signInSocialPending ? <Spinner /> : ProviderIcon ? <ProviderIcon /> : null}
 
       {display === 'full'
         ? localization.auth.continueWith.replace('{{provider}}', getProviderName(provider))

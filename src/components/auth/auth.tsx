@@ -7,6 +7,7 @@ import { ResetPassword } from './reset-password'
 import { SignIn } from './sign-in'
 import { SignOut } from './sign-out'
 import { SignUp } from './sign-up'
+import { VerifyEmail } from './verify-email'
 
 export type AuthProps = {
   className?: string
@@ -30,6 +31,7 @@ const AUTH_VIEWS: Partial<Record<AuthView, ComponentType<AuthProps>>> = {
   signUp: SignUp,
   forgotPassword: ForgotPassword,
   resetPassword: ResetPassword,
+  verifyEmail: VerifyEmail,
 }
 
 /**

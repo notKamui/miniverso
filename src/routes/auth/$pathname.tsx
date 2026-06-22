@@ -19,6 +19,7 @@ const authCrumbs: TAuthPaths = {
   forgotPassword: 'Forgot Password',
   resetPassword: 'Reset Password',
   signOut: 'Sign Out',
+  verifyEmail: 'Verify Email',
 }
 
 export const Route = createFileRoute('/auth/$pathname')({
