@@ -40,9 +40,9 @@ export const $getColumnVisibility = createServerFn({ method: 'GET' })
   .validator(validate(getSchema))
   .handler(({ data: { key } }) => {
     const raw = getCookie(cookieName(key))
-    if (raw == null || raw === '') return {} as ColumnVisibilityState
+    if (raw == null || raw === '') return {}
     const [error, result] = tryInline(() => JSON.parse(raw) as unknown)
-    if (error) return {} as ColumnVisibilityState
+    if (error) return {}
     return parseVisibilityState(result)
   })
 

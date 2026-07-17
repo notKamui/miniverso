@@ -1,3 +1,4 @@
+import type { DeepKeys } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 import { FieldInfo } from '@/components/form/field-info'
 import { Label } from '@/components/ui/label'
@@ -9,7 +10,7 @@ export type TextInputProps<F extends Record<string, any>> = Omit<
   'form'
 > & {
   form: ReactForm<F>
-  name: keyof F
+  name: DeepKeys<F>
   label: string
 }
 
@@ -20,7 +21,7 @@ export function TextInput<F extends Record<string, any>>({
   ...props
 }: TextInputProps<F>) {
   return (
-    <form.Field name={name as any}>
+    <form.Field name={name}>
       {(field) => (
         <div className="space-y-2">
           <Label htmlFor={field.name}>{label}</Label>

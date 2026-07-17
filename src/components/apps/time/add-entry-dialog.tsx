@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form'
+import type { z } from 'zod'
 import { FormInput } from '@/components/form/form-input'
 import { TextInput } from '@/components/form/text-input'
 import { Button } from '@/components/ui/button'
@@ -32,16 +33,18 @@ export function AddEntryDialog({
   tzOffset,
   onSuccess,
 }: AddEntryDialogProps) {
+  const defaultValues: z.input<typeof AddTimeEntrySchema> = {
+    date: defaultDate.getDate(),
+    startedAt: '',
+    endedAt: '',
+    description: '',
+  }
+
   const form = useForm({
     validators: {
       onBlur: AddTimeEntrySchema,
     },
-    defaultValues: {
-      date: defaultDate.getDate(),
-      startedAt: '',
-      endedAt: '' as string | undefined,
-      description: '',
-    },
+    defaultValues,
     onSubmit: async ({ value: data }) => {
       const dayKey = Time.from(data.date).formatDayKey()
       const startedAt = UTCTime.at(dayKey, data.startedAt, tzOffset)

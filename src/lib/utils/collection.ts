@@ -113,7 +113,6 @@ export namespace Collection {
     return value !== null && value !== undefined
   }
 
-  // oxlint-disable-next-line unicorn/prefer-native-coercion-functions
   export function notFalsy<T>(value: T): value is Truthy<T> {
     return Boolean(value)
   }
