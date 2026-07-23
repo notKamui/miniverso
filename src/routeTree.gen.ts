@@ -9,37 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteRouteImport } from './routes/settings/route'
-import { Route as AuthRouteRouteImport } from './routes/auth/route'
-import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SettingsPathnameRouteImport } from './routes/settings/$pathname'
-import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
-import { Route as AuthedTimeRouteRouteImport } from './routes/_authed/time/route'
-import { Route as AuthedInventoryRouteRouteImport } from './routes/_authed/inventory/route'
+import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
+import { Route as AuthRouteRouteImport } from './routes/auth/route'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
-import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
-import { Route as AuthedInventoryIndexRouteImport } from './routes/_authed/inventory/index'
+import { Route as AuthedInventoryRouteRouteImport } from './routes/_authed/inventory/route'
+import { Route as AuthedTimeRouteRouteImport } from './routes/_authed/time/route'
+import { Route as AuthPathnameRouteImport } from './routes/auth/$pathname'
+import { Route as SettingsPathnameRouteImport } from './routes/settings/$pathname'
 import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiAdminImportRouteImport } from './routes/api/admin/import'
-import { Route as ApiAdminExportRouteImport } from './routes/api/admin/export'
-import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
-import { Route as AuthedInventoryStatsRouteImport } from './routes/_authed/inventory/stats'
-import { Route as AuthedInventorySettingsRouteImport } from './routes/_authed/inventory/settings'
-import { Route as AuthedInventoryCashRouteImport } from './routes/_authed/inventory/cash'
-import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
 import { Route as AuthedAdminExportRouteImport } from './routes/_authed/admin/export'
+import { Route as AuthedAdminUsersRouteImport } from './routes/_authed/admin/users'
+import { Route as AuthedInventoryIndexRouteImport } from './routes/_authed/inventory/index'
+import { Route as AuthedInventoryCashRouteImport } from './routes/_authed/inventory/cash'
 import { Route as AuthedInventoryOrdersRouteRouteImport } from './routes/_authed/inventory/orders/route'
+import { Route as AuthedInventorySettingsRouteImport } from './routes/_authed/inventory/settings'
+import { Route as AuthedInventoryStatsRouteImport } from './routes/_authed/inventory/stats'
+import { Route as AuthedTimeIndexRouteImport } from './routes/_authed/time/index'
+import { Route as AuthedTimeStatsRouteImport } from './routes/_authed/time/stats'
+import { Route as ApiAdminExportRouteImport } from './routes/api/admin/export'
+import { Route as ApiAdminImportRouteImport } from './routes/api/admin/import'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedInventoryOrdersIndexRouteImport } from './routes/_authed/inventory/orders/index'
-import { Route as AuthedInventoryProductsNewRouteImport } from './routes/_authed/inventory/products/new'
-import { Route as AuthedInventoryProductsProductIdRouteImport } from './routes/_authed/inventory/products/$productId'
-import { Route as AuthedInventoryOrdersNewRouteImport } from './routes/_authed/inventory/orders/new'
 import { Route as AuthedInventoryOrdersOrderIdRouteImport } from './routes/_authed/inventory/orders/$orderId'
+import { Route as AuthedInventoryOrdersNewRouteImport } from './routes/_authed/inventory/orders/new'
+import { Route as AuthedInventoryProductsProductIdRouteImport } from './routes/_authed/inventory/products/$productId'
+import { Route as AuthedInventoryProductsNewRouteImport } from './routes/_authed/inventory/products/new'
 
-const SettingsRouteRoute = SettingsRouteRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedRouteRoute = AuthedRouteRouteImport.update({
+  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
@@ -47,28 +51,14 @@ const AuthRouteRoute = AuthRouteRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedRouteRoute = AuthedRouteRouteImport.update({
-  id: '/_authed',
+const SettingsRouteRoute = SettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsPathnameRoute = SettingsPathnameRouteImport.update({
-  id: '/$pathname',
-  path: '/$pathname',
-  getParentRoute: () => SettingsRouteRoute,
-} as any)
-const AuthPathnameRoute = AuthPathnameRouteImport.update({
-  id: '/$pathname',
-  path: '/$pathname',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthedTimeRouteRoute = AuthedTimeRouteRouteImport.update({
-  id: '/time',
-  path: '/time',
+const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
 const AuthedInventoryRouteRoute = AuthedInventoryRouteRouteImport.update({
@@ -76,64 +66,24 @@ const AuthedInventoryRouteRoute = AuthedInventoryRouteRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthedTimeRouteRoute = AuthedTimeRouteRouteImport.update({
+  id: '/time',
+  path: '/time',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedTimeRouteRoute,
+const AuthPathnameRoute = AuthPathnameRouteImport.update({
+  id: '/$pathname',
+  path: '/$pathname',
+  getParentRoute: () => AuthRouteRoute,
 } as any)
-const AuthedInventoryIndexRoute = AuthedInventoryIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedInventoryRouteRoute,
+const SettingsPathnameRoute = SettingsPathnameRouteImport.update({
+  id: '/$pathname',
+  path: '/$pathname',
+  getParentRoute: () => SettingsRouteRoute,
 } as any)
 const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminImportRoute = ApiAdminImportRouteImport.update({
-  id: '/api/admin/import',
-  path: '/api/admin/import',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminExportRoute = ApiAdminExportRouteImport.update({
-  id: '/api/admin/export',
-  path: '/api/admin/export',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
-  getParentRoute: () => AuthedTimeRouteRoute,
-} as any)
-const AuthedInventoryStatsRoute = AuthedInventoryStatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
-  getParentRoute: () => AuthedInventoryRouteRoute,
-} as any)
-const AuthedInventorySettingsRoute = AuthedInventorySettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthedInventoryRouteRoute,
-} as any)
-const AuthedInventoryCashRoute = AuthedInventoryCashRouteImport.update({
-  id: '/cash',
-  path: '/cash',
-  getParentRoute: () => AuthedInventoryRouteRoute,
-} as any)
-const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
 const AuthedAdminExportRoute = AuthedAdminExportRouteImport.update({
@@ -141,34 +91,66 @@ const AuthedAdminExportRoute = AuthedAdminExportRouteImport.update({
   path: '/export',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
+const AuthedInventoryIndexRoute = AuthedInventoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
+const AuthedInventoryCashRoute = AuthedInventoryCashRouteImport.update({
+  id: '/cash',
+  path: '/cash',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
 const AuthedInventoryOrdersRouteRoute =
   AuthedInventoryOrdersRouteRouteImport.update({
     id: '/orders',
     path: '/orders',
     getParentRoute: () => AuthedInventoryRouteRoute,
   } as any)
+const AuthedInventorySettingsRoute = AuthedInventorySettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
+const AuthedInventoryStatsRoute = AuthedInventoryStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthedInventoryRouteRoute,
+} as any)
+const AuthedTimeIndexRoute = AuthedTimeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedTimeRouteRoute,
+} as any)
+const AuthedTimeStatsRoute = AuthedTimeStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthedTimeRouteRoute,
+} as any)
+const ApiAdminExportRoute = ApiAdminExportRouteImport.update({
+  id: '/api/admin/export',
+  path: '/api/admin/export',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminImportRoute = ApiAdminImportRouteImport.update({
+  id: '/api/admin/import',
+  path: '/api/admin/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedInventoryOrdersIndexRoute =
   AuthedInventoryOrdersIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthedInventoryOrdersRouteRoute,
-  } as any)
-const AuthedInventoryProductsNewRoute =
-  AuthedInventoryProductsNewRouteImport.update({
-    id: '/products/new',
-    path: '/products/new',
-    getParentRoute: () => AuthedInventoryRouteRoute,
-  } as any)
-const AuthedInventoryProductsProductIdRoute =
-  AuthedInventoryProductsProductIdRouteImport.update({
-    id: '/products/$productId',
-    path: '/products/$productId',
-    getParentRoute: () => AuthedInventoryRouteRoute,
-  } as any)
-const AuthedInventoryOrdersNewRoute =
-  AuthedInventoryOrdersNewRouteImport.update({
-    id: '/new',
-    path: '/new',
     getParentRoute: () => AuthedInventoryOrdersRouteRoute,
   } as any)
 const AuthedInventoryOrdersOrderIdRoute =
@@ -176,6 +158,24 @@ const AuthedInventoryOrdersOrderIdRoute =
     id: '/$orderId',
     path: '/$orderId',
     getParentRoute: () => AuthedInventoryOrdersRouteRoute,
+  } as any)
+const AuthedInventoryOrdersNewRoute =
+  AuthedInventoryOrdersNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthedInventoryOrdersRouteRoute,
+  } as any)
+const AuthedInventoryProductsProductIdRoute =
+  AuthedInventoryProductsProductIdRouteImport.update({
+    id: '/products/$productId',
+    path: '/products/$productId',
+    getParentRoute: () => AuthedInventoryRouteRoute,
+  } as any)
+const AuthedInventoryProductsNewRoute =
+  AuthedInventoryProductsNewRouteImport.update({
+    id: '/products/new',
+    path: '/products/new',
+    getParentRoute: () => AuthedInventoryRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -356,18 +356,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -377,32 +370,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings/$pathname': {
-      id: '/settings/$pathname'
-      path: '/$pathname'
-      fullPath: '/settings/$pathname'
-      preLoaderRoute: typeof SettingsPathnameRouteImport
-      parentRoute: typeof SettingsRouteRoute
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/auth/$pathname': {
-      id: '/auth/$pathname'
-      path: '/$pathname'
-      fullPath: '/auth/$pathname'
-      preLoaderRoute: typeof AuthPathnameRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_authed/time': {
-      id: '/_authed/time'
-      path: '/time'
-      fullPath: '/time'
-      preLoaderRoute: typeof AuthedTimeRouteRouteImport
+    '/_authed/admin': {
+      id: '/_authed/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthedAdminRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
     '/_authed/inventory': {
@@ -412,88 +398,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedInventoryRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/admin': {
-      id: '/_authed/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthedAdminRouteRouteImport
+    '/_authed/time': {
+      id: '/_authed/time'
+      path: '/time'
+      fullPath: '/time'
+      preLoaderRoute: typeof AuthedTimeRouteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/time/': {
-      id: '/_authed/time/'
-      path: '/'
-      fullPath: '/time/'
-      preLoaderRoute: typeof AuthedTimeIndexRouteImport
-      parentRoute: typeof AuthedTimeRouteRoute
+    '/auth/$pathname': {
+      id: '/auth/$pathname'
+      path: '/$pathname'
+      fullPath: '/auth/$pathname'
+      preLoaderRoute: typeof AuthPathnameRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
-    '/_authed/inventory/': {
-      id: '/_authed/inventory/'
-      path: '/'
-      fullPath: '/inventory/'
-      preLoaderRoute: typeof AuthedInventoryIndexRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
+    '/settings/$pathname': {
+      id: '/settings/$pathname'
+      path: '/$pathname'
+      fullPath: '/settings/$pathname'
+      preLoaderRoute: typeof SettingsPathnameRouteImport
+      parentRoute: typeof SettingsRouteRoute
     }
     '/_authed/admin/': {
       id: '/_authed/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthedAdminIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/import': {
-      id: '/api/admin/import'
-      path: '/api/admin/import'
-      fullPath: '/api/admin/import'
-      preLoaderRoute: typeof ApiAdminImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/export': {
-      id: '/api/admin/export'
-      path: '/api/admin/export'
-      fullPath: '/api/admin/export'
-      preLoaderRoute: typeof ApiAdminExportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed/time/stats': {
-      id: '/_authed/time/stats'
-      path: '/stats'
-      fullPath: '/time/stats'
-      preLoaderRoute: typeof AuthedTimeStatsRouteImport
-      parentRoute: typeof AuthedTimeRouteRoute
-    }
-    '/_authed/inventory/stats': {
-      id: '/_authed/inventory/stats'
-      path: '/stats'
-      fullPath: '/inventory/stats'
-      preLoaderRoute: typeof AuthedInventoryStatsRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
-    }
-    '/_authed/inventory/settings': {
-      id: '/_authed/inventory/settings'
-      path: '/settings'
-      fullPath: '/inventory/settings'
-      preLoaderRoute: typeof AuthedInventorySettingsRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
-    }
-    '/_authed/inventory/cash': {
-      id: '/_authed/inventory/cash'
-      path: '/cash'
-      fullPath: '/inventory/cash'
-      preLoaderRoute: typeof AuthedInventoryCashRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
-    }
-    '/_authed/admin/users': {
-      id: '/_authed/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthedAdminUsersRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
     '/_authed/admin/export': {
@@ -503,12 +433,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminExportRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/users': {
+      id: '/_authed/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthedAdminUsersRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
+    '/_authed/inventory/': {
+      id: '/_authed/inventory/'
+      path: '/'
+      fullPath: '/inventory/'
+      preLoaderRoute: typeof AuthedInventoryIndexRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/cash': {
+      id: '/_authed/inventory/cash'
+      path: '/cash'
+      fullPath: '/inventory/cash'
+      preLoaderRoute: typeof AuthedInventoryCashRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
     '/_authed/inventory/orders': {
       id: '/_authed/inventory/orders'
       path: '/orders'
       fullPath: '/inventory/orders'
       preLoaderRoute: typeof AuthedInventoryOrdersRouteRouteImport
       parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/settings': {
+      id: '/_authed/inventory/settings'
+      path: '/settings'
+      fullPath: '/inventory/settings'
+      preLoaderRoute: typeof AuthedInventorySettingsRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/stats': {
+      id: '/_authed/inventory/stats'
+      path: '/stats'
+      fullPath: '/inventory/stats'
+      preLoaderRoute: typeof AuthedInventoryStatsRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/time/': {
+      id: '/_authed/time/'
+      path: '/'
+      fullPath: '/time/'
+      preLoaderRoute: typeof AuthedTimeIndexRouteImport
+      parentRoute: typeof AuthedTimeRouteRoute
+    }
+    '/_authed/time/stats': {
+      id: '/_authed/time/stats'
+      path: '/stats'
+      fullPath: '/time/stats'
+      preLoaderRoute: typeof AuthedTimeStatsRouteImport
+      parentRoute: typeof AuthedTimeRouteRoute
+    }
+    '/api/admin/export': {
+      id: '/api/admin/export'
+      path: '/api/admin/export'
+      fullPath: '/api/admin/export'
+      preLoaderRoute: typeof ApiAdminExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/import': {
+      id: '/api/admin/import'
+      path: '/api/admin/import'
+      fullPath: '/api/admin/import'
+      preLoaderRoute: typeof ApiAdminImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/inventory/orders/': {
       id: '/_authed/inventory/orders/'
@@ -517,19 +517,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedInventoryOrdersIndexRouteImport
       parentRoute: typeof AuthedInventoryOrdersRouteRoute
     }
-    '/_authed/inventory/products/new': {
-      id: '/_authed/inventory/products/new'
-      path: '/products/new'
-      fullPath: '/inventory/products/new'
-      preLoaderRoute: typeof AuthedInventoryProductsNewRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
-    }
-    '/_authed/inventory/products/$productId': {
-      id: '/_authed/inventory/products/$productId'
-      path: '/products/$productId'
-      fullPath: '/inventory/products/$productId'
-      preLoaderRoute: typeof AuthedInventoryProductsProductIdRouteImport
-      parentRoute: typeof AuthedInventoryRouteRoute
+    '/_authed/inventory/orders/$orderId': {
+      id: '/_authed/inventory/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/inventory/orders/$orderId'
+      preLoaderRoute: typeof AuthedInventoryOrdersOrderIdRouteImport
+      parentRoute: typeof AuthedInventoryOrdersRouteRoute
     }
     '/_authed/inventory/orders/new': {
       id: '/_authed/inventory/orders/new'
@@ -538,12 +531,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedInventoryOrdersNewRouteImport
       parentRoute: typeof AuthedInventoryOrdersRouteRoute
     }
-    '/_authed/inventory/orders/$orderId': {
-      id: '/_authed/inventory/orders/$orderId'
-      path: '/$orderId'
-      fullPath: '/inventory/orders/$orderId'
-      preLoaderRoute: typeof AuthedInventoryOrdersOrderIdRouteImport
-      parentRoute: typeof AuthedInventoryOrdersRouteRoute
+    '/_authed/inventory/products/$productId': {
+      id: '/_authed/inventory/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/inventory/products/$productId'
+      preLoaderRoute: typeof AuthedInventoryProductsProductIdRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
+    }
+    '/_authed/inventory/products/new': {
+      id: '/_authed/inventory/products/new'
+      path: '/products/new'
+      fullPath: '/inventory/products/new'
+      preLoaderRoute: typeof AuthedInventoryProductsNewRouteImport
+      parentRoute: typeof AuthedInventoryRouteRoute
     }
   }
 }
