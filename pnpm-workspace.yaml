@@ -3,7 +3,7 @@ allowBuilds:
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vite-plus: ^0.2.5
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
+  vitest: ^4.1.10
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
