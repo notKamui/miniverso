@@ -10,16 +10,17 @@ import {
 import { ArrowLeftRight, LogOut, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { UserView } from '@/components/auth/user/user-view'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Item, ItemActions } from '@/components/ui/item'
 import { Spinner } from '@/components/ui/spinner'
 import { multiSessionPlugin } from '@/lib/auth/multi-session-plugin'
+import { cn } from '@/lib/utils/cn'
 
 export type ManageAccountProps = {
   deviceSession?: ListDeviceSession | null
@@ -59,10 +60,9 @@ export function ManageAccount({ deviceSession, isPending }: ManageAccountProps) 
   const isBusy = isSwitching || isRevoking
 
   return (
-    <Card className="border-0 bg-transparent shadow-none ring-0">
-      <CardContent className="flex items-center justify-between gap-3">
-        <UserView user={deviceSession?.user} isPending={isPending} />
-
+    <Item>
+      <UserView user={deviceSession?.user} isPending={isPending} />
+      <ItemActions>
         {deviceSession && isActive && (
           <Button
             className="shrink-0"
@@ -78,10 +78,11 @@ export function ManageAccount({ deviceSession, isPending }: ManageAccountProps) 
 
         {deviceSession && !isActive && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" className="shrink-0" disabled={isBusy}>
-                <MoreHorizontal />
-              </Button>
+            <DropdownMenuTrigger
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }), 'shrink-0')}
+              disabled={isBusy}
+            >
+              <MoreHorizontal />
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="min-w-fit">
@@ -109,7 +110,7 @@ export function ManageAccount({ deviceSession, isPending }: ManageAccountProps) 
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </CardContent>
-    </Card>
+      </ItemActions>
+    </Item>
   )
 }

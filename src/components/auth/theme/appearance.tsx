@@ -5,13 +5,12 @@ import {
   useAuthPlugin,
 } from '@better-auth-ui/react'
 import { Monitor, Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldContent, FieldLabel, FieldTitle } from '@/components/ui/field'
-import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { themePlugin } from '@/lib/auth/theme-plugin'
 import { cn } from '@/lib/utils/cn'
+import { useIsHydrated } from '../use-is-hydrated'
 
 export type AppearanceProps = {
   className?: string
@@ -31,9 +30,7 @@ export function Appearance({ className }: AppearanceProps) {
   // oxlint-disable-next-line react-hooks-js/hooks
   const { theme, setTheme, themes = [] } = useTheme()
 
-  const [isMounted, setIsMounted] = useState(false)
-  // oxlint-disable-next-line react-hooks-js/set-state-in-effect
-  useEffect(() => setIsMounted(true), [])
+  const isHydrated = useIsHydrated()
 
   return (
     <div>
@@ -42,13 +39,13 @@ export function Appearance({ className }: AppearanceProps) {
       <Card className={cn(className)}>
         <CardContent>
           <Field>
-            <Label>{localization.theme}</Label>
+            <FieldLabel>{localization.theme}</FieldLabel>
 
             <RadioGroup
-              value={isMounted ? theme : ''}
+              value={isHydrated ? theme : ''}
               onValueChange={setTheme}
               className="grid grid-cols-2 gap-3 sm:grid-cols-3"
-              disabled={!isMounted || !theme}
+              disabled={!isHydrated || !theme}
             >
               {themes.includes('system') && (
                 <FieldLabel htmlFor="system">

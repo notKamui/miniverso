@@ -30,7 +30,7 @@ export function SwitchAccountSubmenuItem({ deviceSession }: SwitchAccountSubmenu
   return (
     <DropdownMenuItem
       disabled={isPending}
-      onSelect={() => setActiveSession({ sessionToken: deviceSession.session.token })}
+      onClick={() => setActiveSession({ sessionToken: deviceSession.session.token })}
     >
       <UserView user={deviceSession.user} />
 

@@ -15,3 +15,6 @@ peerDependencyRules:
     vite: '*'
     vitest: '*'
 minimumReleaseAge: 1440 # 1 day
+minimumReleaseAgeExclude:
+  - '@better-auth-ui/core@1.6.37'
+  - '@better-auth-ui/react@1.6.37'

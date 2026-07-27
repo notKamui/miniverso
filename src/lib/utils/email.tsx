@@ -1,9 +1,6 @@
-import {
-  EmailVerificationEmail,
-  MagicLinkEmail,
-  ResetPasswordEmail,
-} from '@better-auth-ui/react/email'
+import { MagicLinkEmail, ResetPasswordEmail } from '@better-auth-ui/react/email'
 import { Resend } from 'resend'
+import { EmailVerificationEmail } from '@/components/auth/email/email-verification'
 import { env } from '@/lib/env/server'
 
 export const resend =

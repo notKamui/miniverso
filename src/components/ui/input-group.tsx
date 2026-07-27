@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -57,7 +58,7 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    // oxlint-disable-next-line jsx_a11y/click-events-have-key-events
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
     <div
       role="group"
       data-slot="input-group-addon"

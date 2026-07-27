@@ -49,10 +49,7 @@ export function UserAvatar({ className, user, isPending, fallback }: UserAvatarP
         alt={resolvedUser?.displayUsername || resolvedUser?.name || resolvedUser?.email}
       />
 
-      <AvatarFallback
-        className="text-muted-foreground!"
-        delayMs={resolvedUser?.image ? 600 : undefined}
-      >
+      <AvatarFallback className="text-muted-foreground!">
         {fallback || initials || <User2 className="size-4" />}
       </AvatarFallback>
     </Avatar>

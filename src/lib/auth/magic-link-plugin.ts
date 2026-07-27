@@ -5,6 +5,7 @@ import {
 } from '@better-auth-ui/core/plugins'
 import { MagicLink } from '@/components/auth/magic-link'
 import { MagicLinkButton } from '@/components/auth/magic-link-button'
+import { MagicLinkSent } from '@/components/auth/magic-link-sent'
 
 export const magicLinkPlugin = createAuthPlugin(
   coreMagicLinkPlugin.id,
@@ -12,7 +13,7 @@ export const magicLinkPlugin = createAuthPlugin(
     ...coreMagicLinkPlugin(options),
     authButtons: [MagicLinkButton],
     views: {
-      auth: { magicLink: MagicLink },
+      auth: { magicLink: MagicLink, magicLinkSent: MagicLinkSent },
     },
     // Conditional, not an override: when `emailAndPassword.enabled === false`
     // the `<Auth>` router renders this at `/auth/sign-in` instead of the

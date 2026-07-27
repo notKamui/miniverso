@@ -5,8 +5,8 @@ import {
   useSetActiveSession,
 } from '@better-auth-ui/react'
 import { ChevronsUpDown, LogIn, LogOut, Settings, UserPlus2 } from 'lucide-react'
-import { type ComponentType, isValidElement, type ReactElement, type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
+import { isValidElement, type ReactElement, type ReactNode } from 'react'
+import { buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,18 +54,16 @@ export type UserButtonProps = {
 
 function renderUserLink(
   link: UserButtonLink | ReactElement,
-  Link: ComponentType<{ href: string; children?: ReactNode }>,
+  navigate: (options: { to: string; replace?: boolean }) => void,
   fallbackKey: string,
 ): ReactNode {
   if (isValidElement(link)) return link
 
   const { label, href, icon, variant } = link
   return (
-    <DropdownMenuItem key={fallbackKey} variant={variant} asChild>
-      <Link href={href}>
-        {icon}
-        {label}
-      </Link>
+    <DropdownMenuItem key={fallbackKey} variant={variant} onClick={() => navigate({ to: href })}>
+      {icon}
+      {label}
     </DropdownMenuItem>
   )
 }
@@ -94,7 +92,7 @@ export function UserButton({
   links,
   hideSettings = false,
 }: UserButtonProps) {
-  const { authClient, basePaths, viewPaths, localization, plugins, Link } = useAuth()
+  const { authClient, basePaths, viewPaths, localization, plugins, navigate } = useAuth()
 
   const { isPending: settingActiveSession } = useSetActiveSession(
     authClient as MultiSessionAuthClient,
@@ -107,23 +105,31 @@ export function UserButton({
       if (visibility === 'authenticated' && !session) return []
       if (visibility === 'unauthenticated' && session) return []
     }
-    return [renderUserLink(link, Link, `user-button-link-${index.toString()}`)]
+    return [renderUserLink(link, navigate, `user-button-link-${index.toString()}`)]
   })
+
+  // Whether anything renders between the user info label and the
+  // sign-out item, so the leading separator isn't shown with nothing
+  // to separate (see #439).
+  const hasSessionMenuItems =
+    (userLinks?.length ?? 0) > 0 ||
+    !hideSettings ||
+    plugins.some((plugin) => (plugin.userMenuItems?.length ?? 0) > 0)
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={cn(size === 'icon' && 'rounded-full', size === 'icon' && className)}
-        asChild={size === 'default'}
+        aria-label={size === 'icon' ? localization.auth.account : undefined}
+        className={
+          size === 'icon'
+            ? cn('rounded-full', className)
+            : cn(buttonVariants({ variant, size: 'lg' }), 'h-auto py-2.5 font-normal', className)
+        }
       >
         {size === 'icon' ? (
           <UserAvatar />
         ) : (
-          <Button
-            variant={variant}
-            className={cn('h-auto py-2.5 font-normal', className)}
-            size="lg"
-          >
+          <>
             {session || sessionPending || settingActiveSession ? (
               <UserView isPending={Boolean(settingActiveSession)} />
             ) : (
@@ -137,15 +143,14 @@ export function UserButton({
             )}
 
             <ChevronsUpDown className="ml-auto size-4" />
-          </Button>
+          </>
         )}
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-[--radix-dropdown-menu-trigger-width] max-w-[48svw] min-w-40 md:min-w-56"
+        className="max-w-[48svw] min-w-40 md:min-w-56"
         sideOffset={sideOffset}
         align={align}
-        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {session && (
           <>
@@ -155,7 +160,7 @@ export function UserButton({
               </DropdownMenuLabel>
             </DropdownMenuGroup>
 
-            <DropdownMenuSeparator />
+            {hasSessionMenuItems && <DropdownMenuSeparator />}
           </>
         )}
 
@@ -164,12 +169,16 @@ export function UserButton({
             {userLinks}
 
             {!hideSettings && (
-              <DropdownMenuItem asChild>
-                <Link href={`${basePaths.settings}/${viewPaths.settings.account}`}>
-                  <Settings className="text-muted-foreground" />
+              <DropdownMenuItem
+                onClick={() =>
+                  navigate({
+                    to: `${basePaths.settings}/${viewPaths.settings.account}`,
+                  })
+                }
+              >
+                <Settings className="text-muted-foreground" />
 
-                  {localization.settings.settings}
-                </Link>
+                {localization.settings.settings}
               </DropdownMenuItem>
             )}
 
@@ -181,32 +190,44 @@ export function UserButton({
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem asChild>
-              <Link href={`${basePaths.auth}/${viewPaths.auth.signOut}`}>
-                <LogOut className="text-muted-foreground" />
+            <DropdownMenuItem
+              onClick={() =>
+                navigate({
+                  to: `${basePaths.auth}/${viewPaths.auth.signOut}`,
+                })
+              }
+            >
+              <LogOut className="text-muted-foreground" />
 
-                {localization.auth.signOut}
-              </Link>
+              {localization.auth.signOut}
             </DropdownMenuItem>
           </>
         ) : (
           <>
             {userLinks}
 
-            <DropdownMenuItem asChild>
-              <Link href={`${basePaths.auth}/${viewPaths.auth.signIn}`}>
-                <LogIn className="text-muted-foreground" />
+            <DropdownMenuItem
+              onClick={() =>
+                navigate({
+                  to: `${basePaths.auth}/${viewPaths.auth.signIn}`,
+                })
+              }
+            >
+              <LogIn className="text-muted-foreground" />
 
-                {localization.auth.signIn}
-              </Link>
+              {localization.auth.signIn}
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild>
-              <Link href={`${basePaths.auth}/${viewPaths.auth.signUp}`}>
-                <UserPlus2 className="text-muted-foreground" />
+            <DropdownMenuItem
+              onClick={() =>
+                navigate({
+                  to: `${basePaths.auth}/${viewPaths.auth.signUp}`,
+                })
+              }
+            >
+              <UserPlus2 className="text-muted-foreground" />
 
-                {localization.auth.signUp}
-              </Link>
+              {localization.auth.signUp}
             </DropdownMenuItem>
 
             {plugins.flatMap((plugin) =>
