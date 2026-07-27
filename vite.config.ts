@@ -56,6 +56,12 @@ export default defineConfig({
     cache: {
       scripts: true,
     },
+    tasks: {
+      up: {
+        command: 'vpx taze major -lI --maturity-period 1',
+        cache: false,
+      },
+    },
   },
 })
 
