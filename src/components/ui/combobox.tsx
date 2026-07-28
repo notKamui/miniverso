@@ -30,14 +30,13 @@ type RootOmitKeys =
   | 'multiple'
 
 function createCombobox<Item = unknown, Multiple extends boolean = false>() {
+  type Value = NoInfer<Multiple> extends true ? Item[] : Item | null
+
   type RootProps = Omit<PrimitiveRootProps, RootOmitKeys> & {
     items?: readonly Item[]
-    value?: Multiple extends true ? Item[] : Item | null
-    defaultValue?: Multiple extends true ? Item[] : Item | null
-    onValueChange?: (
-      value: Multiple extends true ? Item[] : Item | null,
-      eventDetails: ComboboxChangeEventDetails,
-    ) => void
+    value?: Value
+    defaultValue?: Value
+    onValueChange?: (value: Value, eventDetails: ComboboxChangeEventDetails) => void
     itemToStringLabel?: (item: Item) => string
     itemToStringValue?: (item: Item) => string
     isItemEqualToValue?: (a: Item, b: Item) => boolean
