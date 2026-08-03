@@ -78,7 +78,7 @@
     "cross-env": "^10.1.0",
     "drizzle-kit": "0.31.10",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "tailwindcss": "^4.3.3",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^7.0.2",
