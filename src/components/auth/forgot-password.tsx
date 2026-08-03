@@ -1,3 +1,4 @@
+import { getViewURL } from '@better-auth-ui/core'
 import { useAuth, useFetchOptions, useRequestPasswordReset } from '@better-auth-ui/react'
 import { type SyntheticEvent, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -44,7 +45,7 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
     const formData = new FormData(e.currentTarget)
     requestPasswordReset({
       email: formData.get('email') as string,
-      redirectTo: `${baseURL}${basePaths.auth}/${viewPaths.auth.resetPassword}`,
+      redirectTo: getViewURL(baseURL, basePaths.auth, viewPaths.auth.resetPassword),
       fetchOptions,
     })
   }

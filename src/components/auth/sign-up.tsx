@@ -1,5 +1,5 @@
-import { authMutationKeys, parseAdditionalFieldValue } from '@better-auth-ui/core'
-import { useAuth, useFetchOptions, useSignUpEmail } from '@better-auth-ui/react'
+import { authMutationKeys, getAuthLinkURL, parseAdditionalFieldValue } from '@better-auth-ui/core'
+import { AuthPrompts, useAuth, useFetchOptions, useSignUpEmail } from '@better-auth-ui/react'
 import { useIsMutating } from '@tanstack/react-query'
 import { Eye, EyeOff } from 'lucide-react'
 import { type SyntheticEvent, useState } from 'react'
@@ -88,7 +88,7 @@ export function SignUp({
       if (emailAndPassword?.requireEmailVerification) {
         sessionStorage.setItem('better-auth-ui.verify-email', email)
         navigate({
-          to: `${basePaths.auth}/${viewPaths.auth.verifyEmail}`,
+          to: getAuthLinkURL(`${basePaths.auth}/${viewPaths.auth.verifyEmail}`, redirectTo),
         })
       } else if (onSignUpSuccess) {
         onSignUpSuccess()
@@ -166,6 +166,7 @@ export function SignUp({
 
   return (
     <Card className={cn('w-full max-w-sm', className)}>
+      <AuthPrompts view="signUp" />
       <CardHeader>
         <CardTitle className="text-xl font-semibold">{localization.auth.signUp}</CardTitle>
       </CardHeader>
@@ -458,7 +459,7 @@ export function SignUp({
             <FieldDescription className="text-center">
               {localization.auth.alreadyHaveAnAccount}{' '}
               <Link
-                href={`${basePaths.auth}/${viewPaths.auth.signIn}`}
+                href={getAuthLinkURL(`${basePaths.auth}/${viewPaths.auth.signIn}`, redirectTo)}
                 className="underline underline-offset-4"
               >
                 {localization.auth.signIn}
