@@ -7,24 +7,26 @@ export function DevTools() {
   if (!import.meta.env.DEV) return null
 
   return (
-    <TanStackDevtools
-      config={{
-        hideUntilHover: true,
-      }}
-      plugins={[
-        {
-          name: 'Tanstack Query',
-          render: <ReactQueryDevtoolsPanel />,
-        },
-        {
-          name: 'Tanstack Router',
-          render: <TanStackRouterDevtoolsPanel />,
-        },
-        {
-          name: 'Tanstack Form',
-          render: <FormDevtoolsPanel />,
-        },
-      ]}
-    />
+    <>
+      <TanStackDevtools
+        config={{
+          hideUntilHover: true,
+        }}
+        plugins={[
+          {
+            name: 'Tanstack Query',
+            render: <ReactQueryDevtoolsPanel />,
+          },
+          {
+            name: 'Tanstack Router',
+            render: <TanStackRouterDevtoolsPanel />,
+          },
+          {
+            name: 'Tanstack Form',
+            render: <FormDevtoolsPanel />,
+          },
+        ]}
+      />
+    </>
   )
 }
