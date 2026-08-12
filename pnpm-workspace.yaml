@@ -2,7 +2,7 @@ allowBuilds:
   esbuild: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: ^0.2.7
+  vite-plus: ^0.2.8
   vitest: ^4.1.10
 overrides:
   vite: 'catalog:'
