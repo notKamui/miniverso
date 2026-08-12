@@ -16,9 +16,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Field } from '@/components/ui/field'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { passkeyPlugin } from '@/lib/auth/passkey-plugin'
 
@@ -64,7 +63,7 @@ export function DeletePasskeyDialog({ open, onOpenChange, passkey }: DeletePassk
         </AlertDialogHeader>
 
         <Field>
-          <Label htmlFor={previewId}>{passkey.name || passkeyLocalization.passkey}</Label>
+          <FieldLabel htmlFor={previewId}>{passkey.name || passkeyLocalization.passkey}</FieldLabel>
 
           <Input id={previewId} value={passkeyName} readOnly disabled />
         </Field>

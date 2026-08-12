@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useHydrated, useRouter } from '@tanstack/react-router'
-import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
+import { createColumnHelper, type ColumnVisibilityState } from '@tanstack/react-table'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -15,7 +15,9 @@ import { useState } from 'react'
 import { AddEntryDialog } from '@/components/apps/time/add-entry-dialog'
 import { EditEntryDialog } from '@/components/apps/time/edit-entry-dialog'
 import { TimeRecorderControls } from '@/components/apps/time/time-recorder-controls'
-import { DataTable } from '@/components/data/data-table'
+import { DataTable, type DataTableFeatures } from '@/components/data/data-table'
+
+const timeColumnHelper = createColumnHelper<DataTableFeatures, TimeEntry>()
 import { AnimatedButtonContent } from '@/components/ui/animated-spinner'
 import { Button } from '@/components/ui/button'
 import { CalendarSelect } from '@/components/ui/calendar-select'
@@ -52,32 +54,27 @@ type RecorderDisplayProps = {
   time: Time
   entries: TimeEntry[]
   tzOffset: number
-  columnVisibilityTimeRecorder?: VisibilityState
+  columnVisibilityTimeRecorder?: ColumnVisibilityState
 }
 
-const timeTableColumns = (tzOffset: number): ColumnDef<TimeEntry>[] => [
-  {
-    accessorKey: 'startedAt',
+const timeTableColumns = (tzOffset: number) => [
+  timeColumnHelper.accessor('startedAt', {
     header: 'Started at',
     cell: ({ row }) => Time.from(row.original.startedAt).formatTime({ offsetMinutes: tzOffset }),
     size: 0, // force minimum width
-  },
-  {
-    accessorKey: 'endedAt',
+  }),
+  timeColumnHelper.accessor('endedAt', {
     header: 'Ended at',
     cell: ({ row }) =>
       row.original.endedAt
-        ? Time.from(row.original.endedAt).formatTime({
-            offsetMinutes: tzOffset,
-          })
+        ? Time.from(row.original.endedAt).formatTime({ offsetMinutes: tzOffset })
         : null,
     size: 0, // force minimum width
-  },
-  {
-    accessorKey: 'description',
+  }),
+  timeColumnHelper.accessor('description', {
     header: 'Description',
-    size: Number.MIN_SAFE_INTEGER, // force taking all available space
-  },
+    meta: { grow: true },
+  }),
 ]
 
 const MotionDialog = m.create(EditEntryDialog)
@@ -143,8 +140,8 @@ export function RecorderDisplay({
     })
   }
 
-  const columnsWithActions: ReturnType<typeof timeTableColumns> = [
-    {
+  const columnsWithActions = [
+    timeColumnHelper.display({
       id: 'select',
       enableHiding: false,
       header: () => {
@@ -185,15 +182,14 @@ export function RecorderDisplay({
         )
       },
       size: 32,
-    },
+    }),
     ...timeTableColumns(tzOffset),
-    {
+    timeColumnHelper.display({
       id: 'actions',
       enableHiding: false,
       meta: { stickyRight: true },
       cell: ({ row }) => {
         const entry = row.original
-
         return (
           <ActionsMenu
             onEdit={() => setSelectedEntry(entry)}
@@ -202,7 +198,7 @@ export function RecorderDisplay({
         )
       },
       size: 50, // force minimum width
-    },
+    }),
   ]
 
   return (

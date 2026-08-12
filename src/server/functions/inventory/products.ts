@@ -61,7 +61,7 @@ export function getProductsQueryOptions(params: z.infer<typeof getProductsSchema
 
 export const $getProducts = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(getProductsSchema))
+  .validator(validate(getProductsSchema))
   .handler(
     async ({
       context: { user },
@@ -161,7 +161,7 @@ export function getProductQueryOptions(productId: string) {
 
 export const $getProduct = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ productId: z.uuid() })))
+  .validator(validate(z.object({ productId: z.uuid() })))
   .handler(async ({ context: { user }, data: { productId } }) => {
     const p = await db
       .select(productListFields)
@@ -211,7 +211,7 @@ export const $getProduct = createServerFn({ method: 'GET' })
 
 export const $createProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(productCreateSchema))
+  .validator(validate(productCreateSchema))
   .handler(async ({ context: { user }, data }) => {
     await validateProductTagIds(db, user.id, data.tagIds)
     await validateProductionCostLabelIds(db, user.id, [
@@ -272,7 +272,7 @@ export const $createProduct = createServerFn({ method: 'POST' })
 
 export const $updateProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(productUpdateSchema))
+  .validator(validate(productUpdateSchema))
   .handler(async ({ context: { user }, data }) => {
     const { id, ...rest } = data
     const tagIds = rest.tagIds
@@ -373,7 +373,7 @@ export const $updateProduct = createServerFn({ method: 'POST' })
 
 export const $deleteProduct = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const row = await db
       .delete(product)

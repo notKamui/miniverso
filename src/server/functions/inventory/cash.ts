@@ -38,7 +38,7 @@ export const $getCash = createServerFn({ method: 'GET' })
 
 export const $createCash = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         label: z.string().min(1).max(100),
@@ -89,7 +89,7 @@ export const $createCash = createServerFn({ method: 'POST' })
 
 export const $updateCash = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         id: z.uuid(),
@@ -140,7 +140,7 @@ export const $updateCash = createServerFn({ method: 'POST' })
 
 export const $reorderCashRow = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) })))
+  .validator(validate(z.object({ id: z.uuid(), direction: z.enum(['up', 'down']) })))
   .handler(async ({ context: { user }, data: { id, direction } }) => {
     const row = await db
       .select({ id: inventoryCash.id, sortOrder: inventoryCash.sortOrder })
@@ -181,7 +181,7 @@ export const $reorderCashRow = createServerFn({ method: 'POST' })
 
 export const $deleteCash = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(({ context: { user }, data: { id } }) =>
     db
       .delete(inventoryCash)

@@ -1,7 +1,7 @@
 import { authQueryKeys } from '@better-auth-ui/core'
 import { useAuth, useAuthPlugin, useDeleteUser, useListAccounts } from '@better-auth-ui/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { TriangleAlert } from 'lucide-react'
+import { Eye, EyeOff, TriangleAlert } from 'lucide-react'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -15,34 +15,41 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Field, FieldError } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { deleteUserPlugin } from '@/lib/auth/delete-user-plugin'
 import { cn } from '@/lib/utils/cn'
+import { useIsHydrated } from '../use-is-hydrated'
 
-export type DeleteUserProps = {
+export type DeleteAccountProps = {
   className?: string
 }
 
 /**
  * Danger-zone card to delete the authenticated account, with a confirmation dialog and toasts.
  */
-export function DeleteUser({ className }: DeleteUserProps) {
+export function DeleteAccount({ className }: DeleteAccountProps) {
   const { authClient, basePaths, localization, viewPaths, navigate } = useAuth()
 
   const { localization: deleteUserLocalization, sendDeleteAccountVerification } =
     useAuthPlugin(deleteUserPlugin)
 
   const { data: accounts } = useListAccounts(authClient)
+  const isHydrated = useIsHydrated()
 
   const queryClient = useQueryClient()
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [password, setPassword] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
   const hasCredentialAccount = accounts?.some((account) => account.providerId === 'credential')
   const needsPassword = !sendDeleteAccountVerification && hasCredentialAccount
@@ -52,6 +59,7 @@ export function DeleteUser({ className }: DeleteUserProps) {
   const handleDialogOpenChange = (open: boolean) => {
     setConfirmOpen(open)
     setPassword('')
+    setIsPasswordVisible(false)
   }
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
@@ -82,18 +90,21 @@ export function DeleteUser({ className }: DeleteUserProps) {
     <Card className={cn('border-destructive', className)}>
       <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm leading-tight font-medium">{deleteUserLocalization.deleteUser}</p>
+          <p className="text-sm leading-tight font-medium">
+            {deleteUserLocalization.deleteAccount}
+          </p>
 
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {deleteUserLocalization.deleteUserDescription}
+            {deleteUserLocalization.deleteAccountDescription}
           </p>
         </div>
 
         <AlertDialog open={confirmOpen} onOpenChange={handleDialogOpenChange}>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" disabled={!accounts}>
-              {deleteUserLocalization.deleteUser}
-            </Button>
+          <AlertDialogTrigger
+            className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }))}
+            disabled={isHydrated && !accounts}
+          >
+            {deleteUserLocalization.deleteAccount}
           </AlertDialogTrigger>
 
           <AlertDialogContent>
@@ -103,28 +114,51 @@ export function DeleteUser({ className }: DeleteUserProps) {
                   <TriangleAlert />
                 </AlertDialogMedia>
 
-                <AlertDialogTitle>{deleteUserLocalization.deleteUser}</AlertDialogTitle>
+                <AlertDialogTitle>{deleteUserLocalization.deleteAccount}</AlertDialogTitle>
 
                 <AlertDialogDescription>
-                  {deleteUserLocalization.deleteUserDescription}
+                  {deleteUserLocalization.deleteAccountDescription}
                 </AlertDialogDescription>
               </AlertDialogHeader>
 
               {needsPassword && (
                 <Field>
-                  <Label htmlFor="delete-password">{localization.auth.password}</Label>
+                  <FieldLabel htmlFor="delete-password">{localization.auth.password}</FieldLabel>
 
-                  <Input
-                    id="delete-password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder={localization.auth.passwordPlaceholder}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isPending}
-                    required
-                  />
+                  <InputGroup>
+                    <InputGroupInput
+                      id="delete-password"
+                      name="password"
+                      type={isPasswordVisible ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      placeholder={localization.auth.passwordPlaceholder}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isPending}
+                      required
+                    />
+
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        size="icon-xs"
+                        aria-label={
+                          isPasswordVisible
+                            ? localization.auth.hidePassword
+                            : localization.auth.showPassword
+                        }
+                        title={
+                          isPasswordVisible
+                            ? localization.auth.hidePassword
+                            : localization.auth.showPassword
+                        }
+                        onClick={() => {
+                          setIsPasswordVisible((visible) => !visible)
+                        }}
+                      >
+                        {isPasswordVisible ? <EyeOff /> : <Eye />}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
 
                   <FieldError />
                 </Field>
@@ -138,7 +172,7 @@ export function DeleteUser({ className }: DeleteUserProps) {
                 <Button type="submit" variant="destructive" disabled={isPending}>
                   {isPending && <Spinner />}
 
-                  {deleteUserLocalization.deleteUser}
+                  {deleteUserLocalization.deleteAccount}
                 </Button>
               </AlertDialogFooter>
             </form>

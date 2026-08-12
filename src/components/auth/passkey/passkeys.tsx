@@ -4,12 +4,13 @@ import {
   useAuthPlugin,
   useListPasskeys,
 } from '@better-auth-ui/react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { ItemGroup, ItemSeparator } from '@/components/ui/item'
 import { passkeyPlugin } from '@/lib/auth/passkey-plugin'
 import { cn } from '@/lib/utils/cn'
+import { useIsHydrated } from '../use-is-hydrated'
 import { AddPasskeyDialog } from './add-passkey-dialog'
 import { Passkey } from './passkey'
 import { PasskeySkeleton } from './passkey-skeleton'
@@ -24,6 +25,8 @@ export function Passkeys({ className }: PasskeysProps) {
   const { localization: passkeyLocalization } = useAuthPlugin(passkeyPlugin)
 
   const { data: passkeys, isPending } = useListPasskeys(authClient as PasskeyAuthClient)
+  const isHydrated = useIsHydrated()
+  const showPending = isHydrated && isPending
 
   const [addOpen, setAddOpen] = useState(false)
 
@@ -35,7 +38,7 @@ export function Passkeys({ className }: PasskeysProps) {
         <Button
           className="shrink-0"
           size="sm"
-          disabled={isPending}
+          disabled={showPending}
           onClick={() => setAddOpen(true)}
         >
           {passkeyLocalization.addPasskey}
@@ -44,18 +47,19 @@ export function Passkeys({ className }: PasskeysProps) {
 
       <Card className="p-0">
         <CardContent className="p-0">
-          {isPending ? (
+          {showPending ? (
             <PasskeySkeleton />
           ) : !passkeys?.length ? (
             <PasskeysEmpty onAddPress={() => setAddOpen(true)} />
           ) : (
-            passkeys.map((passkey, index) => (
-              <div key={passkey.id}>
-                {index > 0 && <Separator />}
-
-                <Passkey passkey={passkey} />
-              </div>
-            ))
+            <ItemGroup className="gap-0">
+              {passkeys.map((passkey, index) => (
+                <Fragment key={passkey.id}>
+                  {index > 0 && <ItemSeparator />}
+                  <Passkey passkey={passkey} />
+                </Fragment>
+              ))}
+            </ItemGroup>
           )}
         </CardContent>
       </Card>

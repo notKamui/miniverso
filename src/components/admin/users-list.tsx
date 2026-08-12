@@ -1,12 +1,19 @@
+import { useSelector } from '@tanstack/react-store'
 import {
+  columnFilteringFeature,
+  columnVisibilityFeature,
+  createColumnHelper,
   type ColumnDef,
-  flexRender,
+  type ColumnVisibilityState,
   functionalUpdate,
-  getCoreRowModel,
+  metaHelper,
   type PaginationState,
+  type ReactTable,
+  type Row,
+  rowPaginationFeature,
+  tableFeatures,
   type Updater,
-  useReactTable,
-  type VisibilityState,
+  useTable,
 } from '@tanstack/react-table'
 import type { InferSelectModel } from 'drizzle-orm'
 import { ChevronDown, ChevronLeft, ChevronRight, MoreVerticalIcon, Trash2Icon } from 'lucide-react'
@@ -38,6 +45,7 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useDebouncedEffect } from '@/lib/hooks/use-debounce'
+import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import type { user } from '@/server/db/schema'
 
@@ -70,12 +78,22 @@ type ColumnMeta = {
   label: string
 }
 
-function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
-  const columns: ColumnDef<User>[] = [
-    {
+const usersTableFeatures = tableFeatures({
+  columnFilteringFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  columnMeta: metaHelper<ColumnMeta>(),
+})
+
+const usersColumnHelper = createColumnHelper<typeof usersTableFeatures, User>()
+
+function createUserColumns(
+  onDelete?: (id: string) => void,
+): ColumnDef<typeof usersTableFeatures, User, any>[] {
+  return Collection.buildArray(
+    usersColumnHelper.accessor('name', {
       id: 'user',
-      accessorKey: 'name',
-      meta: { label: 'User' } satisfies ColumnMeta,
+      meta: { label: 'User' },
       header: 'User',
       cell: ({ row }) => {
         const u = row.original
@@ -98,18 +116,16 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
           </div>
         )
       },
-    },
-    {
+    }),
+    usersColumnHelper.accessor('email', {
       id: 'email',
-      accessorKey: 'email',
-      meta: { label: 'Email' } satisfies ColumnMeta,
+      meta: { label: 'Email' },
       header: 'Email',
-      cell: ({ row }) => <div className="truncate">{row.getValue('email')}</div>,
-    },
-    {
+      cell: ({ row }) => <div className="truncate">{row.original.email}</div>,
+    }),
+    usersColumnHelper.accessor('role', {
       id: 'role',
-      accessorKey: 'role',
-      meta: { label: 'Role' } satisfies ColumnMeta,
+      meta: { label: 'Role' },
       header: 'Role',
       cell: ({ row }) => {
         const u = row.original
@@ -125,11 +141,10 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
           </span>
         )
       },
-    },
-    {
+    }),
+    usersColumnHelper.accessor('emailVerified', {
       id: 'status',
-      accessorKey: 'emailVerified',
-      meta: { label: 'Status' } satisfies ColumnMeta,
+      meta: { label: 'Status' },
       header: 'Status',
       cell: ({ row }) => {
         const u = row.original
@@ -145,56 +160,50 @@ function createUserColumns(onDelete?: (id: string) => void): ColumnDef<User>[] {
           </span>
         )
       },
-    },
-    {
+    }),
+    usersColumnHelper.accessor('createdAt', {
       id: 'joined',
-      accessorKey: 'createdAt',
-      meta: { label: 'Joined' } satisfies ColumnMeta,
+      meta: { label: 'Joined' },
       header: 'Joined',
-      cell: ({ row }) => {
-        const u = row.original
-        return <span className="text-sm text-muted-foreground">{formatDate(u.createdAt)}</span>
-      },
-    },
-  ]
-
-  if (onDelete) {
-    columns.push({
-      id: 'actions',
-      meta: { label: 'Actions' } satisfies ColumnMeta,
-      enableHiding: false,
-      header: () => <span className="sr-only">Actions</span>,
-      cell: ({ row }) => {
-        const u = row.original
-        return (
-          <div className="flex justify-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button aria-label="Open action menu" variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreVerticalIcon className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <button
-                    type="button"
-                    className="w-full text-destructive"
-                    onClick={() => onDelete(u.id)}
-                  >
-                    <Trash2Icon className="mr-2 h-4 w-4" /> Delete
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )
-      },
-    })
-  }
-
-  return columns
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{formatDate(row.original.createdAt)}</span>
+      ),
+    }),
+    onDelete != null &&
+      usersColumnHelper.display({
+        id: 'actions',
+        meta: { label: 'Actions' },
+        enableHiding: false,
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => {
+          const u = row.original
+          return (
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Open action menu" variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVerticalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem asChild>
+                    <button
+                      type="button"
+                      className="w-full text-destructive"
+                      onClick={() => onDelete(u.id)}
+                    >
+                      <Trash2Icon className="mr-2 h-4 w-4" /> Delete
+                    </button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
+        },
+      }),
+  )
 }
 
 export function UsersList({
@@ -208,9 +217,6 @@ export function UsersList({
   setSearch,
   onDelete,
 }: UsersListProps) {
-  'use no memo'
-  // TODO: ^ remove this once tanstack table is fixed
-
   const [searchInput, setSearchInput] = useState(q ?? '')
   useDebouncedEffect(
     () => {
@@ -222,7 +228,7 @@ export function UsersList({
     350,
   )
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({})
 
   const columns = useMemo(() => createUserColumns(onDelete), [onDelete])
   const pagination = useMemo<PaginationState>(
@@ -230,11 +236,10 @@ export function UsersList({
     [page, size],
   )
 
-  // oxlint-disable-next-line react-hooks-js/incompatible-library -- TODO: remove this once tanstack table is fixed
-  const table = useReactTable({
+  const table = useTable({
+    features: usersTableFeatures,
     data: users,
     columns,
-    getCoreRowModel: getCoreRowModel(),
 
     manualPagination: true,
     rowCount: total,
@@ -319,58 +324,67 @@ export function UsersList({
               Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                const meta = column.columnDef.meta as ColumnMeta | undefined
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(Boolean(value))}
-                  >
-                    {meta?.label ?? column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
+          <table.Subscribe selector={(s) => s.columnVisibility}>
+            {() => (
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(Boolean(value))}
+                      >
+                        {column.columnDef.meta?.label ?? column.id}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+              </DropdownMenuContent>
+            )}
+          </table.Subscribe>
         </DropdownMenu>
       </div>
 
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="whitespace-nowrap">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
+            <table.Subscribe selector={(s) => s.columnVisibility}>
+              {() =>
+                table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      if (!header.column.getIsVisible()) return null
+                      return (
+                        <TableHead key={header.id} className="whitespace-nowrap">
+                          {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))
+              }
+            </table.Subscribe>
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="align-middle">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table
+                .getRowModel()
+                .rows.map((row) => <UserRow key={row.id} table={table} row={row} />)
             ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No users found.
-                </TableCell>
-              </TableRow>
+              <table.Subscribe selector={(s) => s.columnVisibility}>
+                {() => (
+                  <TableRow>
+                    <TableCell
+                      colSpan={table.getVisibleLeafColumns().length}
+                      className="h-24 text-center"
+                    >
+                      No users found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </table.Subscribe>
             )}
           </TableBody>
         </Table>
@@ -400,5 +414,24 @@ export function UsersList({
         </div>
       </div>
     </div>
+  )
+}
+
+function UserRow({
+  table,
+  row,
+}: {
+  table: ReactTable<typeof usersTableFeatures, User>
+  row: Row<typeof usersTableFeatures, User>
+}) {
+  useSelector(table.atoms.columnVisibility)
+  return (
+    <TableRow>
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id} className="align-middle">
+          <table.FlexRender cell={cell} />
+        </TableCell>
+      ))}
+    </TableRow>
   )
 }

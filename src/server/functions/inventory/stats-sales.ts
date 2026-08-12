@@ -25,7 +25,7 @@ export function getInventoryStatsQueryOptions({
 
 export const $getInventoryStats = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         startDate: z.iso.datetime(),

@@ -28,7 +28,7 @@ export function getUsersQueryOptions({ page, size, search, role }: z.infer<typeo
 
 export const $getUsers = createServerFn({ method: 'GET' })
   .middleware([$$admin])
-  .inputValidator(validate(GetUsersSchema))
+  .validator(validate(GetUsersSchema))
   .handler(async ({ data: { page, size, search, role } }) => {
     const conditions = [] as (SQL | undefined)[]
     if (search) {
@@ -50,7 +50,7 @@ export const $getUsers = createServerFn({ method: 'GET' })
 
 export const $deleteUsers = createServerFn({ method: 'POST' })
   .middleware([$$admin])
-  .inputValidator(validate(z.object({ ids: z.array(z.string()).min(1) })))
+  .validator(validate(z.object({ ids: z.array(z.string()).min(1) })))
   .handler(async ({ context: { user: self }, data: { ids } }) => {
     const toDelete = ids.filter((id) => id !== self.id) // Prevent self-deletion
     if (toDelete.length === 0) {

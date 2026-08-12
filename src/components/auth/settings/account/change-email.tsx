@@ -1,13 +1,11 @@
-'use client'
-
+import { getViewURL } from '@better-auth-ui/core'
 import { useAuth, useChangeEmail, useSession } from '@better-auth-ui/react'
 import { type SyntheticEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Field, FieldError } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
@@ -26,7 +24,7 @@ export type ChangeEmailProps = {
  * @returns A JSX element rendering the change-email card and form
  */
 export function ChangeEmail({ className }: ChangeEmailProps) {
-  const { authClient, baseURL, localization, viewPaths } = useAuth()
+  const { authClient, basePaths, baseURL, localization, viewPaths } = useAuth()
   const { data: session } = useSession(authClient)
 
   const { mutate: changeEmail, isPending } = useChangeEmail(authClient, {
@@ -43,7 +41,7 @@ export function ChangeEmail({ className }: ChangeEmailProps) {
     const formData = new FormData(e.currentTarget)
     changeEmail({
       newEmail: formData.get('email') as string,
-      callbackURL: `${baseURL}/${viewPaths.settings.account}`,
+      callbackURL: getViewURL(baseURL, basePaths.settings, viewPaths.settings.account),
     })
   }
 
@@ -55,7 +53,7 @@ export function ChangeEmail({ className }: ChangeEmailProps) {
         <Card className={cn(className)}>
           <CardContent className="flex flex-col gap-6">
             <Field data-invalid={Boolean(fieldErrors.email)}>
-              <Label htmlFor="email">{localization.auth.email}</Label>
+              <FieldLabel htmlFor="email">{localization.auth.email}</FieldLabel>
 
               {session ? (
                 <Input

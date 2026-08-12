@@ -31,7 +31,7 @@ export const $getInventoryCurrency = createServerFn({ method: 'GET' })
 
 export const $setInventoryCurrency = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ currency: z.string().min(1).max(10) })))
+  .validator(validate(z.object({ currency: z.string().min(1).max(10) })))
   .handler(async ({ context: { user }, data }) => {
     await db
       .insert(inventorySetting)

@@ -36,7 +36,7 @@ export const $getInventoryTags = createServerFn({ method: 'GET' })
 
 export const $createInventoryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         name: z.string().min(1).max(500),
@@ -75,7 +75,7 @@ export const $createInventoryTag = createServerFn({ method: 'POST' })
 
 export const $updateInventoryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(
+  .validator(
     validate(
       z.object({
         id: z.uuid(),
@@ -107,7 +107,7 @@ export const $updateInventoryTag = createServerFn({ method: 'POST' })
 
 export const $deleteInventoryTag = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const tag = await db
       .delete(inventoryTag)

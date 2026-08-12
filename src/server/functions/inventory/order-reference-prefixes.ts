@@ -42,7 +42,7 @@ const prefixSchema = z
 
 export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ prefix: prefixSchema })))
+  .validator(validate(z.object({ prefix: prefixSchema })))
   .handler(async ({ context: { user }, data: { prefix } }) => {
     const p = prefix.trim()
     return await db.transaction(async (tx) => {
@@ -76,7 +76,7 @@ export const $createOrderReferencePrefix = createServerFn({ method: 'POST' })
 
 export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid(), prefix: prefixSchema.optional() })))
+  .validator(validate(z.object({ id: z.uuid(), prefix: prefixSchema.optional() })))
   .handler(async ({ context: { user }, data: { id, prefix } }) => {
     const set: Record<string, unknown> = {}
     if (prefix !== undefined) set.prefix = prefix.trim()
@@ -119,7 +119,7 @@ export const $updateOrderReferencePrefix = createServerFn({ method: 'POST' })
 
 export const $deleteOrderReferencePrefix = createServerFn({ method: 'POST' })
   .middleware([$$auth, $$rateLimit])
-  .inputValidator(validate(z.object({ id: z.uuid() })))
+  .validator(validate(z.object({ id: z.uuid() })))
   .handler(async ({ context: { user }, data: { id } }) => {
     const all = await db
       .select({ id: inventoryOrderReferencePrefix.id })
@@ -175,7 +175,7 @@ export async function getNextOrderReferenceForPrefix(
 
 export const $getNextOrderReference = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ prefixId: z.uuid() })))
+  .validator(validate(z.object({ prefixId: z.uuid() })))
   .handler(async ({ context: { user }, data: { prefixId } }) => {
     const p = await db
       .select({ prefix: inventoryOrderReferencePrefix.prefix })

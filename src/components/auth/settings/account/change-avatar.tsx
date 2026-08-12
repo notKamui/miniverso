@@ -1,21 +1,19 @@
-'use client'
-
-import { fileToBase64 } from '@better-auth-ui/core'
+import { fileToAvatarDataUrl } from '@better-auth-ui/core'
 import { useAuth, useSession, useUpdateUser } from '@better-auth-ui/react'
 import { Trash2, Upload } from 'lucide-react'
 import { type ChangeEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { UserAvatar } from '@/components/auth/user/user-avatar'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Field } from '@/components/ui/field'
-import { Label } from '@/components/ui/label'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
+import { cn } from '@/lib/utils/cn'
 
 export type ChangeAvatarProps = {
   className?: string
@@ -44,7 +42,7 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
     try {
       const resized = (await avatar.resize?.(file, avatar.size, avatar.extension)) || file
 
-      const image = (await avatar.upload?.(resized)) || (await fileToBase64(resized))
+      const image = (await avatar.upload?.(resized)) || (await fileToAvatarDataUrl(resized))
 
       updateUser(
         { image },
@@ -85,7 +83,7 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
 
   return (
     <Field className={className}>
-      <Label>{localization.settings.avatar}</Label>
+      <FieldLabel>{localization.settings.avatar}</FieldLabel>
 
       <input
         ref={fileInputRef}
@@ -107,12 +105,13 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
         </Button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="sm" disabled={!session || isPending}>
-              {isPending && <Spinner />}
+          <DropdownMenuTrigger
+            className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }))}
+            disabled={!session || isPending}
+          >
+            {isPending && <Spinner />}
 
-              {localization.settings.changeAvatar}
-            </Button>
+            {localization.settings.changeAvatar}
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="min-w-fit">

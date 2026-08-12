@@ -1,3 +1,4 @@
+import type { DeepKeys } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 import { FieldInfo } from '@/components/form/field-info'
 import { Input } from '@/components/ui/input'
@@ -9,7 +10,7 @@ const inputControlledKeys = ['type', 'value', 'onChange', 'onBlur', 'name', 'id'
 export type FormInputProps<F extends Record<string, any>> = {
   type?: React.HTMLInputTypeAttribute
   form: ReactForm<F>
-  name: keyof F
+  name: DeepKeys<F>
   label: string
 } & Omit<ComponentProps<'input'>, (typeof inputControlledKeys)[number]>
 
@@ -21,7 +22,7 @@ export function FormInput<F extends Record<string, any>>({
   ...inputProps
 }: FormInputProps<F>) {
   return (
-    <form.Field name={name as any}>
+    <form.Field name={name}>
       {(field) => (
         <div className="space-y-2">
           <Label htmlFor={field.name}>{label}</Label>

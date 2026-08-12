@@ -46,7 +46,7 @@ export function getOrdersQueryOptions(params: z.input<typeof getOrdersSchema> = 
 
 export const $getOrders = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(getOrdersSchema))
+  .validator(validate(getOrdersSchema))
   .handler(async ({ context: { user }, data: { page, size, reference, startDate, endDate } }) => {
     const conditions: Parameters<typeof and>[0][] = [eq(order.userId, user.id)]
     if (reference) {
@@ -121,7 +121,7 @@ export function getOrderQueryOptions(orderId: string) {
 
 export const $getOrder = createServerFn({ method: 'GET' })
   .middleware([$$auth])
-  .inputValidator(validate(z.object({ orderId: z.uuid() })))
+  .validator(validate(z.object({ orderId: z.uuid() })))
   .handler(async ({ context: { user }, data: { orderId } }) => {
     const o = await db
       .select(orderListFields)

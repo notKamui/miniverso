@@ -5,13 +5,11 @@ import { db } from '@/server/db'
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 export type DbOrTransaction = Transaction | typeof db
 
-export const takeUniqueOrNull = takeUniqueOr(() => null) as <T extends any[]>(
-  values: T,
-) => T[number] | null
+export const takeUniqueOrNull = takeUniqueOr(() => null)
 
-export function takeUniqueOr<T extends any[], E extends T[number] | null | undefined = never>(
+export function takeUniqueOr<E = never>(
   or: () => E,
-): (values: T) => [E] extends [never] ? T[number] : E | T[number] {
+): <T extends any[]>(values: T) => [E] extends [never] ? T[number] : E | T[number] {
   return (values) => {
     if (values.length === 0) return or()
     // oxlint-disable-next-line typescript/no-unsafe-return
@@ -33,16 +31,14 @@ export async function paginated<TTable extends AnyPgTable<{ columns: { id: PgCol
   totalPages: number
 }> {
   const idColumn = (options.table as any).id as PgColumn
+  const table = options.table as AnyPgTable
 
   const [total, items] = await db.transaction(async (tx) => {
-    const totalQuery = tx
-      .select({ total: count() })
-      .from(options.table as AnyPgTable)
-      .where(options.where)
+    const totalQuery = tx.select({ total: count() }).from(table).where(options.where)
 
     const subquery = tx
       .select({ id: idColumn })
-      .from(options.table as AnyPgTable)
+      .from(table)
       .where(options.where)
       .orderBy(options.orderBy)
       .limit(options.size)
@@ -51,7 +47,7 @@ export async function paginated<TTable extends AnyPgTable<{ columns: { id: PgCol
 
     const rowsQuery = tx
       .select({ row: options.table })
-      .from(options.table as AnyPgTable)
+      .from(table)
       .innerJoin(subquery, eq(idColumn, subquery.id))
       .orderBy(options.orderBy)
 

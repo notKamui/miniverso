@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import type { ColumnDef, VisibilityState } from '@tanstack/react-table'
+import { createColumnHelper, type ColumnVisibilityState } from '@tanstack/react-table'
 import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
-import { DataTable } from '@/components/data/data-table'
+import { DataTable, type DataTableFeatures } from '@/components/data/data-table'
 import { SortableColumnHeader } from '@/components/data/sortable-column-header'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +21,8 @@ import { $updateProduct, productsQueryKey } from '@/server/functions/inventory/p
 import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 
 const LOW_STOCK_THRESHOLD = 5
+
+const productColumnHelper = createColumnHelper<DataTableFeatures, Product>()
 
 type Product = {
   id: string
@@ -41,7 +43,7 @@ type ProductTableProps = {
   total: number
   page: number
   search: Record<string, unknown>
-  columnVisibilityProducts?: VisibilityState
+  columnVisibilityProducts?: ColumnVisibilityState
   toolbarSlot?: React.ReactNode
   navigate: (opts: {
     to: string
@@ -94,9 +96,8 @@ export function ProductTable({
     })
   }
 
-  const columns: ColumnDef<Product>[] = [
-    {
-      accessorKey: 'name',
+  const columns = [
+    productColumnHelper.accessor('name', {
       header: () => (
         <SortableColumnHeader
           column="name"
@@ -119,14 +120,12 @@ export function ProductTable({
           </Link>
         )
       },
-    },
-    {
-      accessorKey: 'sku',
+    }),
+    productColumnHelper.accessor('sku', {
       header: 'SKU',
       cell: ({ row }) => row.original.sku ?? '—',
-    },
-    {
-      accessorKey: 'priceTaxFree',
+    }),
+    productColumnHelper.accessor('priceTaxFree', {
       header: () => (
         <SortableColumnHeader
           column="price"
@@ -136,21 +135,16 @@ export function ProductTable({
           onSort={handleSort}
         />
       ),
-      cell: ({ row }) => {
-        const p = row.original
-        return formatMoney(Number(p.priceTaxFree), currency)
-      },
-    },
-    {
-      accessorKey: 'vatPercent',
+      cell: ({ row }) => formatMoney(Number(row.original.priceTaxFree), currency),
+    }),
+    productColumnHelper.accessor('vatPercent', {
       header: 'With tax',
       cell: ({ row }) => {
         const p = row.original
         return formatMoney(priceTaxIncluded(p.priceTaxFree, p.vatPercent), currency)
       },
-    },
-    {
-      accessorKey: 'quantity',
+    }),
+    productColumnHelper.accessor('quantity', {
       header: 'Stock',
       cell: ({ row }) => {
         const p = row.original
@@ -181,9 +175,8 @@ export function ProductTable({
           </div>
         )
       },
-    },
-    {
-      accessorKey: 'tags',
+    }),
+    productColumnHelper.accessor('tags', {
       header: 'Tags',
       cell: ({ row }) => {
         const tags = row.original.tags
@@ -205,9 +198,8 @@ export function ProductTable({
           </div>
         )
       },
-    },
-    {
-      accessorKey: 'updatedAt',
+    }),
+    productColumnHelper.accessor('updatedAt', {
       header: () => (
         <SortableColumnHeader
           column="updatedAt"
@@ -218,24 +210,19 @@ export function ProductTable({
         />
       ),
       cell: ({ row }) => {
-        const p = row.original
-        const d = new Date(p.updatedAt)
+        const d = new Date(row.original.updatedAt)
         return (
           <span className="text-sm whitespace-nowrap text-muted-foreground">
             {d.toLocaleDateString()}
           </span>
         )
       },
-    },
-    {
-      accessorKey: 'totalProductionCost',
+    }),
+    productColumnHelper.accessor('totalProductionCost', {
       header: 'Prod. cost',
-      cell: ({ row }) => {
-        const c = row.original.totalProductionCost ?? 0
-        return formatMoney(Number(c), currency)
-      },
-    },
-    {
+      cell: ({ row }) => formatMoney(Number(row.original.totalProductionCost ?? 0), currency),
+    }),
+    productColumnHelper.display({
       id: 'actions',
       header: '',
       size: 40,
@@ -291,7 +278,7 @@ export function ProductTable({
           </div>
         )
       },
-    },
+    }),
   ]
 
   return (
