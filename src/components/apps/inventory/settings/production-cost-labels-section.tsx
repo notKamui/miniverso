@@ -129,7 +129,7 @@ export function ProductionCostLabelsSection() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Color</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-25">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
