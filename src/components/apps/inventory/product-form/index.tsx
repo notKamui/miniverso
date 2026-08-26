@@ -93,10 +93,11 @@ export function ProductForm({ productId, existing, duplicateFrom, onSuccess }: P
     },
   })
 
-  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
-  const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
+  const { data: tags } = useSuspenseQuery(getInventoryTagsQueryOptions())
+  const { data: labels } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
   return (
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <form
       onKeyDown={(e) => {
         if (

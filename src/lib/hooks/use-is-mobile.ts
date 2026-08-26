@@ -12,7 +12,7 @@ function getSnapshot() {
   return window.innerWidth < MOBILE_BREAKPOINT
 }
 
-export function useIsMobile(initial: boolean | undefined = undefined): boolean {
+export function useIsMobile(initial?: boolean): boolean {
   const getServerSnapshot = () => initial ?? false
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }

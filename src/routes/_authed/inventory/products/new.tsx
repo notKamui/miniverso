@@ -23,10 +23,10 @@ export const Route = createFileRoute('/_authed/inventory/products/new')({
   loader: async ({ context: { queryClient }, deps: { duplicateFrom } }) => {
     const [duplicateFromData] = await Promise.all([
       duplicateFrom
-        ? queryClient.fetchQuery(getProductQueryOptions(duplicateFrom))
+        ? queryClient.query(getProductQueryOptions(duplicateFrom))
         : Promise.resolve(undefined),
-      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
-      queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
+      queryClient.query({ ...getInventoryTagsQueryOptions(), staleTime: 'static' }),
+      queryClient.query({ ...getProductionCostLabelsQueryOptions(), staleTime: 'static' }),
     ])
     return { crumb: 'New product', duplicateFromData }
   },

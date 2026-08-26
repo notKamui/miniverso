@@ -6,7 +6,9 @@ import { cn } from '@/lib/utils/cn'
 
 function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
+    // Separators/fragments sit alongside items, so a real <ul> isn't valid here.
     <div
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- list role is intentional
       role="list"
       data-slot="item-group"
       className={cn('group/item-group flex flex-col', className)}
@@ -67,7 +69,7 @@ function Item({
 }
 
 const itemMediaVariants = cva(
-  'flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]]/item:translate-y-0.5 group-has-[[data-slot=item-description]]/item:self-start [&_svg]:pointer-events-none',
+  'flex shrink-0 items-center justify-center gap-2 group-has-data-[slot=item-description]/item:translate-y-0.5 group-has-data-[slot=item-description]/item:self-start [&_svg]:pointer-events-none',
   {
     variants: {
       variant: {

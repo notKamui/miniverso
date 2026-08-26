@@ -102,9 +102,9 @@ function SetPassword({ className }: { className?: string }) {
 
           {sentEmail ? (
             <div className="flex flex-col items-start gap-3 sm:items-end">
-              <p className="text-sm" role="status">
+              <output className="text-sm">
                 {localization.auth.resetLinkSentTo.replace('{{email}}', sentEmail)}
-              </p>
+              </output>
 
               <OpenEmailButton email={sentEmail} className="w-auto" />
             </div>

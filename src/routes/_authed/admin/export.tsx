@@ -189,9 +189,10 @@ function useExportDownload(args: {
       a.remove()
 
       toast.success('Download started')
-    } finally {
-      setIsExporting(false)
+    } catch {
+      toast.error('Export failed')
     }
+    setIsExporting(false)
   }
 
   return { isExporting, downloadExport }
@@ -254,9 +255,8 @@ function useImportNdjson(args: {
       toast.error(
         error instanceof Error ? error.message : 'Import failed (network or server error)',
       )
-    } finally {
-      setIsImporting(false)
     }
+    setIsImporting(false)
   }
 
   return { isImporting, importData }

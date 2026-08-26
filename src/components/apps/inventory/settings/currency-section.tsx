@@ -11,7 +11,7 @@ const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF'] as const
 
 export function CurrencySection() {
   const queryClient = useQueryClient()
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
 
   const setMut = useMutation({
     mutationFn: $setInventoryCurrency,

@@ -6,7 +6,7 @@ import { getOrderQueryOptions } from '@/server/functions/inventory/orders-querie
 
 export const Route = createFileRoute('/_authed/inventory/orders/$orderId')({
   loader: async ({ context: { queryClient }, params: { orderId } }) => {
-    const data = await queryClient.fetchQuery(getOrderQueryOptions(orderId))
+    const data = await queryClient.query(getOrderQueryOptions(orderId))
     return { crumb: data.order.reference }
   },
   component: RouteComponent,

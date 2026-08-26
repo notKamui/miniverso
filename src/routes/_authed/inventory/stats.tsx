@@ -27,14 +27,14 @@ export const Route = createFileRoute('/_authed/inventory/stats')({
         : getRange(search.preset)
 
     const [stats, stockStats, productionCostLabels] = await Promise.all([
-      queryClient.fetchQuery(
+      queryClient.query(
         getInventoryStatsQueryOptions({
           startDate: start.toISOString(),
           endDate: end.toISOString(),
         }),
       ),
-      queryClient.fetchQuery(getInventoryStockStatsQueryOptions({ labelIds: search.labelIds })),
-      queryClient.fetchQuery(getProductionCostLabelsQueryOptions()),
+      queryClient.query(getInventoryStockStatsQueryOptions({ labelIds: search.labelIds })),
+      queryClient.query(getProductionCostLabelsQueryOptions()),
     ])
 
     return { stats, stockStats, productionCostLabels, preset: search.preset, crumb: 'Statistics' }

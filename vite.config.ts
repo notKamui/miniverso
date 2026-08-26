@@ -1,8 +1,7 @@
-import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite-plus'
 import { buildServeEntrypoint } from './build/vite-plugins/build-serve-entrypoint.ts'
 import fmt from './oxfmt.config.ts'
@@ -18,14 +17,7 @@ function chunkNodeModules(id: string) {
 export default defineConfig({
   fmt,
   lint,
-  plugins: [
-    devtools(),
-    tailwindcss(),
-    tanstackStart(),
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
-    buildServeEntrypoint(),
-  ],
+  plugins: [devtools(), tailwindcss(), tanstackStart(), react(), buildServeEntrypoint()],
   define: { APP_VERSION: JSON.stringify(pkg.version) },
   resolve: { tsconfigPaths: true },
   test: {

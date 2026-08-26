@@ -21,13 +21,14 @@ export const Route = createFileRoute('/_authed/time/')({
     const tzOffsetMinutes = search.tz ?? 0
 
     const [columnVisibilityTimeRecorder] = await Promise.all([
-      queryClient.fetchQuery(getColumnVisibilityQueryOptions('time-recorder')),
-      queryClient.ensureQueryData(
-        getTimeEntriesByDayQueryOptions({
+      queryClient.query(getColumnVisibilityQueryOptions('time-recorder')),
+      queryClient.query({
+        ...getTimeEntriesByDayQueryOptions({
           dayKey: date.formatDayKey(),
           tzOffsetMinutes,
         }),
-      ),
+        staleTime: 'static',
+      }),
     ])
 
     return {

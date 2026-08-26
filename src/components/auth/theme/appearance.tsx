@@ -26,9 +26,8 @@ export type AppearanceProps = {
  * @returns A JSX element containing the theme selector card.
  */
 export function Appearance({ className }: AppearanceProps) {
-  const { useTheme, localization } = useAuthPlugin(themePlugin)
-  // oxlint-disable-next-line react-hooks-js/hooks
-  const { theme, setTheme, themes = [] } = useTheme()
+  const { useTheme: getThemeState, localization } = useAuthPlugin(themePlugin)
+  const { theme, setTheme, themes = [] } = getThemeState()
 
   const isHydrated = useIsHydrated()
 

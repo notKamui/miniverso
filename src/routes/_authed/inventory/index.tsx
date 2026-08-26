@@ -28,10 +28,10 @@ export const Route = createFileRoute('/_authed/inventory/')({
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps: { search }, context: { queryClient } }) => {
     const [columnVisibilityProducts] = await Promise.all([
-      queryClient.fetchQuery(getColumnVisibilityQueryOptions('inventory-products')),
-      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
-      queryClient.ensureQueryData(
-        getProductsQueryOptions({
+      queryClient.query(getColumnVisibilityQueryOptions('inventory-products')),
+      queryClient.query({ ...getInventoryTagsQueryOptions(), staleTime: 'static' }),
+      queryClient.query({
+        ...getProductsQueryOptions({
           page: search.page,
           size: search.size,
           search: search.q?.trim() || undefined,
@@ -40,7 +40,8 @@ export const Route = createFileRoute('/_authed/inventory/')({
           orderBy: search.orderBy,
           order: search.order,
         }),
-      ),
+        staleTime: 'static',
+      }),
     ])
     return { crumb: 'Products', columnVisibilityProducts }
   },
@@ -53,7 +54,7 @@ function RouteComponent() {
   const { columnVisibilityProducts } = Route.useLoaderData({
     select: ({ columnVisibilityProducts }) => ({ columnVisibilityProducts }),
   })
-  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
+  const { data: tags } = useSuspenseQuery(getInventoryTagsQueryOptions())
   const { data: productsPage } = useSuspenseQuery(
     getProductsQueryOptions({
       page: search.page,

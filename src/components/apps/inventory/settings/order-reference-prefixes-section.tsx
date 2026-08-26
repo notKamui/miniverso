@@ -31,7 +31,7 @@ import { Section } from '../section'
 
 export function OrderReferencePrefixesSection() {
   const queryClient = useQueryClient()
-  const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
+  const { data: prefixes } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
 
   const [newPrefix, setNewPrefix] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)

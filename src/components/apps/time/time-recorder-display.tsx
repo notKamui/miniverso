@@ -171,10 +171,9 @@ export function RecorderDisplay({
               if (value) {
                 setSelectedRows((prev) => ({ ...prev, [entry.id]: entry }))
               } else {
-                setSelectedRows((prev) => {
-                  const { [entry.id]: _, ...rest } = prev
-                  return rest
-                })
+                setSelectedRows((prev) =>
+                  Object.fromEntries(Object.entries(prev).filter(([id]) => id !== entry.id)),
+                )
               }
             }}
             aria-label={`Select row ${entry.id}`}

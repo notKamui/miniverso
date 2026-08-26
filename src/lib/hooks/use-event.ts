@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 export function useEvent<K extends keyof WindowEventMap>(
   type: K,
@@ -10,12 +10,33 @@ export function useEvent(
   listener: EventListenerOrEventListenerObject,
   options?: boolean | AddEventListenerOptions,
 ): void
-export function useEvent(...args: Parameters<typeof window.addEventListener>) {
+export function useEvent(
+  type: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: boolean | AddEventListenerOptions,
+) {
+  const listenerRef = useRef(listener)
+  const optionsRef = useRef(options)
+
+  useLayoutEffect(() => {
+    listenerRef.current = listener
+    optionsRef.current = options
+  })
+
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
 
-    window.addEventListener(...args)
-    return () => window.removeEventListener(...args)
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-  }, [...args])
+    const handleEvent: EventListener = (event) => {
+      const current = listenerRef.current
+      if (typeof current === 'function') {
+        current(event)
+      } else {
+        current.handleEvent(event)
+      }
+    }
+
+    const currentOptions = optionsRef.current
+    window.addEventListener(type, handleEvent, currentOptions)
+    return () => window.removeEventListener(type, handleEvent, currentOptions)
+  }, [type])
 }

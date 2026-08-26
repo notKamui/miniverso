@@ -34,7 +34,7 @@ const DEFAULT_COLOR = '#6b7280'
 
 export function ProductionCostLabelsSection() {
   const queryClient = useQueryClient()
-  const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
+  const { data: labels } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
   const [newLabelName, setNewLabelName] = useState('')
   const [newLabelColor, setNewLabelColor] = useState(DEFAULT_COLOR)

@@ -25,8 +25,8 @@ import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/c
 
 export function CashTable() {
   const queryClient = useQueryClient()
-  const { data: rows = [] } = useSuspenseQuery(getCashQueryOptions())
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: rows } = useSuspenseQuery(getCashQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
 
   const createMut = useMutation({
     mutationFn: $createCash,

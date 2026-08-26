@@ -70,9 +70,10 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
             setIsDeleting(true)
             try {
               await avatar.delete?.(currentImage)
-            } finally {
-              setIsDeleting(false)
+            } catch {
+              // Deletion failures are non-fatal; clear loading state either way.
             }
+            setIsDeleting(false)
           }
 
           toast.success(localization.settings.avatarDeletedSuccess)

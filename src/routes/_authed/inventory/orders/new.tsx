@@ -5,7 +5,7 @@ import { getOrderReferencePrefixesQueryOptions } from '@/server/functions/invent
 
 export const Route = createFileRoute('/_authed/inventory/orders/new')({
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(getOrderReferencePrefixesQueryOptions())
+    await queryClient.query({ ...getOrderReferencePrefixesQueryOptions(), staleTime: 'static' })
     return { crumb: 'New order' }
   },
   component: RouteComponent,

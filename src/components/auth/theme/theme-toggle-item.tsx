@@ -34,9 +34,8 @@ function handleTabsKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
  * for ensuring theming is configured before rendering this component.
  */
 export function ThemeToggleItem() {
-  const { useTheme, localization } = useAuthPlugin(themePlugin)
-  // oxlint-disable-next-line react-hooks-js/hooks
-  const { theme, setTheme, themes = [] } = useTheme()
+  const { useTheme: getThemeState, localization } = useAuthPlugin(themePlugin)
+  const { theme, setTheme, themes = [] } = getThemeState()
   const tabsListRef = useRef<HTMLDivElement>(null)
 
   // The TabsTriggers aren't part of the menu's roving focus group, so

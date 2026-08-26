@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_authed/admin/users')({
   loader: async ({ deps: { search }, context: { queryClient } }) => {
     const { page, size, q, role } = search
 
-    const usersPage = await queryClient.fetchQuery(
+    const usersPage = await queryClient.query(
       getUsersQueryOptions({
         page,
         size,
