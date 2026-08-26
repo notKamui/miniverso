@@ -156,7 +156,7 @@ export const Route = createFileRoute('/_authed/time/stats')({
 
     const dayKey = day ?? Time.now().formatDayKey()
 
-    const stats = await queryClient.fetchQuery(
+    const stats = await queryClient.query(
       getTimeStatsQueryOptions({
         dayKey,
         type,

@@ -14,11 +14,14 @@ import { getProductionCostLabelsQueryOptions } from '@/server/functions/inventor
 export const Route = createFileRoute('/_authed/inventory/settings')({
   loader: async ({ context: { queryClient } }) => {
     await Promise.all([
-      queryClient.ensureQueryData(getInventoryCurrencyQueryOptions()),
-      queryClient.ensureQueryData(getOrderReferencePrefixesQueryOptions()),
-      queryClient.ensureQueryData(getOrderPriceModificationPresetsQueryOptions()),
-      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
-      queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
+      queryClient.query({ ...getInventoryCurrencyQueryOptions(), staleTime: 'static' }),
+      queryClient.query({ ...getOrderReferencePrefixesQueryOptions(), staleTime: 'static' }),
+      queryClient.query({
+        ...getOrderPriceModificationPresetsQueryOptions(),
+        staleTime: 'static',
+      }),
+      queryClient.query({ ...getInventoryTagsQueryOptions(), staleTime: 'static' }),
+      queryClient.query({ ...getProductionCostLabelsQueryOptions(), staleTime: 'static' }),
     ])
     return { crumb: 'Settings' }
   },

@@ -28,16 +28,17 @@ export const Route = createFileRoute('/_authed/inventory/orders/')({
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps: { search }, context: { queryClient } }) => {
     const [columnVisibilityOrders] = await Promise.all([
-      queryClient.fetchQuery(getColumnVisibilityQueryOptions('inventory-orders')),
-      queryClient.ensureQueryData(
-        getOrdersQueryOptions({
+      queryClient.query(getColumnVisibilityQueryOptions('inventory-orders')),
+      queryClient.query({
+        ...getOrdersQueryOptions({
           page: search.page,
           size: search.size,
           reference: search.reference?.trim() || undefined,
           startDate: search.startDate?.trim() || undefined,
           endDate: search.endDate?.trim() || undefined,
         }),
-      ),
+        staleTime: 'static',
+      }),
     ])
     return { columnVisibilityOrders }
   },
@@ -58,7 +59,7 @@ function RouteComponent() {
 
   const debouncedRef = useDebounce(refInput, 300)
 
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const { data: ordersPage } = useSuspenseQuery(
     getOrdersQueryOptions({
       page: search.page,

@@ -18,9 +18,9 @@ export const Route = createFileRoute('/_authed/inventory/products/$productId')({
   validateSearch: searchSchema,
   loader: async ({ context: { queryClient }, params: { productId } }) => {
     const [productData] = await Promise.all([
-      queryClient.fetchQuery(getProductQueryOptions(productId)),
-      queryClient.ensureQueryData(getInventoryTagsQueryOptions()),
-      queryClient.ensureQueryData(getProductionCostLabelsQueryOptions()),
+      queryClient.query(getProductQueryOptions(productId)),
+      queryClient.query({ ...getInventoryTagsQueryOptions(), staleTime: 'static' }),
+      queryClient.query({ ...getProductionCostLabelsQueryOptions(), staleTime: 'static' }),
     ])
     return { crumb: productData.product.name, productData }
   },

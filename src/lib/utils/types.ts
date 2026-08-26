@@ -1,6 +1,8 @@
 import type { FieldApi, ReactFormApi } from '@tanstack/react-form'
 import type { HTMLAttributes, RefObject } from 'react'
 
+export type MaybePromise<T> = T | Promise<T>
+
 export type Compute<T> = { [K in keyof T]: T[K] } & {}
 
 export type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] extends N

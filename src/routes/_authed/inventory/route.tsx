@@ -3,7 +3,7 @@ import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/c
 
 export const Route = createFileRoute('/_authed/inventory')({
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(getInventoryCurrencyQueryOptions())
+    await queryClient.query({ ...getInventoryCurrencyQueryOptions(), staleTime: 'static' })
     return { crumb: 'Inventory' }
   },
 })

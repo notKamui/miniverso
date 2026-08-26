@@ -1,10 +1,6 @@
-import {
-  type MultiSessionAuthClient,
-  useAuth,
-  useAuthPlugin,
-  useListDeviceSessions,
-  useSession,
-} from '@better-auth-ui/react'
+import type { MultiSessionAuthClient } from '@better-auth-ui/core/plugins/multi-session'
+import { useAuth, useAuthPlugin, useSession } from '@better-auth-ui/react'
+import { useListDeviceSessions } from '@better-auth-ui/react/plugins/multi-session'
 import { Check, CirclePlus } from 'lucide-react'
 import { UserView } from '@/components/auth/user/user-view'
 import {
@@ -25,12 +21,10 @@ import { SwitchAccountSubmenuItem } from './switch-account-submenu-item'
  * @returns The switch account submenu content as a JSX element
  */
 export function SwitchAccountSubmenuContent() {
-  const { authClient, basePaths, viewPaths, navigate } = useAuth()
+  const { authClient, basePaths, viewPaths, navigate } = useAuth<MultiSessionAuthClient>()
   const { localization: multiSessionLocalization } = useAuthPlugin(multiSessionPlugin)
   const { data: session } = useSession(authClient)
-  const { data: deviceSessions, isPending } = useListDeviceSessions(
-    authClient as MultiSessionAuthClient,
-  )
+  const { data: deviceSessions, isPending } = useListDeviceSessions(authClient)
 
   return (
     <DropdownMenuSubContent className="max-w-[48svw] min-w-48 md:min-w-56">

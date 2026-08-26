@@ -27,7 +27,6 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { deleteUserPlugin } from '@/lib/auth/delete-user-plugin'
 import { cn } from '@/lib/utils/cn'
-import { useIsHydrated } from '../use-is-hydrated'
 
 export type DeleteAccountProps = {
   className?: string
@@ -43,7 +42,6 @@ export function DeleteAccount({ className }: DeleteAccountProps) {
     useAuthPlugin(deleteUserPlugin)
 
   const { data: accounts } = useListAccounts(authClient)
-  const isHydrated = useIsHydrated()
 
   const queryClient = useQueryClient()
 
@@ -102,7 +100,7 @@ export function DeleteAccount({ className }: DeleteAccountProps) {
         <AlertDialog open={confirmOpen} onOpenChange={handleDialogOpenChange}>
           <AlertDialogTrigger
             className={cn(buttonVariants({ variant: 'destructive', size: 'sm' }))}
-            disabled={isHydrated && !accounts}
+            disabled={!accounts}
           >
             {deleteUserLocalization.deleteAccount}
           </AlertDialogTrigger>

@@ -13,10 +13,8 @@ import {
 } from '@/components/ui/dialog'
 import { EditTimeEntrySchema } from '@/lib/forms/time-entry'
 import { Time } from '@/lib/utils/time'
-import type { PartialExcept } from '@/lib/utils/types'
+import type { MaybePromise, PartialExcept } from '@/lib/utils/types'
 import type { TimeEntry } from '@/server/db/schema/time'
-
-type MaybePromise<T> = T | Promise<T>
 
 export function EditEntryDialog({
   entry,

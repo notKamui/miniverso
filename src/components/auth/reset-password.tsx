@@ -1,4 +1,4 @@
-import { getAuthLinkURL } from '@better-auth-ui/core'
+import { getAuthLinkURL, isPasswordCompromisedError } from '@better-auth-ui/core'
 import { useAuth, useResetPassword } from '@better-auth-ui/react'
 import { Eye, EyeOff } from 'lucide-react'
 import { type SyntheticEvent, useEffect, useState } from 'react'
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
+import { PasswordStrengthMeter } from './password-strength-meter'
 
 export type ResetPasswordProps = {
   className?: string
@@ -40,12 +41,23 @@ export function ResetPassword({ className }: ResetPasswordProps) {
   const signInURL = getAuthLinkURL(`${basePaths.auth}/${viewPaths.auth.signIn}`, redirectTo)
 
   const { mutate: resetPassword, isPending } = useResetPassword(authClient, {
+    onError: (error) => {
+      // The haveIBeenPwned plugin rejects on the password itself, so it
+      // belongs against the field rather than in a toast.
+      if (isPasswordCompromisedError(error)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          password: localization.auth.passwordCompromised,
+        }))
+      }
+    },
     onSuccess: () => {
       toast.success(localization.auth.passwordResetSuccess)
       navigate({ to: signInURL })
     },
   })
 
+  const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
 
@@ -111,7 +123,9 @@ export function ResetPassword({ className }: ResetPasswordProps) {
                   minLength={emailAndPassword?.minPasswordLength}
                   maxLength={emailAndPassword?.maxPasswordLength}
                   disabled={isPending}
-                  onChange={() => {
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+
                     setFieldErrors((prev) => ({
                       ...prev,
                       password: undefined,
@@ -159,6 +173,8 @@ export function ResetPassword({ className }: ResetPasswordProps) {
               </InputGroup>
 
               <FieldError>{fieldErrors.password}</FieldError>
+
+              <PasswordStrengthMeter password={password} />
             </Field>
 
             {emailAndPassword?.confirmPassword && (

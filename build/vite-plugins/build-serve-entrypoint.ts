@@ -21,11 +21,11 @@ export function buildServeEntrypoint(): Vite.PluginOption {
               codeSplitting: false,
             },
           },
-          target: 'node25',
+          target: 'node26',
         },
         configFile: false,
         oxc: {
-          target: 'node25',
+          target: 'node26',
         },
       })
     },

@@ -1,4 +1,4 @@
-import { captchaPlugin } from '@better-auth-ui/react/plugins'
+import { captchaPlugin } from '@better-auth-ui/react/plugins/captcha'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { LazyMotion } from 'motion/react'
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       socialProviders={socialOAuthProviders}
       redirectTo="/"
       navigate={navigate}
-      Link={Link}
+      Link={({ href, ...props }) => <Link to={href} {...props} />}
     >
       {children}
     </BetterAuthProvider>

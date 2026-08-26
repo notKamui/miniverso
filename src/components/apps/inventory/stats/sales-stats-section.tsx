@@ -18,7 +18,7 @@ type SalesStatsSectionProps = {
 }
 
 export function SalesStatsSection({ stats }: SalesStatsSectionProps) {
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const chartData = stats.topByRevenue.slice(0, 8).map((t) => ({
     name: t.productName ?? 'Deleted',
     revenue: t.revenue,

@@ -5,7 +5,7 @@ import { getCashQueryOptions } from '@/server/functions/inventory/cash'
 
 export const Route = createFileRoute('/_authed/inventory/cash')({
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(getCashQueryOptions())
+    await queryClient.query({ ...getCashQueryOptions(), staleTime: 'static' })
     return { crumb: 'Cash' }
   },
   component: RouteComponent,

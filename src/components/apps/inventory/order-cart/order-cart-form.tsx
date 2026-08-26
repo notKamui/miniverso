@@ -31,8 +31,8 @@ import { effectivePriceTaxFree } from './utils'
 export function OrderCartForm() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: prefixes = [] } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: prefixes } = useSuspenseQuery(getOrderReferencePrefixesQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const { data: presets = [] } = useQuery(getOrderPriceModificationPresetsQueryOptions())
 
   const [savePresetOpen, setSavePresetOpen] = useState(false)
@@ -162,6 +162,7 @@ export function OrderCartForm() {
   }
 
   return (
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <form
       className="flex max-w-2xl flex-col gap-6"
       onKeyDown={(e) => {

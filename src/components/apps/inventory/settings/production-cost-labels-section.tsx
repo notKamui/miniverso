@@ -34,7 +34,7 @@ const DEFAULT_COLOR = '#6b7280'
 
 export function ProductionCostLabelsSection() {
   const queryClient = useQueryClient()
-  const { data: labels = [] } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
+  const { data: labels } = useSuspenseQuery(getProductionCostLabelsQueryOptions())
 
   const [newLabelName, setNewLabelName] = useState('')
   const [newLabelColor, setNewLabelColor] = useState(DEFAULT_COLOR)
@@ -129,7 +129,7 @@ export function ProductionCostLabelsSection() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Color</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-25">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

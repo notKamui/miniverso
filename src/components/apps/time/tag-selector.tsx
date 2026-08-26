@@ -83,11 +83,10 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
         ) : (
           <div className="max-h-64 overflow-y-auto">
             {tags.map((tag) => (
-              <div
+              <button
                 key={tag.id}
                 onClick={() => handleSelectTag(tag)}
                 onKeyDown={(e) => handleKeyDown(e, tag)}
-                role="button"
                 tabIndex={0}
                 className={cn(
                   'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
@@ -108,7 +107,7 @@ export function TagSelector({ onSelectTag, disabled = false }: TagSelectorProps)
                 >
                   <Trash2Icon className="size-3.5 text-destructive" />
                 </Button>
-              </div>
+              </button>
             ))}
           </div>
         )}

@@ -1,6 +1,5 @@
-import { viewPaths } from '@better-auth-ui/core'
-import { ensureSession as ensureSessionClient } from '@better-auth-ui/react'
-import { ensureSession as ensureSessionServer } from '@better-auth-ui/react/server'
+import { ensureSession as ensureSessionClient, viewPaths } from '@better-auth-ui/core'
+import { ensureSessionServer } from '@better-auth-ui/core/server'
 import { QueryClient } from '@tanstack/query-core'
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { createIsomorphicFn } from '@tanstack/react-start'

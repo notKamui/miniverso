@@ -36,7 +36,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data } = useSuspenseQuery(getOrderQueryOptions(orderId))
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
 
   async function invalidateQueries() {
     await Promise.all([

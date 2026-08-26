@@ -30,7 +30,7 @@ export function StockStatsSection({
   search,
   navigate,
 }: StockStatsSectionProps) {
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const labelIds = (search.labelIds as string[] | undefined) ?? []
   const anchorRef = LabelCombobox.useAnchor()
 

@@ -34,7 +34,7 @@ const DEFAULT_COLOR = '#6b7280'
 
 export function ProductTagsSection() {
   const queryClient = useQueryClient()
-  const { data: tags = [] } = useSuspenseQuery(getInventoryTagsQueryOptions())
+  const { data: tags } = useSuspenseQuery(getInventoryTagsQueryOptions())
 
   const [newTagName, setNewTagName] = useState('')
   const [newTagColor, setNewTagColor] = useState(DEFAULT_COLOR)
@@ -129,7 +129,7 @@ export function ProductTagsSection() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Color</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-25">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

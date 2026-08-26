@@ -23,10 +23,10 @@ export const Route = createRootRouteWithContext<{
 }>()({
   beforeLoad: async ({ context: { queryClient } }) => {
     const [hcaptchaInfo, socialOAuth, requestInfo, user] = await Promise.all([
-      queryClient.fetchQuery(captchaInfoQueryOptions()),
-      queryClient.fetchQuery(socialOAuthQueryOptions()),
-      queryClient.fetchQuery(requestInfoQueryOptions()),
-      queryClient.fetchQuery(userQueryOptions()),
+      queryClient.query(captchaInfoQueryOptions()),
+      queryClient.query(socialOAuthQueryOptions()),
+      queryClient.query(requestInfoQueryOptions()),
+      queryClient.query(userQueryOptions()),
     ])
     const { theme, sidebar } = requestInfo.userPreferences
 

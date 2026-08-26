@@ -43,7 +43,7 @@ export function TopProductsSection({
   topByBenefit,
   topByQuantitySold,
 }: TopProductsSectionProps) {
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   return (
     <Section
       title="Top products (date range)"

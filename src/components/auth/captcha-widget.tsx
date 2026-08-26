@@ -1,4 +1,4 @@
-import type { CaptchaRenderProps } from '@better-auth-ui/react/plugins'
+import type { CaptchaRenderProps } from '@better-auth-ui/react/plugins/captcha'
 import { type TurnstileInstance, Turnstile } from '@marsidev/react-turnstile'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'

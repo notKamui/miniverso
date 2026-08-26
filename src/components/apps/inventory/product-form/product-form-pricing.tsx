@@ -10,7 +10,7 @@ import { priceTaxIncluded } from '@/server/functions/inventory/utils'
 type Props = { form: ReactForm<ProductFormValues> }
 
 export function ProductFormPricing({ form }: Props) {
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <FormInput

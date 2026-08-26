@@ -1,10 +1,6 @@
-import {
-  type MultiSessionAuthClient,
-  useAuth,
-  useAuthPlugin,
-  useListDeviceSessions,
-  useSession,
-} from '@better-auth-ui/react'
+import type { MultiSessionAuthClient } from '@better-auth-ui/core/plugins/multi-session'
+import { useAuth, useAuthPlugin, useSession } from '@better-auth-ui/react'
+import { useListDeviceSessions } from '@better-auth-ui/react/plugins/multi-session'
 import { Fragment } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ItemGroup, ItemSeparator } from '@/components/ui/item'
@@ -25,13 +21,11 @@ export type ManageAccountsProps = {
  * @returns A JSX element containing the accounts management card
  */
 export function ManageAccounts({ className }: ManageAccountsProps) {
-  const { authClient } = useAuth()
+  const { authClient } = useAuth<MultiSessionAuthClient>()
   const { localization: multiSessionLocalization } = useAuthPlugin(multiSessionPlugin)
   const { data: session } = useSession(authClient)
 
-  const { data: deviceSessions, isPending } = useListDeviceSessions(
-    authClient as MultiSessionAuthClient,
-  )
+  const { data: deviceSessions, isPending } = useListDeviceSessions(authClient)
 
   const otherSessions = deviceSessions?.filter(
     (deviceSession) => deviceSession.session.id !== session?.session.id,

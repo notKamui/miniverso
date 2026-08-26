@@ -59,7 +59,7 @@ function formatPresetValue(p: { type: string; kind: string; value: string }): st
 
 export function OrderPriceModificationPresetsSection() {
   const queryClient = useQueryClient()
-  const { data: presets = [] } = useSuspenseQuery(getOrderPriceModificationPresetsQueryOptions())
+  const { data: presets } = useSuspenseQuery(getOrderPriceModificationPresetsQueryOptions())
 
   const [newPreset, setNewPreset] = useState<PresetForm>(defaultForm)
   const [editingId, setEditingId] = useState<string | null>(null)

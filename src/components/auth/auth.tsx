@@ -2,6 +2,7 @@ import type { AuthView } from '@better-auth-ui/core'
 import { useAuth } from '@better-auth-ui/react'
 import { type ComponentType, useEffect } from 'react'
 import { AuthRedirect } from './auth-redirect'
+import { AuthCallback, AuthError } from './auth-result'
 import { ForgotPassword } from './forgot-password'
 import type { SocialLayout } from './provider-buttons'
 import { ResetLinkSent } from './reset-link-sent'
@@ -28,6 +29,8 @@ export type AuthProps = {
 const PASSWORD_ONLY_VIEWS = new Set(['signUp', 'forgotPassword', 'resetPassword', 'resetLinkSent'])
 
 const AUTH_VIEWS: Partial<Record<AuthView, ComponentType<AuthProps>>> = {
+  callback: AuthCallback,
+  error: AuthError,
   redirect: AuthRedirect,
   signIn: SignIn,
   signOut: SignOut,

@@ -65,7 +65,7 @@ export function ProductTable({
   emptyMessage = 'No products yet. Add one to get started.',
 }: ProductTableProps) {
   const queryClient = useQueryClient()
-  const { data: currency = 'EUR' } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
+  const { data: currency } = useSuspenseQuery(getInventoryCurrencyQueryOptions())
   const updateMut = useMutation({
     mutationFn: $updateProduct,
     onSuccess: async () => {
@@ -151,7 +151,8 @@ export function ProductTable({
         if (p.kind === 'bundle') return '—'
         const q = p.quantity
         return (
-          <div
+          <button
+            aria-label="Edit stock"
             className="flex items-center"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
@@ -172,7 +173,7 @@ export function ProductTable({
                 q < LOW_STOCK_THRESHOLD && 'font-medium text-destructive',
               )}
             />
-          </div>
+          </button>
         )
       },
     }),
@@ -232,16 +233,11 @@ export function ProductTable({
         const p = row.original
         const isArchived = Boolean(p.archivedAt)
         return (
-          <div
-            className="flex justify-end"
-            onClick={(e) => e.stopPropagation()}
-            tabIndex={0}
-            role="button"
-            onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}
-          >
+          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-sm" className="size-8">
+                <Button variant="ghost" size="icon-sm" className="size-8" aria-label="Actions">
                   <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>

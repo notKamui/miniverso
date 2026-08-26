@@ -29,17 +29,17 @@ type RootOmitKeys =
   | 'isItemEqualToValue'
   | 'multiple'
 
-function createCombobox<Item = unknown, Multiple extends boolean = false>() {
-  type Value = NoInfer<Multiple> extends true ? Item[] : Item | null
+function createCombobox<TItem = unknown, Multiple extends boolean = false>() {
+  type Value = NoInfer<Multiple> extends true ? TItem[] : TItem | null
 
   type RootProps = Omit<PrimitiveRootProps, RootOmitKeys> & {
-    items?: readonly Item[]
+    items?: readonly TItem[]
     value?: Value
     defaultValue?: Value
     onValueChange?: (value: Value, eventDetails: ComboboxChangeEventDetails) => void
-    itemToStringLabel?: (item: Item) => string
-    itemToStringValue?: (item: Item) => string
-    isItemEqualToValue?: (a: Item, b: Item) => boolean
+    itemToStringLabel?: (item: TItem) => string
+    itemToStringValue?: (item: TItem) => string
+    isItemEqualToValue?: (a: TItem, b: TItem) => boolean
     multiple?: Multiple
   }
 
@@ -50,14 +50,14 @@ function createCombobox<Item = unknown, Multiple extends boolean = false>() {
   }
 
   type ListProps = Omit<ComboboxPrimitive.List.Props, 'children'> & {
-    children?: (item: Item, index: number) => React.ReactNode
+    children?: (item: TItem, index: number) => React.ReactNode
   }
 
   function List(props: ListProps) {
     return <ComboboxList {...props} />
   }
 
-  type ItemProps = Omit<ComboboxPrimitive.Item.Props, 'value'> & { value: Item }
+  type ItemProps = Omit<ComboboxPrimitive.Item.Props, 'value'> & { value: TItem }
 
   function Item(props: ItemProps) {
     return <ComboboxItem {...props} />

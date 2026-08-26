@@ -5,14 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils/cn'
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function InputGroup({ className, ...props }: React.ComponentProps<'fieldset'>) {
   return (
-    <div
+    <fieldset
       data-slot="input-group"
-      role="group"
       className={cn(
-        'group/input-group relative flex w-full items-center rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30',
-        'h-9 min-w-0 has-[>textarea]:h-auto',
+        'group/input-group relative m-0 flex w-full min-w-0 items-center rounded-md border border-input p-0 shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30',
+        'h-9 has-[>textarea]:h-auto',
 
         // Variants based on alignment.
         'has-[>[data-align=inline-start]]:[&>input]:pl-2',
@@ -58,8 +57,11 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
+    // Click focuses the sibling input; not an interactive control itself.
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <div
+      aria-label="Input group addon"
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- addon grouping is intentional
       role="group"
       data-slot="input-group-addon"
       data-align={align}

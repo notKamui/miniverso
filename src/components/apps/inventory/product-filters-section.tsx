@@ -40,7 +40,7 @@ export function ProductFiltersSection({ search, navigate, tags }: ProductFilters
 
   useEffect(() => {
     if ((debouncedQ || undefined) !== (search.q || undefined)) {
-      void navigate({
+      navigate({
         to: '.',
         search: { ...search, q: debouncedQ || undefined, page: 1 },
         replace: true,

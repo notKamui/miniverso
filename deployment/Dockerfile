@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24-slim AS base
+FROM node:26-slim AS base
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="/root/.vite-plus/bin:$PNPM_HOME:$PATH"
