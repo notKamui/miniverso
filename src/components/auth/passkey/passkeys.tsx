@@ -1,16 +1,12 @@
-import {
-  type PasskeyAuthClient,
-  useAuth,
-  useAuthPlugin,
-  useListPasskeys,
-} from '@better-auth-ui/react'
+import type { PasskeyAuthClient } from '@better-auth-ui/core/plugins/passkey'
+import { useAuth, useAuthPlugin } from '@better-auth-ui/react'
+import { useListPasskeys } from '@better-auth-ui/react/plugins/passkey'
 import { Fragment, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ItemGroup, ItemSeparator } from '@/components/ui/item'
 import { passkeyPlugin } from '@/lib/auth/passkey-plugin'
 import { cn } from '@/lib/utils/cn'
-import { useIsHydrated } from '../use-is-hydrated'
 import { AddPasskeyDialog } from './add-passkey-dialog'
 import { Passkey } from './passkey'
 import { PasskeySkeleton } from './passkey-skeleton'
@@ -21,12 +17,10 @@ export type PasskeysProps = {
 }
 
 export function Passkeys({ className }: PasskeysProps) {
-  const { authClient } = useAuth()
+  const { authClient } = useAuth<PasskeyAuthClient>()
   const { localization: passkeyLocalization } = useAuthPlugin(passkeyPlugin)
 
-  const { data: passkeys, isPending } = useListPasskeys(authClient as PasskeyAuthClient)
-  const isHydrated = useIsHydrated()
-  const showPending = isHydrated && isPending
+  const { data: passkeys, isPending } = useListPasskeys(authClient)
 
   const [addOpen, setAddOpen] = useState(false)
 
@@ -38,7 +32,7 @@ export function Passkeys({ className }: PasskeysProps) {
         <Button
           className="shrink-0"
           size="sm"
-          disabled={showPending}
+          disabled={isPending}
           onClick={() => setAddOpen(true)}
         >
           {passkeyLocalization.addPasskey}
@@ -47,7 +41,7 @@ export function Passkeys({ className }: PasskeysProps) {
 
       <Card className="p-0">
         <CardContent className="p-0">
-          {showPending ? (
+          {isPending ? (
             <PasskeySkeleton />
           ) : !passkeys?.length ? (
             <PasskeysEmpty onAddPress={() => setAddOpen(true)} />

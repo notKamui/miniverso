@@ -1,3 +1,4 @@
+import { getProviderId } from '@better-auth-ui/core'
 import { useAuth, useListAccounts } from '@better-auth-ui/react'
 import { Fragment } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,27 +21,36 @@ export type LinkedAccountsProps = {
  * @returns A JSX element containing the linked accounts card
  */
 export function LinkedAccounts({ className }: LinkedAccountsProps) {
-  const { authClient, localization, multipleAccountsPerProvider, socialProviders } = useAuth()
+  const {
+    authClient,
+    allowUnlinkingAllAccounts,
+    localization,
+    multipleAccountsPerProvider,
+    socialProviders,
+  } = useAuth()
 
   const { data: accounts, isPending } = useListAccounts(authClient)
 
   const linkedAccounts = accounts?.filter((account) => account.providerId !== 'credential')
+  const canUnlink = allowUnlinkingAllAccounts === true || (accounts?.length ?? 0) > 1
 
   const linkedProviderIds = new Set(linkedAccounts?.map((a) => a.providerId))
 
   const availableProviders =
     multipleAccountsPerProvider === false
-      ? socialProviders?.filter((p) => !linkedProviderIds.has(p))
+      ? socialProviders?.filter((provider) => !linkedProviderIds.has(getProviderId(provider)))
       : socialProviders
 
   const allRows = [
     ...(linkedAccounts?.map((account) => ({
       key: account.id,
       account,
-      provider: account.providerId,
+      provider:
+        socialProviders?.find((provider) => getProviderId(provider) === account.providerId) ??
+        account.providerId,
     })) ?? []),
     ...(availableProviders?.map((provider) => ({
-      key: provider,
+      key: getProviderId(provider),
       account: undefined,
       provider,
     })) ?? []),
@@ -55,7 +65,7 @@ export function LinkedAccounts({ className }: LinkedAccountsProps) {
           <ItemGroup className="gap-0">
             {isPending
               ? socialProviders?.map((provider, index) => (
-                  <Fragment key={provider}>
+                  <Fragment key={getProviderId(provider)}>
                     {index > 0 && <ItemSeparator />}
                     <AccountRowSkeleton />
                   </Fragment>
@@ -63,7 +73,11 @@ export function LinkedAccounts({ className }: LinkedAccountsProps) {
               : allRows.map((row, index) => (
                   <Fragment key={row.key}>
                     {index > 0 && <ItemSeparator />}
-                    <LinkedAccount account={row.account} provider={row.provider} />
+                    <LinkedAccount
+                      account={row.account}
+                      canUnlink={canUnlink}
+                      provider={row.provider}
+                    />
                   </Fragment>
                 ))}
           </ItemGroup>

@@ -47,8 +47,10 @@ export const auth = createServerOnlyFn(() =>
         },
       },
     },
-    experimental: {
-      joins: true,
+    advanced: {
+      database: {
+        joins: true,
+      },
     },
     baseURL: env.BASE_URL,
     emailAndPassword: {

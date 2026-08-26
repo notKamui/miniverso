@@ -23,6 +23,8 @@ const authCrumbs: TAuthPaths = {
   redirect: 'Redirect',
   resetLinkSent: 'Reset Link Sent',
   magicLinkSent: 'Magic Link Sent',
+  callback: 'Callback',
+  error: 'Error',
 }
 
 export const Route = createFileRoute('/auth/$pathname')({

@@ -92,6 +92,13 @@
       "when": 1778087312500,
       "tag": "0012_add_passkey_to_users",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1787753067212,
+      "tag": "0013_add_account_issuer",
+      "breakpoints": true
     }
   ]
 }

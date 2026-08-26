@@ -1,4 +1,4 @@
-import type { AuthView } from '@better-auth-ui/core'
+import { type AuthView, getProviderId } from '@better-auth-ui/core'
 import { useAuth } from '@better-auth-ui/react'
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils/cn'
@@ -43,7 +43,7 @@ export function ProviderButtons({ socialLayout = 'auto', view = 'signIn' }: Prov
     >
       {socialProviders?.map((provider) => (
         <ProviderButton
-          key={provider}
+          key={getProviderId(provider)}
           provider={provider}
           view={view}
           display={

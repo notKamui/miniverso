@@ -1,15 +1,21 @@
-import { getProviderName } from '@better-auth-ui/core'
 import {
-  providerIcons,
+  type AuthSocialProvider,
+  getProviderId,
+  getProviderName,
+  isSessionNotFreshError,
+} from '@better-auth-ui/core'
+import {
+  renderProviderIcon,
   useAccountInfo,
   useAuth,
   useLinkSocial,
   useUnlinkAccount,
 } from '@better-auth-ui/react'
-import type { Account, SocialProvider } from 'better-auth'
+import type { Account } from 'better-auth'
 import { Link2, Link2Off, Plug } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Item,
   ItemActions,
@@ -21,10 +27,12 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils/cn'
+import { FreshSessionPrompt } from './fresh-session-prompt'
 
 export type LinkedAccountProps = {
   account?: Account
-  provider: SocialProvider
+  canUnlink?: boolean
+  provider: AuthSocialProvider | (string & {})
 }
 
 /**
@@ -37,80 +45,107 @@ export type LinkedAccountProps = {
  * @param provider - The provider id
  * @returns A JSX element containing the linked account row
  */
-export function LinkedAccount({ account, provider }: LinkedAccountProps) {
+export function LinkedAccount({ account, canUnlink = true, provider }: LinkedAccountProps) {
   const { authClient, baseURL, localization } = useAuth()
 
   const { data: accountInfo, isPending: isLoadingInfo } = useAccountInfo(authClient, {
-    query: { accountId: account?.accountId },
+    query: { accountId: account?.id ?? '' },
   })
 
   const { mutate: linkSocial, isPending: isLinking } = useLinkSocial(authClient)
 
-  const { mutate: unlinkAccount, isPending: isUnlinking } = useUnlinkAccount(authClient, {
+  const unlinkAccount = useUnlinkAccount(authClient, {
     onSuccess: () => toast.success(localization.settings.accountUnlinked),
   })
 
-  const ProviderIcon = providerIcons[provider]
+  const providerId = getProviderId(provider)
+  const providerIcon = renderProviderIcon(provider)
   const providerName = getProviderName(provider)
-
   const displayName =
-    accountInfo?.data?.login ||
-    accountInfo?.data?.username ||
+    readProviderHandle(accountInfo?.data) ||
     accountInfo?.user?.email ||
     accountInfo?.user?.name ||
     account?.accountId
 
+  const needsFreshSession = isSessionNotFreshError(unlinkAccount.error)
+
   return (
-    <Item>
-      <ItemMedia variant="icon">
-        {ProviderIcon ? (
-          <ProviderIcon className={cn(!account && 'opacity-50')} />
-        ) : (
-          <Plug className={cn(!account && 'opacity-50')} />
-        )}
-      </ItemMedia>
-      <ItemContent>
-        <ItemTitle>{providerName}</ItemTitle>
-        {account && isLoadingInfo ? (
-          <Skeleton className="my-0.5 h-3 w-24" />
-        ) : (
-          <ItemDescription>
-            {account
-              ? displayName
-              : localization.settings.linkProvider.replace('{{provider}}', providerName)}
-          </ItemDescription>
-        )}
-      </ItemContent>
-      <ItemActions>
-        {account ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => unlinkAccount({ providerId: account.providerId })}
-            disabled={isUnlinking}
-            aria-label={localization.settings.unlinkProvider.replace('{{provider}}', providerName)}
-          >
-            {isUnlinking ? <Spinner /> : <Link2Off />}
-            {localization.settings.unlinkProvider.replace('{{provider}}', '').trim()}
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              linkSocial({
-                provider,
-                callbackURL: `${baseURL}${window.location.pathname}`,
-              })
-            }
-            disabled={isLinking}
-            aria-label={localization.settings.linkProvider.replace('{{provider}}', providerName)}
-          >
-            {isLinking ? <Spinner /> : <Link2 />}
-            {localization.settings.link}
-          </Button>
-        )}
-      </ItemActions>
-    </Item>
+    <>
+      <Item>
+        <ItemMedia variant="icon" className={cn(!account && 'opacity-50')}>
+          {providerIcon ?? <Plug />}
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>{providerName}</ItemTitle>
+          {account && isLoadingInfo ? (
+            <Skeleton className="my-0.5 h-3 w-24" />
+          ) : (
+            <ItemDescription>
+              {account
+                ? displayName
+                : localization.settings.linkProvider.replace('{{provider}}', providerName)}
+            </ItemDescription>
+          )}
+        </ItemContent>
+        <ItemActions>
+          {account ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => unlinkAccount.mutate({ accountId: account.id })}
+              disabled={unlinkAccount.isPending || !canUnlink}
+              title={canUnlink ? undefined : localization.settings.lastAccountUnlinkingDisabled}
+              aria-label={localization.settings.unlinkProvider.replace(
+                '{{provider}}',
+                providerName,
+              )}
+            >
+              {unlinkAccount.isPending ? <Spinner /> : <Link2Off />}
+              {localization.settings.unlinkProvider.replace('{{provider}}', '').trim()}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                linkSocial({
+                  provider: providerId,
+                  callbackURL: `${baseURL}${window.location.pathname}`,
+                })
+              }
+              disabled={isLinking}
+              aria-label={localization.settings.linkProvider.replace('{{provider}}', providerName)}
+            >
+              {isLinking ? <Spinner /> : <Link2 />}
+              {localization.settings.link}
+            </Button>
+          )}
+        </ItemActions>
+      </Item>
+      {account && (
+        <Dialog
+          open={needsFreshSession}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) unlinkAccount.reset()
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="sr-only">
+                {localization.settings.freshSessionTitle}
+              </DialogTitle>
+            </DialogHeader>
+            <FreshSessionPrompt onFresh={() => unlinkAccount.mutate({ accountId: account.id })} />
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   )
+}
+
+/** GitHub/Google `accountInfo.data` is typed as `object`; read the handle fields if present. */
+function readProviderHandle(data: unknown) {
+  if (!data || typeof data !== 'object') return undefined
+  if ('login' in data && typeof data.login === 'string' && data.login) return data.login
+  if ('username' in data && typeof data.username === 'string' && data.username) return data.username
 }
