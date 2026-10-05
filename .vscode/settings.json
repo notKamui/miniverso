@@ -1,6 +1,7 @@
 {
   "js/ts.experimental.useTsgo": true,
   "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "json.schemaDownload.enable": true,
 
   "auto-close-tag.disableOnLanguage": ["typescript", "typescriptreact"],
 
