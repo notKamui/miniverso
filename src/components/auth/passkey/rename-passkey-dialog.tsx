@@ -1,8 +1,8 @@
 import type { PasskeyAuthClient } from '@better-auth-ui/core/plugins/passkey'
 import { useAuth, useAuthPlugin } from '@better-auth-ui/react'
 import { useUpdatePasskey } from '@better-auth-ui/react/plugins/passkey'
-import type { SyntheticEvent } from 'react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { useEffect } from 'react'
+import { buttonVariants } from '@/components/ui/button'
 import {
   Dialog,
   DialogClose,
@@ -13,58 +13,72 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/spinner'
 import { passkeyPlugin } from '@/lib/auth/passkey-plugin'
+import { useAuthForm } from '../auth-form'
 import type { ListedPasskey } from './delete-passkey-dialog'
 
-export type RenamePasskeyDialogProps = {
+export function RenamePasskeyDialog({
+  open,
+  onOpenChange,
+  passkey,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
   passkey: ListedPasskey
-}
-
-export function RenamePasskeyDialog({ open, onOpenChange, passkey }: RenamePasskeyDialogProps) {
+}) {
   const { authClient, localization } = useAuth<PasskeyAuthClient>()
-  const { localization: passkeyLocalization } = useAuthPlugin(passkeyPlugin)
-
+  const { localization: labels } = useAuthPlugin(passkeyPlugin)
   const updatePasskey = useUpdatePasskey(authClient, {
     onSuccess: () => onOpenChange(false),
   })
+  const form = useAuthForm({
+    defaultValues: { name: passkey.name ?? '' },
+    onSubmit: async ({ value }) => {
+      const name = value.name.trim()
+      if (name) await updatePasskey.mutateAsync({ id: passkey.id, name })
+    },
+  })
 
-  const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const nextName = (formData.get('name') as string)?.trim()
-    if (nextName) updatePasskey.mutate({ id: passkey.id, name: nextName })
-  }
-
-  const fieldId = `passkey-name-${passkey.id}`
+  useEffect(() => {
+    if (open) form.reset({ name: passkey.name ?? '' })
+  }, [form, open, passkey.name])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form
-          key={open ? passkey.id : 'closed'}
-          className="flex flex-col gap-6"
-          onSubmit={handleSubmit}
-        >
-          <DialogHeader>
-            <DialogTitle>{passkeyLocalization.renamePasskey}</DialogTitle>
-          </DialogHeader>
-          <Field>
-            <FieldLabel htmlFor={fieldId}>{passkeyLocalization.name}</FieldLabel>
-            <Input id={fieldId} name="name" defaultValue={passkey.name ?? ''} required />
-          </Field>
-          <DialogFooter>
-            <DialogClose className={buttonVariants({ variant: 'outline' })} type="button">
-              {localization.settings.cancel}
-            </DialogClose>
-            <Button disabled={updatePasskey.isPending} type="submit">
-              {updatePasskey.isPending && <Spinner />}
-              {localization.settings.saveChanges}
-            </Button>
-          </DialogFooter>
-        </form>
+        <form.AppForm>
+          <form.AuthFormRoot className="flex flex-col gap-6">
+            <DialogHeader>
+              <DialogTitle>{labels.renamePasskey}</DialogTitle>
+            </DialogHeader>
+            <form.AppField name="name">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor={`passkey-name-${passkey.id}`}>{labels.name}</FieldLabel>
+                  <Input
+                    id={`passkey-name-${passkey.id}`}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    required
+                  />
+                </Field>
+              )}
+            </form.AppField>
+            <DialogFooter>
+              <DialogClose className={buttonVariants({ variant: 'outline' })} type="button">
+                {localization.settings.cancel}
+              </DialogClose>
+              <form.AuthFormSubmitButton
+                isPending={updatePasskey.isPending}
+                disabled={updatePasskey.isPending}
+              >
+                {localization.settings.saveChanges}
+              </form.AuthFormSubmitButton>
+            </DialogFooter>
+          </form.AuthFormRoot>
+        </form.AppForm>
       </DialogContent>
     </Dialog>
   )

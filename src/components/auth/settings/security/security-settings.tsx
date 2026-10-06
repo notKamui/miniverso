@@ -1,5 +1,5 @@
 import { useAuth } from '@better-auth-ui/react'
-import { cn } from '@/lib/utils/cn'
+import { cn } from 'cn'
 import { ActiveSessions } from './active-sessions'
 import { ChangePassword } from './change-password'
 import { LinkedAccounts } from './linked-accounts'

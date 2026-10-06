@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { cn } from 'cn'
 import type { ReactNode } from 'react'
 import { UserButton } from '@/components/auth/user/user-button'
 import { AppSidebar } from '@/components/nav/app-sidebar'
@@ -15,7 +16,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { type Crumb, useCrumbs } from '@/lib/hooks/use-crumbs'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
 import { useSidebarState, useUpdateSidebarState } from '@/lib/hooks/use-sidebar-state'
-import { cn } from '@/lib/utils/cn'
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const breadcrumbs = useCrumbs()

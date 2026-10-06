@@ -9,14 +9,15 @@ import {
 import {
   renderProviderIcon,
   useAuth,
+  useFetchOptions,
   useSignInOAuthPopup,
   useSignInSocial,
 } from '@better-auth-ui/react'
 import { useIsMutating } from '@tanstack/react-query'
+import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { cn } from '@/lib/utils/cn'
 import { LastUsedBadge } from './last-login-method/last-used-badge'
 
 export type ProviderButtonProps = {
@@ -42,10 +43,16 @@ export function ProviderButton({
   const { authClient, baseURL, localization, navigate, redirectTo, socialSignInMode } = useAuth()
 
   const callbackURL = `${baseURL}${redirectTo}`
+  const { fetchOptions, resetFetchOptions } = useFetchOptions()
 
-  const { mutate: signInSocial, isPending: signInSocialPending } = useSignInSocial(authClient)
+  const { mutate: signInSocial, isPending: signInSocialPending } = useSignInSocial(authClient, {
+    onError: resetFetchOptions,
+  })
   const { mutate: signInPopup, isPending: signInPopupPending } = useSignInOAuthPopup(
     authClient as OAuthPopupAuthClient,
+    {
+      onError: resetFetchOptions,
+    },
   )
 
   const providerId = getProviderId(provider)
@@ -72,7 +79,7 @@ export function ProviderButton({
       return
     }
 
-    signInSocial({ provider: providerId, callbackURL })
+    signInSocial({ provider: providerId, callbackURL, fetchOptions })
   }
 
   return (

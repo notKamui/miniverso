@@ -9,6 +9,7 @@ import {
   type Updater,
   useTable,
 } from '@tanstack/react-table'
+import { cn } from 'cn'
 import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,7 +27,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useLongPress } from '@/lib/hooks/use-long-press'
-import { cn } from '@/lib/utils/cn'
 import { $setColumnVisibility } from '@/server/functions/column-visibility'
 import { dataTableFeatures, type DataTableFeatures } from './data-table-features'
 

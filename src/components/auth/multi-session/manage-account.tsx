@@ -7,6 +7,7 @@ import {
   useRevokeMultiSession,
   useSetActiveSession,
 } from '@better-auth-ui/react/plugins/multi-session'
+import { cn } from 'cn'
 import { ArrowLeftRight, LogOut, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { UserView } from '@/components/auth/user/user-view'
@@ -20,7 +21,6 @@ import {
 import { Item, ItemActions } from '@/components/ui/item'
 import { Spinner } from '@/components/ui/spinner'
 import { multiSessionPlugin } from '@/lib/auth/multi-session-plugin'
-import { cn } from '@/lib/utils/cn'
 
 export type ManageAccountProps = {
   deviceSession?: ListDeviceSession | null

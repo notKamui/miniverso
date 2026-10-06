@@ -1,8 +1,9 @@
 import {
   type AuthSocialProvider,
+  getAuthErrorMessage,
   getProviderId,
   getProviderName,
-  isSessionNotFreshError,
+  isReauthenticationRequiredError,
 } from '@better-auth-ui/core'
 import {
   renderProviderIcon,
@@ -12,6 +13,7 @@ import {
   useUnlinkAccount,
 } from '@better-auth-ui/react'
 import type { Account } from 'better-auth'
+import { cn } from 'cn'
 import { Link2, Link2Off, Plug } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -26,8 +28,19 @@ import {
 } from '@/components/ui/item'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { cn } from '@/lib/utils/cn'
-import { FreshSessionPrompt } from './fresh-session-prompt'
+import { ReauthenticationAction } from '../../reauthentication'
+
+const PROFILE_NAME_KEYS = ['login', 'username'] as const
+
+function readAccountProfileName(data: object | undefined) {
+  if (!data) return
+
+  const fields = new Map<string, unknown>(Object.entries(data))
+  for (const key of PROFILE_NAME_KEYS) {
+    const value = fields.get(key)
+    if (typeof value === 'string' && value) return value
+  }
+}
 
 export type LinkedAccountProps = {
   account?: Account
@@ -55,6 +68,16 @@ export function LinkedAccount({ account, canUnlink = true, provider }: LinkedAcc
   const { mutate: linkSocial, isPending: isLinking } = useLinkSocial(authClient)
 
   const unlinkAccount = useUnlinkAccount(authClient, {
+    meta: { errorPresentation: 'inline' },
+    onError: (error) => {
+      if (!isReauthenticationRequiredError(error)) {
+        const message = getAuthErrorMessage(error, localization)
+        if (message) {
+          console.error('[Better Auth UI]', error)
+          toast.error(message)
+        }
+      }
+    },
     onSuccess: () => toast.success(localization.settings.accountUnlinked),
   })
 
@@ -62,12 +85,12 @@ export function LinkedAccount({ account, canUnlink = true, provider }: LinkedAcc
   const providerIcon = renderProviderIcon(provider)
   const providerName = getProviderName(provider)
   const displayName =
-    readProviderHandle(accountInfo?.data) ||
+    readAccountProfileName(accountInfo?.data) ||
     accountInfo?.user?.email ||
     accountInfo?.user?.name ||
     account?.accountId
 
-  const needsFreshSession = isSessionNotFreshError(unlinkAccount.error)
+  const needsReauthentication = isReauthenticationRequiredError(unlinkAccount.error)
 
   return (
     <>
@@ -124,7 +147,7 @@ export function LinkedAccount({ account, canUnlink = true, provider }: LinkedAcc
       </Item>
       {account && (
         <Dialog
-          open={needsFreshSession}
+          open={needsReauthentication}
           onOpenChange={(nextOpen) => {
             if (!nextOpen) unlinkAccount.reset()
           }}
@@ -132,20 +155,13 @@ export function LinkedAccount({ account, canUnlink = true, provider }: LinkedAcc
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="sr-only">
-                {localization.settings.freshSessionTitle}
+                {localization.settings.reauthenticationTitle}
               </DialogTitle>
             </DialogHeader>
-            <FreshSessionPrompt onFresh={() => unlinkAccount.mutate({ accountId: account.id })} />
+            <ReauthenticationAction showTitle={false} />
           </DialogContent>
         </Dialog>
       )}
     </>
   )
-}
-
-/** GitHub/Google `accountInfo.data` is typed as `object`; read the handle fields if present. */
-function readProviderHandle(data: unknown) {
-  if (!data || typeof data !== 'object') return undefined
-  if ('login' in data && typeof data.login === 'string' && data.login) return data.login
-  if ('username' in data && typeof data.username === 'string' && data.username) return data.username
 }

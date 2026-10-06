@@ -1,11 +1,11 @@
 import { useAuth, useSendVerificationEmail } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldDescription } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
-import { cn } from '@/lib/utils/cn'
 import { OpenEmailButton } from './open-email-button'
 
 export type VerifyEmailProps = {

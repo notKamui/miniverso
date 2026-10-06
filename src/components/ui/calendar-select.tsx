@@ -1,8 +1,8 @@
+import { cn } from 'cn'
 import { CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
 
 export type CalendarSelectProps = {
@@ -26,7 +26,7 @@ export function CalendarSelect({
         <Button
           variant={'outline'}
           className={cn(
-            'w-[280px] pl-3 text-left font-normal max-sm:grow',
+            'w-70 pl-3 text-left font-normal max-sm:grow',
             !value && 'text-muted-foreground',
             className,
           )}

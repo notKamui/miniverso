@@ -60,16 +60,16 @@ export function ActiveSession({ activeSession }: ActiveSessionProps) {
   })
 
   const isCurrentSession = activeSession.token === session?.session.token
-  const ua = Bowser.parse(activeSession.userAgent || '')
-  const isMobile = ua.platform.type === 'mobile' || ua.platform.type === 'tablet'
+  const ua = activeSession.userAgent ? Bowser.parse(activeSession.userAgent) : undefined
+  const isMobile = ua?.platform.type === 'mobile' || ua?.platform.type === 'tablet'
 
   return (
     <Item>
       <ItemMedia variant="icon">{isMobile ? <Smartphone /> : <Monitor />}</ItemMedia>
       <ItemContent>
         <ItemTitle>
-          {ua.browser.name || 'Unknown Browser'}
-          {ua.os.name ? `, ${ua.os.name}` : ''}
+          {ua?.browser.name || 'Unknown Browser'}
+          {ua?.os.name ? `, ${ua.os.name}` : ''}
         </ItemTitle>
         {isCurrentSession ? (
           <Badge variant="secondary">{localization.settings.currentSession}</Badge>

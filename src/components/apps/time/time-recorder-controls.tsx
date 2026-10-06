@@ -1,6 +1,6 @@
+import { cn } from 'cn'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useResetOnChangeByKey } from '@/lib/hooks/use-reset-on-change'
-import { cn } from '@/lib/utils/cn'
 import { Time } from '@/lib/utils/time'
 import type { TimeEntry, TimeEntryTag } from '@/server/db/schema/time'
 import { DescriptionInput } from './description-input'

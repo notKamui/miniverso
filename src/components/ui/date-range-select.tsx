@@ -1,8 +1,8 @@
+import { cn } from 'cn'
 import { CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils/cn'
 import { type Preset, getRange } from '@/lib/utils/date-range'
 
 const PRESET_LABELS: Record<Preset, string> = {
@@ -83,7 +83,7 @@ export function DateRangeSelect({
             variant="outline"
             size="sm"
             className={cn(
-              'min-w-[240px] justify-start gap-2 pl-3 text-left font-normal',
+              'min-w-60 justify-start gap-2 pl-3 text-left font-normal',
               !startDate && !endDate && 'text-muted-foreground',
             )}
           >
