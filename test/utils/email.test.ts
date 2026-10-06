@@ -25,8 +25,9 @@ vi.mock('resend', () => ({
 
 // Mock better-auth-ui email components so JSX element type/props are inspectable
 vi.mock('@better-auth-ui/react/email', () => ({
-  ResetPasswordEmail: 'ResetPasswordEmail',
   EmailVerificationEmail: 'EmailVerificationEmail',
+  MagicLinkEmail: 'MagicLinkEmail',
+  ResetPasswordEmail: 'ResetPasswordEmail',
 }))
 
 // Now import the module under test
@@ -85,7 +86,7 @@ describe('email utils', () => {
     expect(call.from).toBe('Miniverso <app@example.com>')
     expect(call.to).toBe('bob@example.com')
     expect(call.subject).toBe('Verify your email address')
-    expect(call.react.type.name).toBe('EmailVerificationEmail')
+    expect(call.react.type).toBe('EmailVerificationEmail')
     expect(call.react.props.url).toBe('https://app.example.com/verify?token=xyz')
     expect(call.react.props.email).toBe('bob@example.com')
     expect(call.react.props.appName).toBe('Miniverso')

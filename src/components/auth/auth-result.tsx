@@ -1,9 +1,9 @@
 import { getAuthResultMessage, parseAuthResult } from '@better-auth-ui/core'
 import { useAuth } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { CircleCheckIcon, CircleXIcon, TriangleAlertIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils/cn'
 import { useIsHydrated } from './use-is-hydrated'
 
 type AuthResultProps = {

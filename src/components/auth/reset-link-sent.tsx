@@ -1,9 +1,9 @@
 import { getAuthLinkURL } from '@better-auth-ui/core'
 import { useAuth } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { useSyncExternalStore } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldDescription } from '@/components/ui/field'
-import { cn } from '@/lib/utils/cn'
 import { OpenEmailButton } from './open-email-button'
 
 /** `sessionStorage` key the forgot-password form stores the submitted email under. */

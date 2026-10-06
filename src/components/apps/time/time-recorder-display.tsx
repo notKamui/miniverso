@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useHydrated, useRouter } from '@tanstack/react-router'
 import { createColumnHelper, type ColumnVisibilityState } from '@tanstack/react-table'
+import { cn } from 'cn'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -33,7 +34,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { useNow } from '@/lib/hooks/use-now'
 import { createOptimisticMutationHelpers } from '@/lib/hooks/use-optimistic-mutation'
-import { cn } from '@/lib/utils/cn'
 import { Collection } from '@/lib/utils/collection'
 import { Time } from '@/lib/utils/time'
 import type { PartialExcept } from '@/lib/utils/types'

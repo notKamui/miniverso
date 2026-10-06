@@ -2,8 +2,8 @@ allowBuilds:
   esbuild: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: ^0.3.0
-  vitest: ^4.1.11
+  vite-plus: ^1.0.0
+  vitest: ^5.0.3
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
@@ -15,6 +15,3 @@ peerDependencyRules:
     vite: '*'
     vitest: '*'
 minimumReleaseAge: 1440 # 1 day
-minimumReleaseAgeExclude:
-  - '@better-auth-ui/core@1.7.14'
-  - '@better-auth-ui/react@1.7.14'

@@ -1,7 +1,7 @@
+import { cn } from 'cn'
 import { ChevronRight, MoreHorizontal } from 'lucide-react'
 import { Slot as SlotPrimitive } from 'radix-ui'
 import type { ComponentProps, ReactNode } from 'react'
-import { cn } from '@/lib/utils/cn'
 
 const Breadcrumb = ({
   ref,

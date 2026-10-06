@@ -1,9 +1,9 @@
 import { useAuth, useAuthPlugin } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { useSyncExternalStore } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldDescription } from '@/components/ui/field'
 import { magicLinkPlugin } from '@/lib/auth/magic-link-plugin'
-import { cn } from '@/lib/utils/cn'
 import { OpenEmailButton } from './open-email-button'
 
 /** `sessionStorage` key the magic-link form stores the submitted email under. */

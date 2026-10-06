@@ -1,11 +1,11 @@
 import type { MultiSessionAuthClient } from '@better-auth-ui/core/plugins/multi-session'
 import { useAuth, useAuthPlugin, useSession } from '@better-auth-ui/react'
 import { useListDeviceSessions } from '@better-auth-ui/react/plugins/multi-session'
+import { cn } from 'cn'
 import { Fragment } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ItemGroup, ItemSeparator } from '@/components/ui/item'
 import { multiSessionPlugin } from '@/lib/auth/multi-session-plugin'
-import { cn } from '@/lib/utils/cn'
 import { ManageAccount } from './manage-account'
 
 export type ManageAccountsProps = {

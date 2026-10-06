@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from 'cn'
 import { PanelLeftIcon } from 'lucide-react'
 import { Slot as SlotPrimitive } from 'radix-ui'
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useState } from 'react'
@@ -15,7 +16,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/lib/hooks/use-is-mobile'
-import { cn } from '@/lib/utils/cn'
 
 const SIDEBAR_WIDTH = '16rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'

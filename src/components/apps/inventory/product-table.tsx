@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { createColumnHelper, type ColumnVisibilityState } from '@tanstack/react-table'
+import { cn } from 'cn'
 import { Archive, ArchiveRestore, Copy, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTable, type DataTableFeatures } from '@/components/data/data-table'
@@ -13,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils/cn'
 import { contrastTextForHex } from '@/lib/utils/color'
 import { formatMoney } from '@/lib/utils/format-money'
 import { getInventoryCurrencyQueryOptions } from '@/server/functions/inventory/currency'

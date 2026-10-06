@@ -1,5 +1,6 @@
 import { fileToAvatarDataUrl } from '@better-auth-ui/core'
 import { useAuth, useSession, useUpdateUser } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { Trash2, Upload } from 'lucide-react'
 import { type ChangeEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
-import { cn } from '@/lib/utils/cn'
+import { tryAsync } from '@/lib/utils/try'
 
 export type ChangeAvatarProps = {
   className?: string
@@ -51,9 +52,8 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
         },
       )
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message)
-      }
+      console.error('[Better Auth UI] Image operation failed', error)
+      toast.error(localization.errors.imageUploadFailed)
     }
 
     setIsUploading(false)
@@ -68,11 +68,7 @@ export function ChangeAvatar({ className }: ChangeAvatarProps) {
         onSuccess: async () => {
           if (currentImage) {
             setIsDeleting(true)
-            try {
-              await avatar.delete?.(currentImage)
-            } catch {
-              // Deletion failures are non-fatal; clear loading state either way.
-            }
+            await tryAsync(avatar.delete?.(currentImage) ?? Promise.resolve())
             setIsDeleting(false)
           }
 

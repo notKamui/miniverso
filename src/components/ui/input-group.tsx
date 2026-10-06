@@ -1,17 +1,17 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from 'cn'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils/cn'
 
 function InputGroup({ className, ...props }: React.ComponentProps<'fieldset'>) {
   return (
     <fieldset
       data-slot="input-group"
       className={cn(
-        'group/input-group relative m-0 flex w-full min-w-0 items-center rounded-md border border-input p-0 shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30',
-        'h-9 has-[>textarea]:h-auto',
+        'group/input-group relative flex w-full items-center rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30',
+        'h-9 min-w-0 has-[>textarea]:h-auto',
 
         // Variants based on alignment.
         'has-[>[data-align=inline-start]]:[&>input]:pl-2',

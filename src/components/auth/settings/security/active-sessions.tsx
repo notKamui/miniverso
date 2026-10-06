@@ -1,12 +1,12 @@
-import { isSessionNotFreshError } from '@better-auth-ui/core'
+import { isReauthenticationRequiredError } from '@better-auth-ui/core'
 import { useAuth, useListSessions, useSession } from '@better-auth-ui/react'
+import { cn } from 'cn'
 import { Fragment } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Item, ItemContent, ItemGroup, ItemMedia, ItemSeparator } from '@/components/ui/item'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils/cn'
+import { ReauthenticationAction } from '../../reauthentication'
 import { ActiveSession } from './active-session'
-import { FreshSessionPrompt } from './fresh-session-prompt'
 import { SessionActions } from './session-actions'
 
 export type ActiveSessionsProps = {
@@ -25,11 +25,14 @@ export function ActiveSessions({ className }: ActiveSessionsProps) {
   const { authClient, localization } = useAuth()
   const { data: session } = useSession(authClient)
 
-  const sessionsQuery = useListSessions(authClient)
+  const sessionsQuery = useListSessions(authClient, {
+    meta: { errorPresentation: 'inline' },
+  })
   const { data: sessions, error, isPending } = sessionsQuery
 
-  const activeSessions =
-    sessions?.toSorted((activeSession) => (activeSession.id === session?.session.id ? -1 : 1)) ?? []
+  const activeSessions = [...(sessions ?? [])].toSorted((activeSession) =>
+    activeSession.id === session?.session.id ? -1 : 1,
+  )
 
   return (
     <div>
@@ -37,8 +40,10 @@ export function ActiveSessions({ className }: ActiveSessionsProps) {
 
       <Card className={cn('gap-0 p-0', className)}>
         <CardContent className="p-0">
-          {isSessionNotFreshError(error) ? (
-            <FreshSessionPrompt onFresh={() => sessionsQuery.refetch()} />
+          {isReauthenticationRequiredError(error) ? (
+            <ReauthenticationAction />
+          ) : error ? (
+            <div className="p-4 text-sm text-destructive">{error.message}</div>
           ) : isPending ? (
             <SessionRowSkeleton />
           ) : (
