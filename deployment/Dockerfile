@@ -2,13 +2,14 @@
 FROM node:26-slim AS base
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
-ENV PATH="/root/.vite-plus/bin:$PNPM_HOME:$PATH"
+ENV PATH="/root/.local/share/vite-plus/bin:/root/.vite-plus/bin:$PNPM_HOME:$PATH"
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl git \
   && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL https://vite.plus | bash
-RUN corepack enable
-RUN corepack prepare pnpm@latest-11 --activate
+RUN npm install -g corepack \
+  && corepack enable \
+  && corepack prepare pnpm@11.24.0 --activate
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
