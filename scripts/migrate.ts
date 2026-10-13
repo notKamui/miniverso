@@ -1,4 +1,4 @@
-import { env } from '@/lib/env/server'
+import { env } from '../src/lib/env/server.ts'
 
 export async function runDatabaseMigrations() {
   const { default: postgres } = await import('postgres')

@@ -1,6 +1,6 @@
 // oxlint-disable unicorn/no-process-exit
 
-import { runDatabaseMigrations } from './migrate'
+import { runDatabaseMigrations } from './migrate.ts'
 
 await runDatabaseMigrations()
   .catch((error) => {

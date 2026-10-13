@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cross-env-shell NODE_ENV=development \"node --experimental-strip-types scripts/migrate-run.ts && vite dev --port 3000\"",
+    "dev": "cross-env NODE_ENV=development node --env-file=.env --experimental-strip-types scripts/migrate-run.ts && cross-env NODE_ENV=development vp dev --port 3000",
     "start": "cross-env NODE_ENV=production node --env-file=.env dist/serve.js",
     "b": "vp run build",
     "build": "cross-env NODE_ENV=production BUILD_ENV=production vp build --mode production",
