@@ -4,7 +4,7 @@ import { Time } from '@/lib/utils/time'
 
 export function useNow() {
   const isHydrated = useHydrated()
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
     const interval = setInterval(() => {
