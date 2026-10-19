@@ -15,6 +15,8 @@ export type VerifyEmailProps = {
 /** Seconds the resend button stays disabled to prevent spamming the endpoint. */
 const RESEND_COOLDOWN_SECONDS = 60
 
+const VERIFY_EMAIL_STORAGE_KEY = 'better-auth-ui.verify-email'
+
 /**
  * Reads the verify-email address from `sessionStorage` on the client and
  * returns an empty string during SSR.
@@ -24,7 +26,7 @@ const RESEND_COOLDOWN_SECONDS = 60
 function useStoredVerifyEmail() {
   return useSyncExternalStore(
     () => () => {},
-    () => sessionStorage.getItem('better-auth-ui.verify-email') ?? '',
+    () => sessionStorage.getItem(VERIFY_EMAIL_STORAGE_KEY) ?? '',
     () => '',
   )
 }
