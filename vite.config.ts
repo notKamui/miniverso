@@ -50,7 +50,7 @@ export default defineConfig({
     },
     tasks: {
       up: {
-        command: 'vpx taze major -lI --maturity-period 1',
+        command: 'vpx taze major -lI --maturity-period 1 --request-timeout 10000',
         cache: false,
       },
     },
